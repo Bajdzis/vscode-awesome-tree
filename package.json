@@ -1,42 +1,46 @@
 {
 	"name": "awesome-tree",
-	"displayName": "awesome-tree",
+	"displayName": "Awesome tree",
 	"description": "Stop creating folders, start creating structures! (Automated file creation)",
 	"version": "0.0.1",
 	"engines": {
-		"vscode": "^1.38.0"
+		"vscode": "^1.37.0"
 	},
 	"categories": [
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"*"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Bajdzis/vscode-awesome-tree.git"
+	},
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "extension.helloWorld",
-				"title": "Hello World"
-			}
-		]
+		"commands": []
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile",
-		"test": "node ./out/test/runTest.js"
+		"test": "jest"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
-		"@types/mocha": "^5.2.6",
+		"@types/jest": "^24.0.18",
+		"@types/lodash": "^4.14.138",
 		"@types/node": "^10.12.21",
 		"@types/vscode": "^1.38.0",
 		"glob": "^7.1.4",
-		"mocha": "^6.1.4",
-		"typescript": "^3.3.1",
+		"jest": "^24.9.0",
+		"ts-jest": "^24.1.0",
 		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
 		"vscode-test": "^1.2.0"
+	},
+	"dependencies": {
+		"lodash": "^4.17.15"
 	}
 }
