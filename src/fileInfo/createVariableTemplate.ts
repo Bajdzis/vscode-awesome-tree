@@ -17,11 +17,11 @@ export function createVariableTemplate(search:string, information: PathInfo[]) {
         });
     });
 
-    let result = search;
+    let result = encodeURIComponent(search);
 
     Object.keys(variables).sort((a: string,b: string) => a.length - b.length).forEach((variableName) => {
         const [_, index0, index1, index2] = variables[variableName];
-        const regExp = new RegExp(`(?<=^([^\\$\\{]|\\$\\{[^"]*\\})*)(?<varName>${variableName})`,'ig');
+        const regExp = new RegExp(`(?<=^([^\\$\\{]|\\$\\{[^"]*\\})*)(?<varName>${variableName})`,'i');
         let regExpResult: RegExpExecArray|null = null;
 
         while ((regExpResult = regExp.exec(result)) !== null) {

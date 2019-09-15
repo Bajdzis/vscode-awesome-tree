@@ -10,7 +10,7 @@ export function renderVariableTemplate(template:string, information: PathInfo[])
             words.parts.forEach((word, wordIndex) => {
                 const regExpTemplate = `\\$\\{(?<textCase>[a-z]*)\\(variable\\[${infoIndex}\\]\\[${wordsIndex}\\]\\[${wordIndex}\\]\\)\\}`;
                 let regExpResult: RegExpExecArray|null = null;
-                while ((regExpResult = (new RegExp(regExpTemplate,'gi')).exec(result)) !== null) {
+                while ((regExpResult = (new RegExp(regExpTemplate,'i')).exec(result)) !== null) {
                     const textCase: TextCase = regExpResult.groups && (regExpResult.groups.textCase as TextCase) || 'other';
                     const templateVariable = regExpResult[0];
                     const formatedText = getFormatedText(word, textCase);
@@ -20,5 +20,5 @@ export function renderVariableTemplate(template:string, information: PathInfo[])
         });
     });
 
-    return result;
+    return decodeURIComponent(result);
 }

@@ -5,6 +5,16 @@ import { getInfoAboutPath, PathInfo } from './fileInfo/getInfoAboutPath';
 import { createVariableTemplate } from './fileInfo/createVariableTemplate';
 import { renderVariableTemplate } from './fileInfo/renderVariableTemplate';
 
+type Directories = {
+	[key:string]: {
+		directoryInfo: PathInfo;
+		files:{
+			pathTemplate: string;
+			contentTemplate: string;
+		}[];
+	}
+};
+
 export function activate(context: vscode.ExtensionContext) {
 
 	const fileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/*",false, true, true);
@@ -16,40 +26,42 @@ export function activate(context: vscode.ExtensionContext) {
 			const parentDir = path.dirname(uri.fsPath);
 			const newDirname = path.basename(uri.fsPath);
 			const infoAboutNewDirectory = getInfoAboutPath(relative);
-			const directories: {[key:string]: {
-				directoryInfo: PathInfo;
-				files: string[];
-			}} = {};
+			const directories: Directories = {};
 			
 			const directoryNames = fs.readdirSync(parentDir);
 			directoryNames.forEach(subDirectoryOrFiles => {
 				const subDirectoryOrFilesPath = path.resolve(parentDir, subDirectoryOrFiles);
-				if(fs.lstatSync(subDirectoryOrFilesPath).isDirectory() && newDirname !== subDirectoryOrFiles){
+				if (fs.lstatSync(subDirectoryOrFilesPath).isDirectory() && newDirname !== subDirectoryOrFiles) {
 					const files = getAllFilesPath(subDirectoryOrFilesPath);
 					const directoryInfo = getInfoAboutPath(getRelative(subDirectoryOrFilesPath));
 					directories[subDirectoryOrFiles] = {
 						directoryInfo,
-						files:files.map((fileName) => createVariableTemplate(fileName.replace(subDirectoryOrFilesPath, ''),[directoryInfo]))
-					}
+						files:files.map((fileName) => ({
+							pathTemplate: createVariableTemplate(fileName.replace(subDirectoryOrFilesPath, ''),[directoryInfo]),
+							contentTemplate: createVariableTemplate(fs.readFileSync(fileName).toString(),[directoryInfo])
+						}))
+					};
 				}
 			});
 
 			Object.values(directories)
 				.reduce((files, data) => [
 					...files,
-					...data.files.filter((file) => !files.includes(file))
+					...data.files.map(file => file.pathTemplate).filter((file) => !files.includes(file))
 				], [] as string[])
-				.map(filePath => {
-					const template: string = renderVariableTemplate(filePath, [infoAboutNewDirectory]);
-					const newFilePath = path.join(uri.path, template);
+				.map(filePathTemplate => {
+					const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
+					const newFilePath = path.join(uri.path, filePath);
+					const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
+
 					ensureDirectoryExistence(newFilePath);
-					fs.writeFile(newFilePath,'',{}, async () => {
+					fs.writeFile(newFilePath, content, {}, async () => {
 						const textDocument = await vscode.workspace.openTextDocument(newFilePath);
 						if (textDocument) {
 							vscode.window.showTextDocument(textDocument);
 						}
 					});
-					return template;
+					return filePath;
 				});
 
 			
@@ -58,6 +70,43 @@ export function activate(context: vscode.ExtensionContext) {
 			// fill files
 		}
 	});
+
+	function createFileContent(templateStringPath:string, directories: Directories, variables: PathInfo[]): string {
+		const contents: Array<string[]> = [];
+		Object.values(directories).forEach(directory => {
+			directory.files.forEach(({pathTemplate, contentTemplate}) => {
+				if (pathTemplate === templateStringPath) {
+					const lines = contentTemplate.split(encodeURIComponent("\n"));
+					contents.push(lines);
+				}
+			})
+		});
+
+		if (contents.length === 0) {
+			return '';
+		}
+		
+		const [baseFile, ...otherFiles] = contents;
+		const lineToGenerate: string[] = [];
+
+		baseFile.forEach(line => {
+			if(allFilesIncludeThisLine(otherFiles, line)){
+				lineToGenerate.push(renderVariableTemplate(line, variables))
+			}
+		});
+
+		return lineToGenerate.join("\n");
+	}
+
+	function allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean{
+		for (let i = 0; i < files.length; i++) {
+			const file = files[i];
+			if(!file.includes(line)){
+				return false;
+			}
+		}
+		return true;
+	}
 
 	function ensureDirectoryExistence(filePath:string) {
 		const dirname = path.dirname(filePath);

@@ -30,14 +30,14 @@ describe('fileInfo / createVariableTemplate',() => {
     it('should return template string', () => {
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', mockPathInfo);
 
-        expect(template).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/mocked${capitalize(variable[0][1][0])}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/mocked${capitalize(variable[0][1][0])}.test.ts');
     });
 
 
     it('should render string base on template', () => {
-        const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', mockPathInfo);
+        const template = createVariableTemplate('/tests/uri/mocked%${.*}Uri.test.ts', mockPathInfo);
         const render = renderVariableTemplate(template, mockPathInfo);
-        expect(render).toEqual('/tests/uri/mockedUri.test.ts');
+        expect(render).toEqual('/tests/uri/mocked%${.*}Uri.test.ts');
     });
 
     it('should not create infinite loop', () => {
@@ -58,7 +58,7 @@ describe('fileInfo / createVariableTemplate',() => {
         ];
 
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', specialCharacters);
-        expect(template).toEqual('/${lowerCase(variable[0][0][6])}/${lowerCase(variable[0][0][4])}/${lowerCase(variable[0][0][5])}${capitalize(variable[0][0][4])}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][0][6])}/${lowerCase(variable[0][0][4])}/${lowerCase(variable[0][0][5])}${capitalize(variable[0][0][4])}.test.ts');
     });
     
 });
