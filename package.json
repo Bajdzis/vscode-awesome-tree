@@ -12,6 +12,7 @@
 	"activationEvents": [
 		"*"
 	],
+	"icon": "readme/awesome-tree-icon.png",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Bajdzis/vscode-awesome-tree.git"
