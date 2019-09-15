@@ -19,70 +19,82 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const fileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/*",false, true, true);
 	fileSystemWatcher.onDidCreate(async(uri: vscode.Uri) => {
-		const relative = getRelative(uri.path);
+		try {
+			const relative = getRelative(uri.path);
 
-		// when directory or file is not empty probably change name parent directory
-		if (isEmptyDirectory(uri)) {
-			const parentDir = path.dirname(uri.fsPath);
-			const newDirname = path.basename(uri.fsPath);
-			const infoAboutNewDirectory = getInfoAboutPath(relative);
-			const directories: Directories = {};
-			
-			const directoryNames = fs.readdirSync(parentDir);
-			directoryNames.forEach(subDirectoryOrFiles => {
-				const subDirectoryOrFilesPath = path.resolve(parentDir, subDirectoryOrFiles);
-				if (fs.lstatSync(subDirectoryOrFilesPath).isDirectory() && newDirname !== subDirectoryOrFiles) {
-					const files = getAllFilesPath(subDirectoryOrFilesPath);
-					const directoryInfo = getInfoAboutPath(getRelative(subDirectoryOrFilesPath));
-					directories[subDirectoryOrFiles] = {
-						directoryInfo,
-						files:files.map((fileName) => ({
-							pathTemplate: createVariableTemplate(fileName.replace(subDirectoryOrFilesPath, ''),[directoryInfo]),
-							contentTemplate: createVariableTemplate(fs.readFileSync(fileName).toString(),[directoryInfo])
-						}))
-					};
-				}
-			});
-
-			const preparePathFiles = Object.values(directories)
-				.reduce((files, data) => [
-					...files,
-					...data.files.map(file => file.pathTemplate).filter((file) => !files.includes(file))
-				], [] as string[]);
-
-			const answersQuestion = [
-				'Yes, generate files', 
-				'No, thanks'
-			];
-
-			const resultQuestion = await vscode.window.showInformationMessage(
-				`Do you want to create ${preparePathFiles.length} file(s) in new "${newDirname}" folder?`,
-				...answersQuestion
-			);
-
-			if (resultQuestion !== answersQuestion[0]) {
-				return;
-			}
-
-			preparePathFiles.map(filePathTemplate => {
-					const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
-					const newFilePath = path.join(uri.path, filePath);
-					const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
-
-					ensureDirectoryExistence(newFilePath);
-					fs.writeFile(newFilePath, content, {}, async () => {
-						const textDocument = await vscode.workspace.openTextDocument(newFilePath);
-						if (textDocument) {
-							vscode.window.showTextDocument(textDocument);
-						}
-					});
-					return filePath;
+			// when directory or file is not empty probably change name parent directory
+			if (isEmptyDirectory(uri)) {
+				const parentDir = path.dirname(uri.fsPath);
+				const newDirname = path.basename(uri.fsPath);
+				const infoAboutNewDirectory = getInfoAboutPath(relative);
+				const directories: Directories = {};
+				
+				const directoryNames = fs.readdirSync(parentDir);
+				directoryNames.forEach(subDirectoryOrFiles => {
+					const subDirectoryOrFilesPath = path.resolve(parentDir, subDirectoryOrFiles);
+					if (fs.lstatSync(subDirectoryOrFilesPath).isDirectory() && newDirname !== subDirectoryOrFiles) {
+						const files = getAllFilesPath(subDirectoryOrFilesPath);
+						const directoryInfo = getInfoAboutPath(getRelative(subDirectoryOrFilesPath));
+						directories[subDirectoryOrFiles] = {
+							directoryInfo,
+							files:files.map((fileName) => ({
+								pathTemplate: createVariableTemplate(fileName.replace(subDirectoryOrFilesPath, ''),[directoryInfo]),
+								contentTemplate: createVariableTemplate(fs.readFileSync(fileName).toString(),[directoryInfo])
+							}))
+						};
+					}
 				});
 
-			
-		} else if(isFile(uri)) {
-			console.log(getInfoAboutPath(relative));
-			// fill files
+				const preparePathFiles = Object.values(directories)
+					.reduce((files, data) => [
+						...files,
+						...data.files.map(file => file.pathTemplate).filter((file) => !files.includes(file))
+					], [] as string[]);
+
+				const answersQuestion = [
+					'Yes, generate files', 
+					'No, thanks'
+				];
+
+				const resultQuestion = await vscode.window.showInformationMessage(
+					`Do you want to create ${preparePathFiles.length} file(s) in new "${newDirname}" folder?`,
+					...answersQuestion
+				);
+
+				if (resultQuestion !== answersQuestion[0]) {
+					return;
+				}
+
+				preparePathFiles.map(filePathTemplate => {
+						const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
+						const newFilePath = path.join(uri.path, filePath);
+						const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
+
+						ensureDirectoryExistence(newFilePath);
+						fs.writeFile(newFilePath, content, {}, async () => {
+							const textDocument = await vscode.workspace.openTextDocument(newFilePath);
+							if (textDocument) {
+								vscode.window.showTextDocument(textDocument);
+							}
+						});
+						return filePath;
+					});
+
+				
+			} else if(isFile(uri)) {
+				console.log(getInfoAboutPath(relative));
+				// fill files
+			}
+		} catch (error) {
+			const result = await vscode.window.showErrorMessage(
+				`Something go wrong :( ${error.toString()}`,
+				'Create issue od GitHub'
+			);
+
+			if (result === 'Create issue od GitHub') {
+				vscode.commands.executeCommand('vscode.open', vscode.Uri.parse('https://github.com/Bajdzis/vscode-awesome-tree/issues/new'));
+			}
+
 		}
 	});
 
