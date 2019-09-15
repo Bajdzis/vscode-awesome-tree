@@ -18,9 +18,9 @@ type Directories = {
 export function activate(context: vscode.ExtensionContext) {
 
 	const fileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/*",false, true, true);
-	fileSystemWatcher.onDidCreate((uri: vscode.Uri) => {
+	fileSystemWatcher.onDidCreate(async(uri: vscode.Uri) => {
 		const relative = getRelative(uri.path);
-		
+
 		// when directory or file is not empty probably change name parent directory
 		if (isEmptyDirectory(uri)) {
 			const parentDir = path.dirname(uri.fsPath);
@@ -44,12 +44,27 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			});
 
-			Object.values(directories)
+			const preparePathFiles = Object.values(directories)
 				.reduce((files, data) => [
 					...files,
 					...data.files.map(file => file.pathTemplate).filter((file) => !files.includes(file))
-				], [] as string[])
-				.map(filePathTemplate => {
+				], [] as string[]);
+
+			const answersQuestion = [
+				'Yes, generate files', 
+				'No, thanks'
+			];
+
+			const resultQuestion = await vscode.window.showInformationMessage(
+				`Do you want to create ${preparePathFiles.length} file(s) in new "${newDirname}" folder?`,
+				...answersQuestion
+			);
+
+			if (resultQuestion !== answersQuestion[0]) {
+				return;
+			}
+
+			preparePathFiles.map(filePathTemplate => {
 					const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
 					const newFilePath = path.join(uri.path, filePath);
 					const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
