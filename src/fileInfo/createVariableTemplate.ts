@@ -1,26 +1,27 @@
 import { PathInfo } from "./getInfoAboutPath";
-import { TextCase, getTextCase } from "./getInfoWords";
+import { getTextCase } from "./getInfoWords";
+import { addSlashes } from "../helpers/addSlashes";
 
 
 export function createVariableTemplate(search:string, information: PathInfo[]) {
     const variables: {
-        [key: string] : [TextCase, number,number,number];
+        [key: string] : [number,number,number];
     } = {};
 
     information.forEach((info, infoIndex) => {
         info.pathParts.forEach((words, wordsIndex) => {
             words.parts.forEach((word, wordIndex) => {
                 if(!variables[word]){
-                    variables[word] = [words.textCase, infoIndex, wordsIndex, wordIndex];
+                    variables[word] = [infoIndex, wordsIndex, wordIndex];
                 }
             });
         });
     });
 
-    let result = encodeURIComponent(search);
+    let result = encodeURIComponent(addSlashes(search));
 
     Object.keys(variables).sort((a: string,b: string) => a.length - b.length).forEach((variableName) => {
-        const [_, index0, index1, index2] = variables[variableName];
+        const [index0, index1, index2] = variables[variableName];
         const regExp = new RegExp(`(?<=^([^\\$\\{]|\\$\\{[^"]*\\})*)(?<varName>${variableName})`,'i');
         let regExpResult: RegExpExecArray|null = null;
 

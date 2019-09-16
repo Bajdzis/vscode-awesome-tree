@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const fileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/*",false, true, true);
 	fileSystemWatcher.onDidCreate(async(uri: vscode.Uri) => {
 		try {
-			const relative = getRelative(uri.path);
+			const relative = getRelative(uri.fsPath);
 
 			// when directory or file is not empty probably change name parent directory
 			if (isEmptyDirectory(uri)) {
@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				preparePathFiles.map(filePathTemplate => {
 						const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
-						const newFilePath = path.join(uri.path, filePath);
+						const newFilePath = path.join(uri.fsPath, filePath);
 						const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
 
 						ensureDirectoryExistence(newFilePath);
@@ -165,7 +165,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return path;
 		}
 		for (let i = 0; i < workspaceFolders.length; i++) {
-			const dirPath = workspaceFolders[i].uri.path;
+			const dirPath = workspaceFolders[i].uri.fsPath;
 			path = path.replace(dirPath, '');
 		}
 		return path;

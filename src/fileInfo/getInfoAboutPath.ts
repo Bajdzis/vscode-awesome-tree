@@ -1,4 +1,5 @@
 import { WordsInfo, getInfoWords } from "./getInfoWords";
+import { addSlashes } from "../helpers/addSlashes";
 
 export interface PathInfo {
     path: string;
@@ -8,6 +9,7 @@ export interface PathInfo {
 }
 
 export function getInfoAboutPath(path: string): PathInfo{
+    path = addSlashes(path);
     const searchExtension = /(?<pathWithoutExtension>.*)\.(?<extension>[a-z0-9]*)$/;
     const result = searchExtension.exec(path);
     const pathWithoutExtension = result && result.groups && result.groups.pathWithoutExtension || path;
