@@ -16,11 +16,22 @@ type Directories = {
 };
 
 export function activate(context: vscode.ExtensionContext) {
-
+	const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
 	const fileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/*",false, true, true);
+	const outputChannel = vscode.window.createOutputChannel('awesome tree');
+
+	outputChannel.appendLine(`Listening for file changes started!`);
+
 	fileSystemWatcher.onDidCreate(async(uri: vscode.Uri) => {
 		try {
 			const relative = getRelative(uri.fsPath);
+
+			const excludeWatchRegExp = new RegExp(settingProvider.get<string>('excludeWatchRegExp', 'bower_components|node_modules|\\.git|\\.svn|\\.hg|\\.DS_Store'));
+
+			if (excludeWatchRegExp.exec(uri.fsPath) !== null) {
+				outputChannel.appendLine(`File '${uri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
+				return;
+			}
 
 			// when directory or file is not empty probably change name parent directory
 			if (isEmptyDirectory(uri)) {
@@ -55,6 +66,10 @@ export function activate(context: vscode.ExtensionContext) {
 					'Yes, generate files', 
 					'No, thanks'
 				];
+
+				if (preparePathFiles.length === 0) {
+					return;
+				}
 
 				const resultQuestion = await vscode.window.showInformationMessage(
 					`Do you want to create ${preparePathFiles.length} file(s) in new "${newDirname}" folder?`,

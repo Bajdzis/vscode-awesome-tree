@@ -3,7 +3,7 @@
 	"displayName": "Awesome tree",
 	"description": "Stop creating folders, start creating structures! (Automated file creation)",
 	"publisher": "bajdzis",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"engines": {
 		"vscode": "^1.37.0"
 	},
@@ -30,7 +30,17 @@
 	},
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": []
+		"commands": [],
+		"configuration": {
+			"title": "Awesome Tree",
+			"properties": {
+				"awesomeTree.excludeWatchRegExp": {
+					"type": "string",
+					"default": "bower_components|node_modules|\\.git|\\.svn|\\.hg|\\.DS_Store",
+					"description": "Regular expressions for exclude watch files."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
