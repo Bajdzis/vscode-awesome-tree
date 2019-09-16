@@ -1,7 +1,8 @@
 import { PathInfo } from "./getInfoAboutPath";
 import { TextCase, getFormatedText } from "./getInfoWords";
+import { AwesomeTreeError } from "../errors/AwesomeTreeError";
 
-export function renderVariableTemplate(template:string, information: PathInfo[]) {
+export function renderVariableTemplate(template:string, information: PathInfo[], maxIterate: number = 500) {
 
     let result = template;
 
@@ -15,6 +16,13 @@ export function renderVariableTemplate(template:string, information: PathInfo[])
                     const templateVariable = regExpResult[0];
                     const formatedText = getFormatedText(word, textCase);
                     result = result.replace(templateVariable, formatedText);
+                    maxIterate--;
+                    if(maxIterate === 0){
+                        throw new AwesomeTreeError(`Too many iterate!`, {
+                            callFunction: 'renderVariableTemplate', 
+                            arguments: [template, information]
+                        });
+                    }
                 }
             });
         });

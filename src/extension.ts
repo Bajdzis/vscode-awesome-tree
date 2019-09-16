@@ -4,6 +4,7 @@ import * as path from 'path';
 import { getInfoAboutPath, PathInfo } from './fileInfo/getInfoAboutPath';
 import { createVariableTemplate } from './fileInfo/createVariableTemplate';
 import { renderVariableTemplate } from './fileInfo/renderVariableTemplate';
+import { AwesomeTreeError } from './errors/AwesomeTreeError';
 
 type Directories = {
 	[key:string]: {
@@ -106,8 +107,18 @@ export function activate(context: vscode.ExtensionContext) {
 				'Create issue od GitHub'
 			);
 
-			if (result === 'Create issue od GitHub') {
-				vscode.commands.executeCommand('vscode.open', vscode.Uri.parse('https://github.com/Bajdzis/vscode-awesome-tree/issues/new'));
+			if (error instanceof AwesomeTreeError) {
+				if (result === 'Create issue od GitHub') {
+					vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(
+						`https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${encodeURI(error.getTitle())}&body=${encodeURIComponent(error.getBody())}`
+					));
+				}
+			} else {
+				if (result === 'Create issue od GitHub') {
+					vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(
+						`https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${encodeURI(error.getTitle())}`
+					));
+				}
 			}
 
 		}

@@ -1,9 +1,10 @@
 import { PathInfo } from "./getInfoAboutPath";
 import { getTextCase } from "./getInfoWords";
 import { addSlashes } from "../helpers/addSlashes";
+import { AwesomeTreeError } from "../errors/AwesomeTreeError";
 
 
-export function createVariableTemplate(search:string, information: PathInfo[]) {
+export function createVariableTemplate(search:string, information: PathInfo[], maxIterate: number = 500) {
     const variables: {
         [key: string] : [number,number,number];
     } = {};
@@ -30,6 +31,13 @@ export function createVariableTemplate(search:string, information: PathInfo[]) {
             let textCase = getTextCase(word);
             if(textCase !== 'other'){
                 result = result.replace( new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${word})`, 'g'), `\${${textCase}(variable[${index0}][${index1}][${index2}])}` );
+            }
+            maxIterate--;
+            if(maxIterate === 0){
+                throw new AwesomeTreeError(`Too many iterate!`, {
+                    callFunction: 'createVariableTemplate', 
+                    arguments: [search, information]
+                });
             }
         }
     });

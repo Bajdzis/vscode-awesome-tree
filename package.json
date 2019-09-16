@@ -3,7 +3,7 @@
 	"displayName": "Awesome tree",
 	"description": "Stop creating folders, start creating structures! (Automated file creation)",
 	"publisher": "bajdzis",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"engines": {
 		"vscode": "^1.37.0"
 	},
