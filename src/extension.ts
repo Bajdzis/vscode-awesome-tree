@@ -107,22 +107,25 @@ export function activate(context: vscode.ExtensionContext) {
 				'Create issue od GitHub'
 			);
 
-			if (error instanceof AwesomeTreeError) {
-				if (result === 'Create issue od GitHub') {
-					vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(
-						`https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${encodeURI(error.getTitle())}&body=${encodeURIComponent(error.getBody())}`
-					));
-				}
-			} else {
-				if (result === 'Create issue od GitHub') {
-					vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(
-						`https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${encodeURI(error.getTitle())}`
-					));
-				}
+			if (result === 'Create issue od GitHub') {
+				createGithubIssue(error);
 			}
 
 		}
 	});
+
+	function createGithubIssue(error: Error) {
+		const MAX_CHARACTERS_IN_URI: number = 4000;
+		let uri: string = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.toString()}`;
+
+		if (error instanceof AwesomeTreeError) {
+			uri = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.getTitle()}&body=${error.getBody()}`;
+		}
+
+		vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(
+			uri.substring(0, MAX_CHARACTERS_IN_URI)
+		));
+	}
 
 	function createFileContent(templateStringPath:string, directories: Directories, variables: PathInfo[]): string {
 		const contents: Array<string[]> = [];

@@ -17,7 +17,7 @@ export function renderVariableTemplate(template:string, information: PathInfo[],
                     const formatedText = getFormatedText(word, textCase);
                     result = result.replace(templateVariable, formatedText);
                     maxIterate--;
-                    if(maxIterate === 0){
+                    if(maxIterate < 0){
                         throw new AwesomeTreeError(`Too many iterate!`, {
                             callFunction: 'renderVariableTemplate', 
                             arguments: [template, information]

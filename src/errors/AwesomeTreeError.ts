@@ -19,7 +19,7 @@ export class AwesomeTreeError extends Error {
         '',
         'Debug Info:', 
         '```json', 
-        JSON.stringify(this.debugInfo, null, 2), 
+        JSON.stringify(this.debugInfo), 
         '```',
         'Stack Info:',
         '```',

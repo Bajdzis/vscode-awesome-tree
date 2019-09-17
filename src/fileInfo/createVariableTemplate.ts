@@ -33,7 +33,7 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
                 result = result.replace( new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${word})`, 'g'), `\${${textCase}(variable[${index0}][${index1}][${index2}])}` );
             }
             maxIterate--;
-            if(maxIterate === 0){
+            if(maxIterate < 0){
                 throw new AwesomeTreeError(`Too many iterate!`, {
                     callFunction: 'createVariableTemplate', 
                     arguments: [search, information]
