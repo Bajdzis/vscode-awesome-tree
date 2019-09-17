@@ -11,7 +11,7 @@ type Directories = {
 		directoryInfo: PathInfo;
 		files:{
 			pathTemplate: string;
-			contentTemplate: string;
+			contentTemplates: string[];
 		}[];
 	}
 };
@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 							directoryInfo,
 							files:files.map((fileName) => ({
 								pathTemplate: createVariableTemplate(fileName.replace(subDirectoryOrFilesPath, ''),[directoryInfo]),
-								contentTemplate: createVariableTemplate(fs.readFileSync(fileName).toString(),[directoryInfo])
+								contentTemplates: fs.readFileSync(fileName).toString().split('\n').map(line => createVariableTemplate(line,[directoryInfo]))
 							}))
 						};
 					}
@@ -130,9 +130,9 @@ export function activate(context: vscode.ExtensionContext) {
 	function createFileContent(templateStringPath:string, directories: Directories, variables: PathInfo[]): string {
 		const contents: Array<string[]> = [];
 		Object.values(directories).forEach(directory => {
-			directory.files.forEach(({pathTemplate, contentTemplate}) => {
+			directory.files.forEach(({pathTemplate, contentTemplates}) => {
 				if (pathTemplate === templateStringPath) {
-					const lines = contentTemplate.split(encodeURIComponent("\n"));
+					const lines = contentTemplates;
 					contents.push(lines);
 				}
 			})
