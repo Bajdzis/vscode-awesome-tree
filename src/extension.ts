@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getInfoAboutPath, PathInfo } from './fileInfo/getInfoAboutPath';
-import { createVariableTemplate } from './fileInfo/createVariableTemplate';
-import { renderVariableTemplate } from './fileInfo/renderVariableTemplate';
+import { createVariableTemplate } from './variableTemplate/createVariableTemplate';
+import { renderVariableTemplate } from './variableTemplate/renderVariableTemplate';
 import { AwesomeTreeError } from './errors/AwesomeTreeError';
 
 type Directories = {

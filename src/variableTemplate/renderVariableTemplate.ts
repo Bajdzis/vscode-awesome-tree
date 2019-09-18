@@ -1,6 +1,7 @@
-import { PathInfo } from './getInfoAboutPath';
-import { TextCase, getFormatedText } from './getInfoWords';
+import { PathInfo } from '../fileInfo/getInfoAboutPath';
 import { AwesomeTreeError } from '../errors/AwesomeTreeError';
+import { TextCase } from '../textCase/domain';
+import { getFormatedText } from '../textCase/getFormatedText';
 
 export function renderVariableTemplate(template:string, information: PathInfo[], maxIterate: number = 500) {
 

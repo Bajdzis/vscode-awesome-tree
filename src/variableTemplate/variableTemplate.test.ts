@@ -1,5 +1,5 @@
 import { createVariableTemplate } from './createVariableTemplate';
-import { PathInfo } from './getInfoAboutPath';
+import { PathInfo } from '../fileInfo/getInfoAboutPath';
 import { renderVariableTemplate } from './renderVariableTemplate';
 
 const mockPathInfo: PathInfo[] =[

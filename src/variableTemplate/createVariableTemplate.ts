@@ -1,7 +1,7 @@
-import { PathInfo } from './getInfoAboutPath';
-import { getTextCase } from './getInfoWords';
+import { PathInfo } from '../fileInfo/getInfoAboutPath';
 import { addSlashes } from '../helpers/addSlashes';
 import { AwesomeTreeError } from '../errors/AwesomeTreeError';
+import { getTextCase } from '../textCase/getTextCase';
 
 
 export function createVariableTemplate(search:string, information: PathInfo[], maxIterate: number = 500) {
