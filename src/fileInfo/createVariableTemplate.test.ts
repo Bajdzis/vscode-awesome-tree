@@ -1,6 +1,6 @@
-import { createVariableTemplate } from "./createVariableTemplate";
-import { PathInfo } from "./getInfoAboutPath";
-import { renderVariableTemplate } from "./renderVariableTemplate";
+import { createVariableTemplate } from './createVariableTemplate';
+import { PathInfo } from './getInfoAboutPath';
+import { renderVariableTemplate } from './renderVariableTemplate';
 
 const mockPathInfo: PathInfo[] =[
     {
@@ -10,22 +10,22 @@ const mockPathInfo: PathInfo[] =[
         pathParts: [
             {
                 parts:['all', 'classes'],
-                textCase:"camelCase",
+                textCase:'camelCase',
                 value: 'allClasses'
             }, 
             {
                 parts:['uri', 'component'],
-                textCase:"camelCase",
+                textCase:'camelCase',
                 value: 'uriComponent'
             },
             {
                 parts:['tests'],
-                textCase:"camelCase",
+                textCase:'camelCase',
                 value: 'tests'
             }
         ]
     }
-]
+];
 describe('fileInfo / createVariableTemplate',() => {
     it('should return template string', () => {
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', mockPathInfo);
@@ -50,7 +50,7 @@ describe('fileInfo / createVariableTemplate',() => {
                 pathParts: [
                     {
                         parts:[ '1', '0', 'variable', 'capitalize', 'uri', 'mocked', 'tests', '1', '0', 'variable', 'capitalize'],
-                        textCase:"camelCase",
+                        textCase:'camelCase',
                         value: 'allClasses'
                     }
                 ]

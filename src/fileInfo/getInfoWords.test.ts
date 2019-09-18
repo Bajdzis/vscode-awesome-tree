@@ -1,4 +1,4 @@
-import { getInfoWords } from "./getInfoWords"
+import { getInfoWords } from './getInfoWords';
 
 describe('fileInfo / getInfoWords',() => {
     it('should return info', () => {

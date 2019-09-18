@@ -6,7 +6,7 @@ export interface WordsInfo {
     value: string;
     parts: string[];
     textCase: TextCase;
-};
+}
 
 export function getTextCase(value: string): TextCase {
     if(capitalize(value)  === value){
@@ -40,7 +40,7 @@ export function getFormatedText(value: string, format: TextCase) {
 
 export function getInfoWords(value: string): WordsInfo {
     let textCase: TextCase = 'other';
-    const inSnakeCase = snakeCase(value);
+    const inSnakeCase: string = snakeCase(value);
     const parts = inSnakeCase.split('_');
 
     if(capitalize(value)  === value){
@@ -59,5 +59,5 @@ export function getInfoWords(value: string): WordsInfo {
         value,
         parts,
         textCase
-    }
+    };
 }

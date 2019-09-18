@@ -1,4 +1,4 @@
-import { getInfoAboutPath } from "./getInfoAboutPath";
+import { getInfoAboutPath } from './getInfoAboutPath';
 
 describe('fileInfo / getInfoAboutPath',() => {
     it('should return dir info', () => {

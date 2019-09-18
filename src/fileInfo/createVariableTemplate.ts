@@ -1,7 +1,7 @@
-import { PathInfo } from "./getInfoAboutPath";
-import { getTextCase } from "./getInfoWords";
-import { addSlashes } from "../helpers/addSlashes";
-import { AwesomeTreeError } from "../errors/AwesomeTreeError";
+import { PathInfo } from './getInfoAboutPath';
+import { getTextCase } from './getInfoWords';
+import { addSlashes } from '../helpers/addSlashes';
+import { AwesomeTreeError } from '../errors/AwesomeTreeError';
 
 
 export function createVariableTemplate(search:string, information: PathInfo[], maxIterate: number = 500) {
@@ -34,7 +34,7 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
             }
             maxIterate--;
             if(maxIterate < 0){
-                throw new AwesomeTreeError(`Too many iterate!`, {
+                throw new AwesomeTreeError('Too many iterate!', {
                     callFunction: 'createVariableTemplate', 
                     arguments: [search, information]
                 });
