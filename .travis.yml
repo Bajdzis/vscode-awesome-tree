@@ -4,4 +4,4 @@ cache: npm
 script:
   - npm run compile
   - npm run lint
-after_script: npm run test:coverage
+  - npm run test:coverage
