@@ -48,7 +48,9 @@
 		"watch": "tsc -watch -p ./",
 		"test": "jest",
 		"test:coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
-		"lint": "eslint ./ --ext .ts "
+		"lint": "eslint ./ --ext .ts ",
+		"prerelease": "standard-version",
+		"release": "git push --follow-tags origin master"
 	},
 	"pre-commit": [
 		"lint",
@@ -67,6 +69,7 @@
 		"glob": "^7.1.4",
 		"jest": "^24.9.0",
 		"pre-commit": "^1.2.2",
+		"standard-version": "^7.0.0",
 		"ts-jest": "^24.1.0",
 		"tslint": "^5.12.1",
 		"typescript": "^3.3.1",
