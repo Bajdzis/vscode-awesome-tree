@@ -1,4 +1,4 @@
-import {camelCase, snakeCase, lowerCase , kebabCase, capitalize} from 'lodash';
+import { camelCase, snakeCase, lowerCase , kebabCase, capitalize } from 'lodash';
 import { TextCase } from './domain';
 
 export function getTextCase(value: string): TextCase {
@@ -10,8 +10,13 @@ export function getTextCase(value: string): TextCase {
         return 'camelCase';
     } else if (kebabCase(value) === value) {
         return 'kebabCase';
-    } else if (snakeCase(value)  === value){
+    } else if (snakeCase(value)  === value) {
         return 'snakeCase';
+    } else if (snakeCase(value).toUpperCase()  === value) {
+        return 'upperSnakeCase';
+    } else if (kebabCase(value).toUpperCase()  === value) {
+        return 'upperKebabCase';
     }
+
     return 'other';
 }

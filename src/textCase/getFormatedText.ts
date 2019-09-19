@@ -10,8 +10,13 @@ export function getFormatedText(value: string, format: TextCase) {
         return camelCase(value);
     } else if ('kebabCase' === format) {
         return kebabCase(value);
-    } else if ('snakeCase' === format){
+    } else if ('snakeCase' === format) {
         return snakeCase(value);
+    } else if ('upperKebabCase' === format) {
+        return kebabCase(value).toUpperCase();
+    } else if ('upperSnakeCase' === format) {
+        return snakeCase(value).toUpperCase();
     }
+
     return value;
 }

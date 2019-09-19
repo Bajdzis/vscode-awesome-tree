@@ -1,1 +1,1 @@
-export type TextCase = 'camelCase' | 'snakeCase' | 'lowerCase' | 'kebabCase' | 'capitalize' | 'other';
+export type TextCase = 'camelCase' | 'snakeCase' | 'lowerCase' | 'kebabCase' | 'capitalize' | 'upperKebabCase' | 'upperSnakeCase'| 'other';
