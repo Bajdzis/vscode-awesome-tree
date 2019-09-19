@@ -29,5 +29,7 @@ export function renderVariableTemplate(template:string, information: PathInfo[],
         });
     });
 
-    return decodeURIComponent(result);
+    const otherTextCase = /\$\{:(.*):\}/g;
+
+    return decodeURIComponent(result.replace(otherTextCase, '$1'));
 }

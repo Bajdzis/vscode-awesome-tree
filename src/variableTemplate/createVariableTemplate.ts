@@ -28,12 +28,15 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
 
         while ((regExpResult = regExp.exec(result)) !== null) {
             const word = regExpResult[0];
-            let textCase = getTextCase(word);
-            if(textCase !== 'other'){
-                result = result.replace( new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${word})`, 'g'), `\${${textCase}(variable[${index0}][${index1}][${index2}])}` );
+            const textCase = getTextCase(word);
+            const allCurrentWord = new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${word})`, 'g');
+            if (textCase === 'other') {
+                result = result.replace( allCurrentWord, `\${:${word}:}` );
+            } else {
+                result = result.replace( allCurrentWord, `\${${textCase}(variable[${index0}][${index1}][${index2}])}` );
             }
             maxIterate--;
-            if(maxIterate < 0){
+            if (maxIterate < 0) {
                 throw new AwesomeTreeError('Too many iterate!', {
                     callFunction: 'createVariableTemplate', 
                     arguments: [search, information]

@@ -33,11 +33,16 @@ describe('fileInfo / createVariableTemplate',() => {
         expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/mocked${capitalize(variable[0][1][0])}.test.ts');
     });
 
+    it('should works with wired text case', () => {
+        const template = createVariableTemplate('/tests/uri/Wired-CASE_UrI.test.ts', mockPathInfo);
+
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/Wired-CASE_${:UrI:}.test.ts');
+    });
 
     it('should render string base on template', () => {
-        const template = createVariableTemplate('/tests/uri/mocked%${.*}Uri.test.ts', mockPathInfo);
+        const template = createVariableTemplate('/tests/UrI/mocked%${.*}Uri.test.ts', mockPathInfo);
         const render = renderVariableTemplate(template, mockPathInfo);
-        expect(render).toEqual('/tests/uri/mocked%${.*}Uri.test.ts');
+        expect(render).toEqual('/tests/UrI/mocked%${.*}Uri.test.ts');
     });
 
     it('should not create infinite loop', () => {
