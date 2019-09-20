@@ -1,9 +1,9 @@
-import {camelCase, snakeCase, lowerCase , kebabCase, capitalize} from 'lodash';
+import {camelCase, snakeCase, lowerCase , kebabCase, upperFirst} from 'lodash';
 import { TextCase } from './domain';
 
 export function getFormatedText(value: string, format: TextCase) {
-    if('capitalize' === format) {
-        return capitalize(value);
+    if('pascalCase' === format) {
+        return upperFirst(camelCase(value));
     } else if ('lowerCase' === format) {
         return lowerCase(value);
     } else if ('camelCase' === format) {

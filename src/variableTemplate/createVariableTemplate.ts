@@ -1,7 +1,7 @@
 import { PathInfo } from '../fileInfo/getInfoAboutPath';
 import { addSlashes } from '../helpers/addSlashes';
 import { AwesomeTreeError } from '../errors/AwesomeTreeError';
-import { getTextCase } from '../textCase/getTextCase';
+import { getTextCaseSingleWord } from '../textCase/getTextCase';
 
 
 export function createVariableTemplate(search:string, information: PathInfo[], maxIterate: number = 500) {
@@ -28,7 +28,7 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
 
         while ((regExpResult = regExp.exec(result)) !== null) {
             const word = regExpResult[0];
-            const textCase = getTextCase(word);
+            const textCase = getTextCaseSingleWord(word);
             const allCurrentWord = new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${word})`, 'g');
             if (textCase === 'other') {
                 result = result.replace( allCurrentWord, `\${:${word}:}` );

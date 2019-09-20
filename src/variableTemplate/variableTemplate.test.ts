@@ -2,7 +2,7 @@ import { createVariableTemplate } from './createVariableTemplate';
 import { PathInfo } from '../fileInfo/getInfoAboutPath';
 import { renderVariableTemplate } from './renderVariableTemplate';
 
-const mockPathInfo: PathInfo[] =[
+const mockPathInfo: PathInfo[] = [
     {
         extension: '',
         isFile: false,
@@ -30,7 +30,7 @@ describe('fileInfo / createVariableTemplate',() => {
     it('should return template string', () => {
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', mockPathInfo);
 
-        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/mocked${capitalize(variable[0][1][0])}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/mocked${pascalCase(variable[0][1][0])}.test.ts');
     });
 
     it('should works with wired text case', () => {
@@ -54,7 +54,7 @@ describe('fileInfo / createVariableTemplate',() => {
                 path: '/allClasses/uriComponent/tests/',
                 pathParts: [
                     {
-                        parts:[ '1', '0', 'variable', 'capitalize', 'uri', 'mocked', 'tests', '1', '0', 'variable', 'capitalize'],
+                        parts:[ '1', '0', 'variable', 'pascalCase', 'uri', 'mocked', 'tests', '1', '0', 'variable', 'pascalCase'],
                         textCase:'camelCase',
                         value: 'allClasses'
                     }
@@ -63,7 +63,7 @@ describe('fileInfo / createVariableTemplate',() => {
         ];
 
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', specialCharacters);
-        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][0][6])}/${lowerCase(variable[0][0][4])}/${lowerCase(variable[0][0][5])}${capitalize(variable[0][0][4])}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][0][6])}/${lowerCase(variable[0][0][4])}/${lowerCase(variable[0][0][5])}${pascalCase(variable[0][0][4])}.test.ts');
     });
     
 });

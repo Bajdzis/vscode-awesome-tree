@@ -1,10 +1,10 @@
-import { getTextCase } from './getTextCase';
+import { getTextCase, getTextCaseSingleWord } from './getTextCase';
 import { getFormatedText } from './getFormatedText';
 
-describe('textCase / getTextCase',() => {
+describe('textCase',() => {
 
-    it('should return correct text case', () => {
-        expect(getTextCase('Some text')).toEqual('capitalize');
+    it('getTextCase should return correct text case', () => {
+        expect(getTextCase('SomeText')).toEqual('pascalCase');
         expect(getTextCase('some text')).toEqual('lowerCase');
         expect(getTextCase('someText')).toEqual('camelCase');
         expect(getTextCase('some-text')).toEqual('kebabCase');
@@ -13,10 +13,25 @@ describe('textCase / getTextCase',() => {
         expect(getTextCase('SOME_TEXT')).toEqual('upperSnakeCase');
     });
 
-    it('should return text with correct format', () => {
-        const someText = 'some text';
+    it('getTextCaseSingleWord should return correct text case', () => {
+        expect(getTextCaseSingleWord('Word')).toEqual('pascalCase');
+        expect(getTextCaseSingleWord('word')).toEqual('lowerCase');
+        expect(getTextCaseSingleWord('WORD')).toEqual('upperKebabCase');
+        expect(getTextCaseSingleWord('WoRd')).toEqual('other');
 
-        expect(getFormatedText(someText, 'capitalize')).toEqual('Some text');
+        expect(getTextCaseSingleWord('SomeText')).toEqual('other');
+        expect(getTextCaseSingleWord('some text')).toEqual('other');
+        expect(getTextCaseSingleWord('someText')).toEqual('other');
+        expect(getTextCaseSingleWord('some-text')).toEqual('other');
+        expect(getTextCaseSingleWord('SOME-TEXT')).toEqual('other');
+        expect(getTextCaseSingleWord('some_text')).toEqual('other');
+        expect(getTextCaseSingleWord('SOME_TEXT')).toEqual('other');
+    });
+
+    it('getFormatedText should return text with correct format', () => {
+        const someText = 'Some text';
+
+        expect(getFormatedText(someText, 'pascalCase')).toEqual('SomeText');
         expect(getFormatedText(someText, 'lowerCase')).toEqual('some text');
         expect(getFormatedText(someText, 'camelCase')).toEqual('someText');
         expect(getFormatedText(someText, 'kebabCase')).toEqual('some-text');
