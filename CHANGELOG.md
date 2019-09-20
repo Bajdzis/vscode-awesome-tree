@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.7...v0.0.8) (2019-09-20)
+
+
+### Bug Fixes
+
+* [#2](https://github.com/Bajdzis/vscode-awesome-tree/issues/2) support unknown text case ([63176ad](https://github.com/Bajdzis/vscode-awesome-tree/commit/63176ad))
+
+
+### Features
+
+* add support upper case ([226706d](https://github.com/Bajdzis/vscode-awesome-tree/commit/226706d))
+
 ### 0.0.7 (2019-09-19)
 
 
