@@ -30,13 +30,21 @@ describe('fileInfo / createVariableTemplate',() => {
     it('should return template string', () => {
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', mockPathInfo);
 
-        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/mocked${pascalCase(variable[0][1][0])}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(words[0][2][0])}/${lowerCase(singleWord[0][1][0])}/mocked${pascalCase(singleWord[0][1][0])}.test.ts');
+    });
+
+    it('should return template with words without single word', () => {
+        const template = createVariableTemplate('/tests/uriComponent/TestsUriComponent.test.ts', mockPathInfo);
+        const render = renderVariableTemplate(template, mockPathInfo);
+
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(words[0][2][0])}/${camelCase(words[0][1][0])}/${pascalCase(words[0][2][0])}${pascalCase(words[0][1][0])}.test.ts');
+        expect(render).toEqual('/tests/uriComponent/TestsUriComponent.test.ts');
     });
 
     it('should works with wired text case', () => {
         const template = createVariableTemplate('/tests/uri/Wired-CASE_UrI.test.ts', mockPathInfo);
 
-        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][2][0])}/${lowerCase(variable[0][1][0])}/Wired-CASE_${:UrI:}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(words[0][2][0])}/${lowerCase(singleWord[0][1][0])}/Wired-CASE_${:UrI:}.test.ts');
     });
 
     it('should render string base on template', () => {
@@ -54,7 +62,7 @@ describe('fileInfo / createVariableTemplate',() => {
                 path: '/allClasses/uriComponent/tests/',
                 pathParts: [
                     {
-                        parts:[ '1', '0', 'variable', 'pascalCase', 'uri', 'mocked', 'tests', '1', '0', 'variable', 'pascalCase'],
+                        parts:[ '1', '0', 'words', 'pascalCase', 'uri', 'mocked', 'tests', '1', '0', 'singleWord', 'pascalCase'],
                         textCase:'camelCase',
                         value: 'allClasses'
                     }
@@ -63,7 +71,7 @@ describe('fileInfo / createVariableTemplate',() => {
         ];
 
         const template = createVariableTemplate('/tests/uri/mockedUri.test.ts', specialCharacters);
-        expect(decodeURIComponent(template)).toEqual('/${lowerCase(variable[0][0][6])}/${lowerCase(variable[0][0][4])}/${lowerCase(variable[0][0][5])}${pascalCase(variable[0][0][4])}.test.ts');
+        expect(decodeURIComponent(template)).toEqual('/${lowerCase(singleWord[0][0][6])}/${lowerCase(singleWord[0][0][4])}/${lowerCase(singleWord[0][0][5])}${pascalCase(singleWord[0][0][4])}.test.ts');
     });
     
 });
