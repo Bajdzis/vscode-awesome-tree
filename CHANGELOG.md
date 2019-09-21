@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.8...v0.0.9) (2019-09-21)
+
+
+### Features
+
+* add support pascalCase ([f543a45](https://github.com/Bajdzis/vscode-awesome-tree/commit/f543a45))
+* add support words as whole ([bada2fc](https://github.com/Bajdzis/vscode-awesome-tree/commit/bada2fc))
+* use default value as fallback ([371c984](https://github.com/Bajdzis/vscode-awesome-tree/commit/371c984))
+
 ### [0.0.8](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.7...v0.0.8) (2019-09-20)
 
 
