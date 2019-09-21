@@ -37,7 +37,7 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
             if (textCase === 'other') {
                 result = result.replace( allCurrentWord, `\${:${word}:}` );
             } else {
-                result = result.replace( allCurrentWord, `\${${textCase}(${type}[${index0}][${index1}][${index2}])}` );
+                result = result.replace( allCurrentWord, `\${${textCase}(${type}[${index0}][${index1}][${index2}])||'${word}'}` );
             }
             maxIterate--;
             if (maxIterate < 0) {

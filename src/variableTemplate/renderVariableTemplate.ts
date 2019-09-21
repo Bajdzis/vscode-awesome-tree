@@ -9,18 +9,19 @@ export function renderVariableTemplate(template:string, information: PathInfo[],
 
     information.forEach((info, infoIndex) => {
         info.pathParts.forEach((words, wordsIndex) => {
-            const regExpTemplate = `\\$\\{(?<textCase>[a-z]*)\\((words)\\[${infoIndex}\\]\\[${wordsIndex}\\]\\[0\\]\\)\\}`;
+            const regExpTemplate = `\\$\\{(?<textCase>[a-z]*)\\((words)\\[${infoIndex}\\]\\[${wordsIndex}\\]\\[0\\]\\)\\|\\|'[^']*'\\}`;
             result = replaceWhileHaveKnowWords(result, regExpTemplate, words.value, maxIterate);
             words.parts.forEach((word, wordIndex) => {
-                const regExpTemplate = `\\$\\{(?<textCase>[a-z]*)\\((singleWord)\\[${infoIndex}\\]\\[${wordsIndex}\\]\\[${wordIndex}\\]\\)\\}`;
+                const regExpTemplate = `\\$\\{(?<textCase>[a-z]*)\\((singleWord)\\[${infoIndex}\\]\\[${wordsIndex}\\]\\[${wordIndex}\\]\\)\\|\\|'[^']*'\\}`;
                 result = replaceWhileHaveKnowWords(result, regExpTemplate, word, maxIterate);
             });
         });
     });
 
     const otherTextCase = /\$\{:(.*):\}/g;
+    const defaultValues = /\$\{[^${}]*\|\|'([^${}]*)'\}/g;
 
-    return decodeURIComponent(result.replace(otherTextCase, '$1'));
+    return decodeURIComponent(result.replace(otherTextCase, '$1').replace(defaultValues, '$1'));
 }
 
 function replaceWhileHaveKnowWords(template: string, regExpTemplate: string, word: string, maxIterate: number = 500): string {

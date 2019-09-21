@@ -5,6 +5,7 @@ import { getInfoAboutPath, PathInfo } from './fileInfo/getInfoAboutPath';
 import { createVariableTemplate } from './variableTemplate/createVariableTemplate';
 import { renderVariableTemplate } from './variableTemplate/renderVariableTemplate';
 import { AwesomeTreeError } from './errors/AwesomeTreeError';
+import { compareVariableTemplate } from './variableTemplate/compareVariableTemplate';
 
 type Directories = {
 	[key:string]: {
@@ -57,23 +58,37 @@ export function activate() {
                     }
                 });
 
-                const preparePathFiles = Object.values(directories)
-                    .reduce((files, data) => [
-                        ...files,
-                        ...data.files.map(file => file.pathTemplate).filter((file) => !files.includes(file))
-                    ], [] as string[]);
+                const uniquePathFiles = Object.values(directories)
+                    .reduce((preparePathFiles, data) => {
+
+                        for (let i = 0; i < data.files.length; i++) {
+                            const file = data.files[i];
+                            let result = true;
+                            for (let j = 0; j < preparePathFiles.length; j++) {
+                                const filePath = preparePathFiles[j];
+                                if(compareVariableTemplate(file.pathTemplate, filePath) ){
+                                    result = false;
+                                    break;
+                                }
+                            }
+                            result && preparePathFiles.push(file.pathTemplate);
+                        }
+                        
+                        return preparePathFiles;
+                    }, [] as string[]);
+
 
                 const answersQuestion = [
                     'Yes, generate files', 
                     'No, thanks'
                 ];
 
-                if (preparePathFiles.length === 0) {
+                if (uniquePathFiles.length === 0) {
                     return;
                 }
 
                 const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to create ${preparePathFiles.length} file(s) in new "${newDirname}" folder?`,
+                    `Do you want to create ${uniquePathFiles.length} file(s) in new "${newDirname}" folder?`,
                     ...answersQuestion
                 );
 
@@ -81,7 +96,7 @@ export function activate() {
                     return;
                 }
 
-                preparePathFiles.map(filePathTemplate => {
+                uniquePathFiles.map(filePathTemplate => {
                     const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
                     const newFilePath = path.join(uri.fsPath, filePath);
                     const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
@@ -131,7 +146,7 @@ export function activate() {
         const contents: Array<string[]> = [];
         Object.values(directories).forEach(directory => {
             directory.files.forEach(({pathTemplate, contentTemplates}) => {
-                if (pathTemplate === templateStringPath) {
+                if (compareVariableTemplate(pathTemplate, templateStringPath)) {
                     const lines = contentTemplates;
                     contents.push(lines);
                 }
@@ -157,11 +172,21 @@ export function activate() {
     function allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean{
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            if(!file.includes(line)){
+            if(!includesThisLine(file, line)){
                 return false;
             }
         }
         return true;
+    }
+
+    function includesThisLine (file: string [], line: string) {
+        for (let j = 0; j < file.length; j++) {
+            const fileLine = file[j];
+            if (compareVariableTemplate(fileLine, line)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function ensureDirectoryExistence(filePath:string) {
