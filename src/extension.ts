@@ -2,20 +2,14 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getInfoAboutPath, PathInfo } from './fileInfo/getInfoAboutPath';
-import { createVariableTemplate } from './variableTemplate/createVariableTemplate';
 import { renderVariableTemplate } from './variableTemplate/renderVariableTemplate';
 import { AwesomeTreeError } from './errors/AwesomeTreeError';
 import { compareVariableTemplate } from './variableTemplate/compareVariableTemplate';
-
-type Directories = {
-	[key:string]: {
-		directoryInfo: PathInfo;
-		files:{
-			pathTemplate: string;
-			contentTemplates: string[];
-		}[];
-	}
-};
+import { getExcludeWatchRegExp } from './settings/getExcludeWatchRegExp';
+import { getRelativePath } from './fileSystem/getRelativePath';
+import { getSiblingInfo, DirectoriesInfo } from './fileInfo/getSiblingInfo';
+import { getPathTemplates } from './fileSystem/getPathTemplates';
+import { getFilesContentAsTemplate } from './fileSystem/getFilesContentAsTemplate';
 
 export function activate() {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
@@ -24,71 +18,34 @@ export function activate() {
 
     outputChannel.appendLine('Listening for file changes started!');
 
-    fileSystemWatcher.onDidCreate(async(uri: vscode.Uri) => {
+    fileSystemWatcher.onDidCreate(async(createdItemUri: vscode.Uri) => {
         try {
-            const relative = getRelative(uri.fsPath);
-
-            const excludeWatchRegExp = new RegExp(settingProvider.get<string>('excludeWatchRegExp', 'bower_components|node_modules|\\.git|\\.svn|\\.hg|\\.DS_Store'));
-
-            if (excludeWatchRegExp.exec(uri.fsPath) !== null) {
-                outputChannel.appendLine(`File '${uri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
+            
+            if (getExcludeWatchRegExp(settingProvider).exec(createdItemUri.fsPath) !== null) {
+                outputChannel.appendLine(`File '${createdItemUri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
                 return;
             }
-
+            
             // when directory or file is not empty probably change name parent directory
-            if (isEmptyDirectory(uri)) {
-                const parentDir = path.dirname(uri.fsPath);
-                const newDirname = path.basename(uri.fsPath);
-                const infoAboutNewDirectory = getInfoAboutPath(relative);
-                const directories: Directories = {};
-				
-                const directoryNames = fs.readdirSync(parentDir);
-                directoryNames.forEach(subDirectoryOrFiles => {
-                    const subDirectoryOrFilesPath = path.resolve(parentDir, subDirectoryOrFiles);
-                    if (fs.lstatSync(subDirectoryOrFilesPath).isDirectory() && newDirname !== subDirectoryOrFiles) {
-                        const files = getAllFilesPath(subDirectoryOrFilesPath);
-                        const directoryInfo = getInfoAboutPath(getRelative(subDirectoryOrFilesPath));
-                        directories[subDirectoryOrFiles] = {
-                            directoryInfo,
-                            files:files.map((fileName) => ({
-                                pathTemplate: createVariableTemplate(fileName.replace(subDirectoryOrFilesPath, ''),[directoryInfo]),
-                                contentTemplates: fs.readFileSync(fileName).toString().split('\n').map(line => createVariableTemplate(line,[directoryInfo]))
-                            }))
-                        };
-                    }
-                });
+            if (isEmptyDirectory(createdItemUri)) {
+                const relativePath = getRelativePath(createdItemUri.fsPath);
+                const infoAboutNewDirectory = getInfoAboutPath(relativePath);
+                const infoAboutSiblingDirectories: DirectoriesInfo = getSiblingInfo(createdItemUri.fsPath);
+                const siblingTemplatePathFiles = getPathTemplates(infoAboutSiblingDirectories);
+                
+                if (siblingTemplatePathFiles.length === 0) {
+                    return;
+                }
 
-                const uniquePathFiles = Object.values(directories)
-                    .reduce((preparePathFiles, data) => {
-
-                        for (let i = 0; i < data.files.length; i++) {
-                            const file = data.files[i];
-                            let result = true;
-                            for (let j = 0; j < preparePathFiles.length; j++) {
-                                const filePath = preparePathFiles[j];
-                                if(compareVariableTemplate(file.pathTemplate, filePath) ){
-                                    result = false;
-                                    break;
-                                }
-                            }
-                            result && preparePathFiles.push(file.pathTemplate);
-                        }
-                        
-                        return preparePathFiles;
-                    }, [] as string[]);
-
+                const uniquePathFiles = deleteSameTemplates(siblingTemplatePathFiles);
 
                 const answersQuestion = [
                     'Yes, generate files', 
                     'No, thanks'
                 ];
 
-                if (uniquePathFiles.length === 0) {
-                    return;
-                }
-
                 const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to create ${uniquePathFiles.length} file(s) in new "${newDirname}" folder?`,
+                    `Do you want to create ${uniquePathFiles.length} file(s) in new "${path.basename(createdItemUri.fsPath)}" folder?`,
                     ...answersQuestion
                 );
 
@@ -96,24 +53,18 @@ export function activate() {
                     return;
                 }
 
-                uniquePathFiles.map(filePathTemplate => {
-                    const filePath: string = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
-                    const newFilePath = path.join(uri.fsPath, filePath);
-                    const content = createFileContent(filePathTemplate, directories, [infoAboutNewDirectory]);
-
-                    ensureDirectoryExistence(newFilePath);
-                    fs.writeFile(newFilePath, content, {}, async () => {
-                        const textDocument = await vscode.workspace.openTextDocument(newFilePath);
-                        if (textDocument) {
-                            vscode.window.showTextDocument(textDocument);
-                        }
-                    });
-                    return filePath;
+                uniquePathFiles.forEach(async (filePathTemplate) => {
+                    const filePath: string = path.join(createdItemUri.fsPath, renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]));
+                    const content = createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
+                    const textDocument = await createDocument(filePath, content);
+        
+                    vscode.window.showTextDocument(textDocument);
                 });
 
-				
-            } else if(isFile(uri)) {
-                console.log(getInfoAboutPath(relative));
+
+            } else if(isFile(createdItemUri)) {
+                const relativePath = getRelativePath(createdItemUri.fsPath);
+                console.log(getInfoAboutPath(relativePath));
                 // fill files
             }
         } catch (error) {
@@ -129,6 +80,18 @@ export function activate() {
         }
     });
 
+    function createDocument(filePath: string, content: string): Promise<vscode.TextDocument> {
+        return new Promise((resolve, reject) => {
+            ensureDirectoryExistence(filePath);
+            fs.writeFile(filePath, content, {}, async (err) => {
+                if(err){
+                    return reject(err);
+                }
+                vscode.workspace.openTextDocument(filePath).then(resolve);
+            });
+        });
+    }
+
     function createGithubIssue(error: Error) {
         const MAX_CHARACTERS_IN_URI: number = 4000;
         let uri: string = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.toString()}`;
@@ -142,16 +105,8 @@ export function activate() {
         ));
     }
 
-    function createFileContent(templateStringPath:string, directories: Directories, variables: PathInfo[]): string {
-        const contents: Array<string[]> = [];
-        Object.values(directories).forEach(directory => {
-            directory.files.forEach(({pathTemplate, contentTemplates}) => {
-                if (compareVariableTemplate(pathTemplate, templateStringPath)) {
-                    const lines = contentTemplates;
-                    contents.push(lines);
-                }
-            });
-        });
+    function createFileContent(templateStringPath:string, directories: DirectoriesInfo, variables: PathInfo[]): string {
+        const contents: Array<string[]> = getFilesContentAsTemplate(directories, templateStringPath);
 
         if (contents.length === 0) {
             return '';
@@ -172,21 +127,30 @@ export function activate() {
     function allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean{
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            if(!includesThisLine(file, line)){
+            if(!includesThisTemplate(file, line)){
                 return false;
             }
         }
         return true;
     }
 
-    function includesThisLine (file: string [], line: string) {
-        for (let j = 0; j < file.length; j++) {
-            const fileLine = file[j];
-            if (compareVariableTemplate(fileLine, line)) {
+    function includesThisTemplate (templates: string [], templateToFind: string) {
+        for (let j = 0; j < templates.length; j++) {
+            const fileLine = templates[j];
+            if (compareVariableTemplate(fileLine, templateToFind)) {
                 return true;
             }
         }
         return false;
+    }
+
+    function deleteSameTemplates(templates: string[]){
+        return templates.reduce((uniqueTemplates, template) => {
+            if(!includesThisTemplate(uniqueTemplates, template)){
+                uniqueTemplates.push(template);
+            }
+            return uniqueTemplates;
+        }, [] as string[]);
     }
 
     function ensureDirectoryExistence(filePath:string) {
@@ -196,33 +160,6 @@ export function activate() {
         }
         ensureDirectoryExistence(dirname);
         fs.mkdirSync(dirname);
-    }
-
-    function getAllFilesPath(dir: string): string[] {
-        const list = fs.readdirSync(dir);
-        let results: string[]  = [];
-        list.forEach((file) => {
-            const fullFilePath = path.resolve( dir, file);
-            let stat = fs.statSync(fullFilePath);
-            if (stat && stat.isDirectory()) { 
-                results = results.concat(getAllFilesPath(fullFilePath));
-            } else { 
-                results.push(fullFilePath);
-            }
-        });
-        return results;
-    }
-
-    function getRelative(path: string) {
-        const { workspaceFolders } = vscode.workspace;
-        if(!workspaceFolders){
-            return path;
-        }
-        for (let i = 0; i < workspaceFolders.length; i++) {
-            const dirPath = workspaceFolders[i].uri.fsPath;
-            path = path.replace(dirPath, '');
-        }
-        return path;
     }
 
     function isDirectory(uri: vscode.Uri): boolean  {

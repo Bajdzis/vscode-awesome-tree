@@ -1,5 +1,5 @@
 import { WordsInfo, getInfoWords } from './getInfoWords';
-import { addSlashes } from '../helpers/addSlashes';
+import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
 
 export interface PathInfo {
     path: string;
@@ -8,12 +8,12 @@ export interface PathInfo {
     extension: string;
 }
 
-export function getInfoAboutPath(path: string): PathInfo{
-    path = addSlashes(path);
+export function getInfoAboutPath(path: string): PathInfo {
+    path = changeToUnixSlashes(path);
     const searchExtension = /(?<pathWithoutExtension>.*)\.(?<extension>[a-z0-9]*)$/;
     const result = searchExtension.exec(path);
     const pathWithoutExtension = result && result.groups && result.groups.pathWithoutExtension || path;
-    const parts = pathWithoutExtension.replace(/^[/|\\]|[/|\\]$/g,'').split(/\/|\\/);
+    const parts = pathWithoutExtension.replace(/^\/|\/$/g,'').split('/');
     const pathParts = parts.map(part => getInfoWords(part));
 
     return {

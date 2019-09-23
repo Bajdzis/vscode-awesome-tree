@@ -1,5 +1,5 @@
 import { PathInfo } from '../fileInfo/getInfoAboutPath';
-import { addSlashes } from '../helpers/addSlashes';
+import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
 import { AwesomeTreeError } from '../errors/AwesomeTreeError';
 import { getTextCaseSingleWord, getTextCase } from '../textCase/getTextCase';
 
@@ -22,7 +22,7 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
         });
     });
 
-    let result = encodeURIComponent(addSlashes(search));
+    let result = encodeURIComponent(changeToUnixSlashes(search));
     const words = Object.keys(variables).sort((a: string,b: string) => b.length - a.length);
 
     words.forEach((variableName) => {
