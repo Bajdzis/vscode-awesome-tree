@@ -14,7 +14,7 @@ import { getFilesContentAsTemplate } from './fileSystem/getFilesContentAsTemplat
 export function activate() {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*',false, true, true);
-    const outputChannel = vscode.window.createOutputChannel('awesome tree');
+    const outputChannel = vscode.window.createOutputChannel('Awesome tree');
 
     outputChannel.appendLine('Listening for file changes started!');
 
@@ -27,7 +27,7 @@ export function activate() {
             }
             
             // when directory or file is not empty probably change name parent directory
-            if (isEmptyDirectory(createdItemUri)) {
+            if (isEmptyDirectory(createdItemUri, outputChannel)) {
                 const relativePath = getRelativePath(createdItemUri.fsPath);
                 const infoAboutNewDirectory = getInfoAboutPath(relativePath);
                 const infoAboutSiblingDirectories: DirectoriesInfo = getSiblingInfo(createdItemUri.fsPath);
@@ -62,7 +62,7 @@ export function activate() {
                 });
 
 
-            } else if(isFile(createdItemUri)) {
+            } else if(isEmptyFile(createdItemUri, outputChannel)) {
                 const relativePath = getRelativePath(createdItemUri.fsPath);
                 console.log(getInfoAboutPath(relativePath));
                 // fill files
@@ -70,10 +70,10 @@ export function activate() {
         } catch (error) {
             const result = await vscode.window.showErrorMessage(
                 `Something go wrong :( ${error.toString()}`,
-                'Create issue od GitHub'
+                'Create issue on GitHub'
             );
 
-            if (result === 'Create issue od GitHub') {
+            if (result === 'Create issue on GitHub') {
                 createGithubIssue(error);
             }
 
@@ -166,12 +166,26 @@ export function activate() {
         return fs.lstatSync(uri.fsPath).isDirectory();
     }
 
-    function isEmptyDirectory(uri: vscode.Uri): boolean {
-        return isDirectory(uri) && !fs.readdirSync(uri.fsPath).length;
+    function isEmptyDirectory(uri: vscode.Uri, outputChannel: vscode.OutputChannel): boolean {
+        try {
+            return isDirectory(uri) && !fs.readdirSync(uri.fsPath).length;
+        } catch {
+            outputChannel.appendLine(`We have problem with check file ${uri.fsPath}`);
+            return false;
+        }
     }
 
     function isFile(uri: vscode.Uri): boolean  {
         return fs.lstatSync(uri.fsPath).isFile();
+    }
+
+    function isEmptyFile(uri: vscode.Uri, outputChannel: vscode.OutputChannel): boolean {
+        try {
+            return isFile(uri) && fs.readFileSync(uri.fsPath).toString().length === 0;
+        } catch {
+            outputChannel.appendLine(`We have problem with check file ${uri.fsPath}`);
+            return false;
+        }
     }
 
 }

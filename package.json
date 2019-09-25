@@ -2,8 +2,12 @@
 	"name": "awesome-tree",
 	"displayName": "Awesome tree",
 	"description": "Stop creating folders, start creating structures! (Automated file creation)",
-	"publisher": "bajdzis",
 	"version": "0.0.9",
+	"publisher": "bajdzis",
+	"author": {
+        "name": "Rafał Budzis",
+        "url": "https://budzis.pl"
+    },
 	"engines": {
 		"vscode": "^1.37.0"
 	},
