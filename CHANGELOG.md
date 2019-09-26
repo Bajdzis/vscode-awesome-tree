@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.9...v0.0.10) (2019-09-26)
+
+
+### Bug Fixes
+
+* [#3](https://github.com/Bajdzis/vscode-awesome-tree/issues/3) hide auto generate lock files form npm or linters ([19ae830](https://github.com/Bajdzis/vscode-awesome-tree/commit/19ae830))
+
 ### [0.0.9](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.8...v0.0.9) (2019-09-21)
 
 

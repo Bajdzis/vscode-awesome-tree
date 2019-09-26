@@ -1,4 +1,5 @@
 jest.mock('fs');
+jest.mock('path');
 jest.mock('vscode');
 import * as fs from 'fs';
 import * as vscode from 'vscode';
