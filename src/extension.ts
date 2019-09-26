@@ -64,8 +64,48 @@ export function activate() {
 
             } else if(isEmptyFile(createdItemUri, outputChannel)) {
                 const relativePath = getRelativePath(createdItemUri.fsPath);
-                console.log(getInfoAboutPath(relativePath));
-                // fill files
+                const infoAboutNewFile = getInfoAboutPath(relativePath);
+                const parentDir = path.dirname(createdItemUri.fsPath);
+
+                const fileToSkip = path.basename(createdItemUri.fsPath);
+                const contents = fs.readdirSync(parentDir)
+                    .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip)
+                    .map(siblingFile => {
+                        const filePath = path.join(parentDir, siblingFile);
+                        return fs.readFileSync(filePath).toString().split('\n');
+                    });
+
+                const [baseFile, ...otherFiles] = contents;
+                const lineToGenerate: string[] = [];
+
+                baseFile.forEach(line => {
+                    const lineTemplate = renderVariableTemplate(line, [infoAboutNewFile]);
+                    if(allFilesIncludeThisLine(otherFiles, line)){
+                        lineToGenerate.push(lineTemplate);
+                    }
+                });
+
+                const content = lineToGenerate.join('\n');
+
+                if (content.length === 0) {
+                    return;
+                }
+
+                const answersQuestion = [
+                    'Yes, create content', 
+                    'No, thanks'
+                ];
+
+                const resultQuestion = await vscode.window.showInformationMessage(
+                    `Do you want to create content for new file '${fileToSkip}' in folder "${parentDir}"?`,
+                    ...answersQuestion
+                );
+
+                if (resultQuestion !== answersQuestion[0]) {
+                    return;
+                }
+
+                createDocument(createdItemUri.fsPath, content);
             }
         } catch (error) {
             const result = await vscode.window.showErrorMessage(
