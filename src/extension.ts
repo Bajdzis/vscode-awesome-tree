@@ -78,6 +78,10 @@ export function activate(context: vscode.ExtensionContext) {
                         return fs.readFileSync(filePath).toString().split('\n');
                     });
 
+                if (contents.length < 2) {
+                    return;
+                }
+
                 const [baseFile, ...otherFiles] = contents;
                 const lineToGenerate: string[] = [];
 
@@ -128,6 +132,10 @@ export function activate(context: vscode.ExtensionContext) {
         const MAX_CHARACTERS_IN_URI: number = 4000;
         let uri: string = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.toString()}`;
 
+        if (error instanceof Error) {
+            uri = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.toString()}&body=\`\`\`${error.stack}\`\`\``;
+        }
+        
         if (error instanceof AwesomeTreeError) {
             uri = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.getTitle()}&body=${error.getBody()}`;
         }
