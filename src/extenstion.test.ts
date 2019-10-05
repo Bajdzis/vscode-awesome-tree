@@ -10,18 +10,24 @@ describe('extenstion', () => {
     let mockWatcher: {
         [key in keyof vscode.FileSystemWatcher]?: jest.Mock
     };
+    let mockContext: vscode.ExtensionContext;
 
     beforeEach(() => {
         mockWatcher = {
             onDidCreate: jest.fn()
         };
+        mockContext = {
+            subscriptions: {
+                push: jest.fn()
+            }
+        } as any as vscode.ExtensionContext;
         const createSystemWatcher = vscode.workspace.createFileSystemWatcher as jest.Mock;
         createSystemWatcher.mockReturnValueOnce(mockWatcher);
     });
 
     it('should start listen for create file', () => {
         expect(vscode.workspace.createFileSystemWatcher).not.toHaveBeenCalled();
-        activate();
+        activate(mockContext);
 
         expect(vscode.workspace.createFileSystemWatcher).toHaveBeenCalled();
         expect(mockWatcher.onDidCreate).toHaveBeenCalled();
@@ -47,7 +53,7 @@ describe('extenstion', () => {
             });
         });
 
-        activate();
+        activate(mockContext);
     });
 
 });

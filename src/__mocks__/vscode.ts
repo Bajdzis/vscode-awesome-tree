@@ -15,3 +15,7 @@ export const window = {
     createOutputChannel: jest.fn(() => outputChanelMock),
     showInformationMessage: jest.fn(),
 } as {[key in keyof typeof vscode.window]: jest.Mock};
+
+export const commands = {
+    registerCommand: jest.fn(),
+} as {[key in keyof typeof vscode.commands]: jest.Mock};
