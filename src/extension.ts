@@ -10,12 +10,15 @@ import { getRelativePath } from './fileSystem/getRelativePath';
 import { getSiblingInfo, DirectoriesInfo } from './fileInfo/getSiblingInfo';
 import { getPathTemplates } from './fileSystem/getPathTemplates';
 import { getFilesContentAsTemplate } from './fileSystem/getFilesContentAsTemplate';
+import { saveAsTemplate } from './commands/saveAsTemplate';
+import { createDocument } from './fileSystem/createDocument';
 
-export function activate() {
+export function activate(context: vscode.ExtensionContext) {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*',false, true, true);
     const outputChannel = vscode.window.createOutputChannel('Awesome tree');
-
+    
+    context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', saveAsTemplate));
     outputChannel.appendLine('Listening for file changes started!');
 
     fileSystemWatcher.onDidCreate(async(createdItemUri: vscode.Uri) => {
@@ -120,17 +123,6 @@ export function activate() {
         }
     });
 
-    function createDocument(filePath: string, content: string): Promise<vscode.TextDocument> {
-        return new Promise((resolve, reject) => {
-            ensureDirectoryExistence(filePath);
-            fs.writeFile(filePath, content, {}, async (err) => {
-                if(err){
-                    return reject(err);
-                }
-                vscode.workspace.openTextDocument(filePath).then(resolve);
-            });
-        });
-    }
 
     function createGithubIssue(error: Error) {
         const MAX_CHARACTERS_IN_URI: number = 4000;
@@ -191,15 +183,6 @@ export function activate() {
             }
             return uniqueTemplates;
         }, [] as string[]);
-    }
-
-    function ensureDirectoryExistence(filePath:string) {
-        const dirname = path.dirname(filePath);
-        if (fs.existsSync(dirname)) {
-            return true;
-        }
-        ensureDirectoryExistence(dirname);
-        fs.mkdirSync(dirname);
     }
 
     function isDirectory(uri: vscode.Uri): boolean  {
