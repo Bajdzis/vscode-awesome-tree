@@ -8,9 +8,9 @@ import { createVariableTemplate } from '../variableTemplate/createVariableTempla
 import { createDocument } from '../fileSystem/createDocument';
 import { addExtensionToRecommendations } from '../fileSystem/addExtensionToRecommendations';
 
-const DIRECTORY_FOR_TEMPLATES = 'awesome-tree-templates';
+export const DIRECTORY_FOR_TEMPLATES = 'awesome-tree-templates';
 
-function findWorkspacePath(searchFsPath:string): string | undefined {
+export function findWorkspacePath(searchFsPath:string): string | undefined {
     const { workspaceFolders } = vscode.workspace;
     if(!workspaceFolders){
         return;

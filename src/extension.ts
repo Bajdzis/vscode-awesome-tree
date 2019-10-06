@@ -12,6 +12,7 @@ import { getPathTemplates } from './fileSystem/getPathTemplates';
 import { getFilesContentAsTemplate } from './fileSystem/getFilesContentAsTemplate';
 import { saveAsTemplate } from './commands/saveAsTemplate';
 import { createDocument } from './fileSystem/createDocument';
+import { getMatchingTemplate } from './savedTemplates/getMatchingTemplate';
 
 export function activate(context: vscode.ExtensionContext) {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
@@ -58,7 +59,17 @@ export function activate(context: vscode.ExtensionContext) {
 
                 uniquePathFiles.forEach(async (filePathTemplate) => {
                     const filePath: string = path.join(createdItemUri.fsPath, renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]));
-                    const content = createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
+                    const savedTemplate = getMatchingTemplate(filePath);
+                    
+                    let content: string;
+                    if (savedTemplate === null) {
+                        content = createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
+                    } else {
+                        content = savedTemplate.map(line => 
+                            renderVariableTemplate(line, [infoAboutNewDirectory])
+                        ).join('\n');
+                    }
+                    
                     const textDocument = await createDocument(filePath, content);
         
                     vscode.window.showTextDocument(textDocument);
@@ -66,8 +77,19 @@ export function activate(context: vscode.ExtensionContext) {
 
 
             } else if(isEmptyFile(createdItemUri, outputChannel)) {
+                const savedTemplate = getMatchingTemplate(createdItemUri.fsPath);
                 const relativePath = getRelativePath(createdItemUri.fsPath);
                 const infoAboutNewFile = getInfoAboutPath(relativePath);
+                if (savedTemplate!==null) {
+                 
+                    const content = savedTemplate.map(line => 
+                        renderVariableTemplate(line, [infoAboutNewFile])
+                    ).join('\n');
+
+                    createDocument(createdItemUri.fsPath, content);
+                    return;
+                }
+
                 const parentDir = path.dirname(createdItemUri.fsPath);
 
                 const fileToSkip = path.basename(createdItemUri.fsPath);
