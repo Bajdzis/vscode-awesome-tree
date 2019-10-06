@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.11...v0.0.12) (2019-10-06)
+
+
+### Bug Fixes
+
+* [#6](https://github.com/Bajdzis/vscode-awesome-tree/issues/6) don't iterate if don't find matching files ([2ac20b5](https://github.com/Bajdzis/vscode-awesome-tree/commit/2ac20b5))
+
+
+### Features
+
+* create templates ([fdaee59](https://github.com/Bajdzis/vscode-awesome-tree/commit/fdaee59))
+* use templates when generating content ([20e382f](https://github.com/Bajdzis/vscode-awesome-tree/commit/20e382f))
+
 ### [0.0.11](https://github.com/Bajdzis/vscode-awesome-tree/compare/v0.0.10...v0.0.11) (2019-09-26)
 
 
