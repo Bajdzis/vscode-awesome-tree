@@ -84,6 +84,7 @@
 		"@types/jest": "^24.0.18",
 		"@types/lodash": "^4.14.138",
 		"@types/node": "^10.12.21",
+		"@types/uuid": "^3.4.5",
 		"@types/vscode": "^1.38.0",
 		"@typescript-eslint/eslint-plugin": "^2.3.0",
 		"@typescript-eslint/parser": "^2.3.0",
@@ -99,7 +100,7 @@
 		"vscode-test": "^1.2.0"
 	},
 	"dependencies": {
-		"@types/uuid": "^3.4.5",
-		"lodash": "^4.17.15"
+		"lodash": "^4.17.15",
+		"uuid": "^3.3.3"
 	}
 }
