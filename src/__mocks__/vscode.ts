@@ -19,3 +19,9 @@ export const window = {
 export const commands = {
     registerCommand: jest.fn(),
 } as {[key in keyof typeof vscode.commands]: jest.Mock};
+
+export const Uri = {
+    file: jest.fn(() => ({
+        with: jest.fn(() => '')
+    })),
+};

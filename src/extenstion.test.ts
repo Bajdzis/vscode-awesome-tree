@@ -19,7 +19,8 @@ describe('extenstion', () => {
         mockContext = {
             subscriptions: {
                 push: jest.fn()
-            }
+            },
+            extensionPath : ''
         } as any as vscode.ExtensionContext;
         const createSystemWatcher = vscode.workspace.createFileSystemWatcher as jest.Mock;
         createSystemWatcher.mockReturnValueOnce(mockWatcher);

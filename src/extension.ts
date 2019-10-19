@@ -18,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*',false, true, true);
     const outputChannel = vscode.window.createOutputChannel('Awesome tree');
+    const chooseFilesTemplateWebView = getWebViewTemplate('chooseFiles');
     
     context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', saveAsTemplate));
     outputChannel.appendLine('Listening for file changes started!');
@@ -52,7 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
         const uniquePathFiles = deleteSameTemplates(siblingTemplatePathFiles);
 
         const answersQuestion = [
-            'Yes, generate files', 
+            'Yes, generate files',
+            'Yes, let me choose', 
             'No, thanks'
         ];
 
@@ -61,27 +63,86 @@ export function activate(context: vscode.ExtensionContext) {
             ...answersQuestion
         );
 
-        if (resultQuestion !== answersQuestion[0]) {
+        if (resultQuestion === answersQuestion[2]) {
             return;
         }
 
-        uniquePathFiles.forEach(async (filePathTemplate) => {
-            const filePath: string = path.join(createdItemUri.fsPath, renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]));
+        let chooseFilesPanel: vscode.WebviewPanel | null = null;
+
+        if (resultQuestion === answersQuestion[1]) {
+            chooseFilesPanel = await showWebView(chooseFilesTemplateWebView, 'Choose files to create');
+        }
+
+        const filesWithContent = uniquePathFiles.map( (filePathTemplate) => {
+            const relativePathFile = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
+            const filePath: string = path.join(createdItemUri.fsPath, relativePathFile);
             const savedTemplate = getMatchingTemplate(filePath);
             
             let content: string;
+            let fromTemplate: boolean = false;
             if (savedTemplate === null) {
                 content = createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
             } else {
+                fromTemplate = true;
                 content = savedTemplate.map(line => 
                     renderVariableTemplate(line, [infoAboutNewDirectory])
                 ).join('\n');
             }
-            
-            const textDocument = await createDocument(filePath, content);
 
-            vscode.window.showTextDocument(textDocument);
+            return { 
+                filePath, 
+                filePathTemplate, 
+                content, 
+                fromTemplate, 
+                relativePath: path.join(relativePath, relativePathFile)
+            };
+
         });
+
+        if (resultQuestion === answersQuestion[0]) {
+            filesWithContent.forEach(async({filePath, content}) => {
+                const textDocument = await createDocument(filePath, content);
+                vscode.window.showTextDocument(textDocument);
+            });
+        } else {
+            type WebViewInfoAboutFiles = {
+                content: string;
+                filePath: string;
+                relativePath: string;
+                [key:string]: any;
+            };
+            const countSiblingDirectories = Object.keys(infoAboutSiblingDirectories).length;
+            const allSiblingHave: WebViewInfoAboutFiles[] = [];
+            const notAllSiblingHave: WebViewInfoAboutFiles[] = [];
+            const fromTemplate: WebViewInfoAboutFiles[] = [];
+
+            filesWithContent.forEach(async(fileInfo) => {
+                if (fileInfo.fromTemplate) {
+                    fromTemplate.push(fileInfo);
+                } else if (countSameTemplates(siblingTemplatePathFiles, fileInfo.filePathTemplate) === countSiblingDirectories) {
+                    allSiblingHave.push(fileInfo);
+                } else {
+                    notAllSiblingHave.push(fileInfo);
+                }
+            });
+
+            chooseFilesPanel && chooseFilesPanel.webview.postMessage({ 
+                type: 'SET_DATA', 
+                payload : {
+                    createdFolderName: path.basename(createdItemUri.fsPath),
+                    allSiblingHave,
+                    notAllSiblingHave,
+                    fromTemplate
+                }
+            });
+    
+            chooseFilesPanel && chooseFilesPanel.webview.onDidReceiveMessage((action) => {
+                if (action.type === 'GENERATE_FILE') {
+                    const { filePath, content } = action.payload;
+                    createDocument(filePath, content);
+                }
+            });
+        }
     }
 
     async function tryCreateFileContentForNewFile(createdItemUri: vscode.Uri) {
@@ -164,6 +225,27 @@ export function activate(context: vscode.ExtensionContext) {
         return lineToGenerate.join('\n');
     }
 
+    function getWebViewTemplate (viewName: string) {
+        let html = fs.readFileSync(path.join(context.extensionPath, 'webViews', 'views', `${viewName}.html`)).toString();
+        html = html.replace(/\{\{basePath\}\}/gi,vscode.Uri.file(path.join(context.extensionPath, 'webViews')).with({
+            scheme: 'vscode-resource'
+        }).toString());
+
+        return html;
+    }
+
+    function showWebView (html: string, title: string): Promise<vscode.WebviewPanel> {
+        return new Promise((resolve) => {
+            const panel =  vscode.window.createWebviewPanel(
+                'vscode-awesome-tree', title, vscode.ViewColumn.One, {
+                    enableScripts: true,
+                }
+            );
+            panel.webview.html = html;
+            resolve(panel);
+        });
+    }
+
     function allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean{
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
@@ -182,6 +264,17 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
         return false;
+    }
+
+    function countSameTemplates (templates: string [], templateToFind: string) {
+        let counter = 0;
+        for (let j = 0; j < templates.length; j++) {
+            const template = templates[j];
+            if (compareVariableTemplate(template, templateToFind)) {
+                counter++;
+            }
+        }
+        return counter;
     }
 
     function deleteSameTemplates(templates: string[]){
