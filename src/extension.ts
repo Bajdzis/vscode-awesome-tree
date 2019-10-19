@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getInfoAboutPath, PathInfo } from './fileInfo/getInfoAboutPath';
 import { renderVariableTemplate } from './variableTemplate/renderVariableTemplate';
-import { AwesomeTreeError } from './errors/AwesomeTreeError';
 import { compareVariableTemplate } from './variableTemplate/compareVariableTemplate';
 import { getExcludeWatchRegExp } from './settings/getExcludeWatchRegExp';
 import { getRelativePath } from './fileSystem/getRelativePath';
@@ -13,6 +12,7 @@ import { getFilesContentAsTemplate } from './fileSystem/getFilesContentAsTemplat
 import { saveAsTemplate } from './commands/saveAsTemplate';
 import { createDocument } from './fileSystem/createDocument';
 import { getMatchingTemplate } from './savedTemplates/getMatchingTemplate';
+import { reportBug } from './errors/reportBug';
 
 export function activate(context: vscode.ExtensionContext) {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
@@ -22,149 +22,127 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', saveAsTemplate));
     outputChannel.appendLine('Listening for file changes started!');
 
-    fileSystemWatcher.onDidCreate(async(createdItemUri: vscode.Uri) => {
-        try {
-            
-            if (getExcludeWatchRegExp(settingProvider).exec(createdItemUri.fsPath) !== null) {
-                outputChannel.appendLine(`File '${createdItemUri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
-                return;
-            }
-            
-            // when directory or file is not empty probably change name parent directory
-            if (isEmptyDirectory(createdItemUri, outputChannel)) {
-                const relativePath = getRelativePath(createdItemUri.fsPath);
-                const infoAboutNewDirectory = getInfoAboutPath(relativePath);
-                const infoAboutSiblingDirectories: DirectoriesInfo = getSiblingInfo(createdItemUri.fsPath);
-                const siblingTemplatePathFiles = getPathTemplates(infoAboutSiblingDirectories);
-                
-                if (siblingTemplatePathFiles.length === 0) {
-                    return;
-                }
+    fileSystemWatcher.onDidCreate((createdItemUri: vscode.Uri) => {
 
-                const uniquePathFiles = deleteSameTemplates(siblingTemplatePathFiles);
-
-                const answersQuestion = [
-                    'Yes, generate files', 
-                    'No, thanks'
-                ];
-
-                const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to create ${uniquePathFiles.length} file(s) in new "${path.basename(createdItemUri.fsPath)}" folder?`,
-                    ...answersQuestion
-                );
-
-                if (resultQuestion !== answersQuestion[0]) {
-                    return;
-                }
-
-                uniquePathFiles.forEach(async (filePathTemplate) => {
-                    const filePath: string = path.join(createdItemUri.fsPath, renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]));
-                    const savedTemplate = getMatchingTemplate(filePath);
-                    
-                    let content: string;
-                    if (savedTemplate === null) {
-                        content = createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
-                    } else {
-                        content = savedTemplate.map(line => 
-                            renderVariableTemplate(line, [infoAboutNewDirectory])
-                        ).join('\n');
-                    }
-                    
-                    const textDocument = await createDocument(filePath, content);
+        if (getExcludeWatchRegExp(settingProvider).exec(createdItemUri.fsPath) !== null) {
+            outputChannel.appendLine(`File '${createdItemUri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
+            return;
+        }
         
-                    vscode.window.showTextDocument(textDocument);
-                });
+        // when directory or file is not empty probably change name parent directory
+        if (isEmptyDirectory(createdItemUri, outputChannel)) {
+            return tryCreateStructureForNewDirectory(createdItemUri).catch(reportBug);
+        }
 
-
-            } else if(isEmptyFile(createdItemUri, outputChannel)) {
-                const savedTemplate = getMatchingTemplate(createdItemUri.fsPath);
-                const relativePath = getRelativePath(createdItemUri.fsPath);
-                const infoAboutNewFile = getInfoAboutPath(relativePath);
-                if (savedTemplate!==null) {
-                 
-                    const content = savedTemplate.map(line => 
-                        renderVariableTemplate(line, [infoAboutNewFile])
-                    ).join('\n');
-
-                    createDocument(createdItemUri.fsPath, content);
-                    return;
-                }
-
-                const parentDir = path.dirname(createdItemUri.fsPath);
-
-                const fileToSkip = path.basename(createdItemUri.fsPath);
-                const contents = fs.readdirSync(parentDir)
-                    .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip)
-                    .map(siblingFile => {
-                        const filePath = path.join(parentDir, siblingFile);
-                        return fs.readFileSync(filePath).toString().split('\n');
-                    });
-
-                if (contents.length < 2) {
-                    return;
-                }
-
-                const [baseFile, ...otherFiles] = contents;
-                const lineToGenerate: string[] = [];
-
-                baseFile.forEach(line => {
-                    const lineTemplate = renderVariableTemplate(line, [infoAboutNewFile]);
-                    if(allFilesIncludeThisLine(otherFiles, line)){
-                        lineToGenerate.push(lineTemplate);
-                    }
-                });
-
-                const content = lineToGenerate.join('\n');
-
-                if (content.length === 0) {
-                    return;
-                }
-
-                const answersQuestion = [
-                    'Yes, create content', 
-                    'No, thanks'
-                ];
-
-                const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to create content for new file '${fileToSkip}' in folder "${parentDir}"?`,
-                    ...answersQuestion
-                );
-
-                if (resultQuestion !== answersQuestion[0]) {
-                    return;
-                }
-
-                createDocument(createdItemUri.fsPath, content);
-            }
-        } catch (error) {
-            const result = await vscode.window.showErrorMessage(
-                `Something go wrong :( ${error.toString()}`,
-                'Create issue on GitHub'
-            );
-
-            if (result === 'Create issue on GitHub') {
-                createGithubIssue(error);
-            }
-
+        if (isEmptyFile(createdItemUri, outputChannel)) {
+            return tryCreateFileContentForNewFile(createdItemUri).catch(reportBug);
         }
     });
 
-
-    function createGithubIssue(error: Error) {
-        const MAX_CHARACTERS_IN_URI: number = 4000;
-        let uri: string = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.toString()}`;
-
-        if (error instanceof Error) {
-            uri = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.toString()}&body=\`\`\`${error.stack}\`\`\``;
-        }
+    async function tryCreateStructureForNewDirectory(createdItemUri: vscode.Uri) {
+        const relativePath = getRelativePath(createdItemUri.fsPath);
+        const infoAboutNewDirectory = getInfoAboutPath(relativePath);
+        const infoAboutSiblingDirectories: DirectoriesInfo = getSiblingInfo(createdItemUri.fsPath);
+        const siblingTemplatePathFiles = getPathTemplates(infoAboutSiblingDirectories);
         
-        if (error instanceof AwesomeTreeError) {
-            uri = `https://github.com/Bajdzis/vscode-awesome-tree/issues/new?title=${error.getTitle()}&body=${error.getBody()}`;
+        if (siblingTemplatePathFiles.length === 0) {
+            return;
         }
 
-        vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(
-            uri.substring(0, MAX_CHARACTERS_IN_URI)
-        ));
+        const uniquePathFiles = deleteSameTemplates(siblingTemplatePathFiles);
+
+        const answersQuestion = [
+            'Yes, generate files', 
+            'No, thanks'
+        ];
+
+        const resultQuestion = await vscode.window.showInformationMessage(
+            `Do you want to create ${uniquePathFiles.length} file(s) in new "${path.basename(createdItemUri.fsPath)}" folder?`,
+            ...answersQuestion
+        );
+
+        if (resultQuestion !== answersQuestion[0]) {
+            return;
+        }
+
+        uniquePathFiles.forEach(async (filePathTemplate) => {
+            const filePath: string = path.join(createdItemUri.fsPath, renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]));
+            const savedTemplate = getMatchingTemplate(filePath);
+            
+            let content: string;
+            if (savedTemplate === null) {
+                content = createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
+            } else {
+                content = savedTemplate.map(line => 
+                    renderVariableTemplate(line, [infoAboutNewDirectory])
+                ).join('\n');
+            }
+            
+            const textDocument = await createDocument(filePath, content);
+
+            vscode.window.showTextDocument(textDocument);
+        });
+    }
+
+    async function tryCreateFileContentForNewFile(createdItemUri: vscode.Uri) {
+        const savedTemplate = getMatchingTemplate(createdItemUri.fsPath);
+        const relativePath = getRelativePath(createdItemUri.fsPath);
+        const infoAboutNewFile = getInfoAboutPath(relativePath);
+        if (savedTemplate!==null) {
+         
+            const content = savedTemplate.map(line => 
+                renderVariableTemplate(line, [infoAboutNewFile])
+            ).join('\n');
+
+            createDocument(createdItemUri.fsPath, content);
+            return;
+        }
+
+        const parentDir = path.dirname(createdItemUri.fsPath);
+
+        const fileToSkip = path.basename(createdItemUri.fsPath);
+        const contents = fs.readdirSync(parentDir)
+            .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip)
+            .map(siblingFile => {
+                const filePath = path.join(parentDir, siblingFile);
+                return fs.readFileSync(filePath).toString().split('\n');
+            });
+
+        if (contents.length < 2) {
+            return;
+        }
+
+        const [baseFile, ...otherFiles] = contents;
+        const lineToGenerate: string[] = [];
+
+        baseFile.forEach(line => {
+            const lineTemplate = renderVariableTemplate(line, [infoAboutNewFile]);
+            if(allFilesIncludeThisLine(otherFiles, line)){
+                lineToGenerate.push(lineTemplate);
+            }
+        });
+
+        const content = lineToGenerate.join('\n');
+
+        if (content.length === 0) {
+            return;
+        }
+
+        const answersQuestion = [
+            'Yes, create content', 
+            'No, thanks'
+        ];
+
+        const resultQuestion = await vscode.window.showInformationMessage(
+            `Do you want to create content for new file '${fileToSkip}' in folder "${parentDir}"?`,
+            ...answersQuestion
+        );
+
+        if (resultQuestion !== answersQuestion[0]) {
+            return;
+        }
+
+        createDocument(createdItemUri.fsPath, content);
     }
 
     function createFileContent(templateStringPath:string, directories: DirectoriesInfo, variables: PathInfo[]): string {
