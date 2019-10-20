@@ -13,6 +13,7 @@ import { saveAsTemplate } from './commands/saveAsTemplate';
 import { createDocument } from './fileSystem/createDocument';
 import { getMatchingTemplate } from './savedTemplates/getMatchingTemplate';
 import { reportBug } from './errors/reportBug';
+import { createVariableTemplate } from './variableTemplate/createVariableTemplate';
 
 export function activate(context: vscode.ExtensionContext) {
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
@@ -166,7 +167,9 @@ export function activate(context: vscode.ExtensionContext) {
             .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip)
             .map(siblingFile => {
                 const filePath = path.join(parentDir, siblingFile);
-                return fs.readFileSync(filePath).toString().split('\n');
+                const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
+                const lines = fs.readFileSync(filePath).toString().split('\n');
+                return lines.map(line => createVariableTemplate(line,[infoAboutFilePath]));
             });
 
         if (contents.length < 2) {
@@ -174,16 +177,12 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const [baseFile, ...otherFiles] = contents;
-        const lineToGenerate: string[] = [];
+        const linesToGenerate: string[] = baseFile
+            .filter((line) => allFilesIncludeThisLine(otherFiles, line));
 
-        baseFile.forEach(line => {
-            const lineTemplate = renderVariableTemplate(line, [infoAboutNewFile]);
-            if(allFilesIncludeThisLine(otherFiles, line)){
-                lineToGenerate.push(lineTemplate);
-            }
-        });
-
-        const content = lineToGenerate.join('\n');
+        const content = linesToGenerate.map(line => 
+            renderVariableTemplate(line, [infoAboutNewFile])
+        ).join('\n');
 
         if (content.length === 0) {
             return;
@@ -246,7 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
         });
     }
 
-    function allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean{
+    function allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean {
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if(!includesThisTemplate(file, line)){
