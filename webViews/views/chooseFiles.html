@@ -79,10 +79,14 @@
         const renderFile = ({name, title, value, code, generated}) => {
             const fieldTemplate = document.querySelector(generated ? '#field-generated-template': '#field-template');
             const html = fieldTemplate.innerHTML;
+            const span = document.createElement('span');
+            span.innerText = code;
+            const escapedCode = span.innerHTML;
+
             const fragment = document.createElement('template');
             fragment.innerHTML = html
                 .replace(/\{\{title\}\}/gi, title)
-                .replace(/\{\{code\}\}/gi, code);
+                .replace(/\{\{code\}\}/gi, escapedCode);
 
             return fragment.content;
         }
