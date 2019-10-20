@@ -41,7 +41,7 @@
 				"category": "FILE",
 				"icon": {
 					"dark": "icons/awesome-template.svg",
-					"light": "icons/awesome-template.svg"
+					"light": "icons/awesome-template-light.svg"
 				}
 			}
 		],
