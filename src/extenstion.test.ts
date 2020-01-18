@@ -11,6 +11,7 @@ describe('extenstion', () => {
         [key in keyof vscode.FileSystemWatcher]?: jest.Mock
     };
     let mockContext: vscode.ExtensionContext;
+    const fsWriteFile = fs.writeFile as any as jest.Mock;
 
     beforeEach(() => {
         mockWatcher = {
@@ -23,6 +24,7 @@ describe('extenstion', () => {
             extensionPath : ''
         } as any as vscode.ExtensionContext;
         const createSystemWatcher = vscode.workspace.createFileSystemWatcher as jest.Mock;
+        fsWriteFile.mockClear();
         createSystemWatcher.mockReturnValueOnce(mockWatcher);
     });
 
@@ -38,20 +40,41 @@ describe('extenstion', () => {
         const createdItemUri: Partial<vscode.Uri> = {
             fsPath:'C:/site/new',
         };
-        const fsWriteFile = fs.writeFile as any as jest.Mock;
         (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Yes, generate files');
 
         expect.assertions(5);
 
         mockWatcher.onDidCreate = jest.fn((callback) => {
-            callback(createdItemUri).then(() => {
+            callback(createdItemUri);
+            setTimeout(() => {
                 expect(fsWriteFile).toHaveBeenCalledTimes(2);
                 expect(fsWriteFile.mock.calls[0][0]).toStrictEqual('C:/site/new/new.js');
                 expect(fsWriteFile.mock.calls[0][1]).toStrictEqual('function NewComponent () {');
                 expect(fsWriteFile.mock.calls[1][0]).toStrictEqual('C:/site/new/new.css');
                 expect(fsWriteFile.mock.calls[1][1]).toStrictEqual('.new { margin:5px; }');
-                done();
-            });
+                done(); 
+            }, 20);
+        });
+
+        activate(mockContext);
+    });
+
+    it('should create content when file is created', (done) => {
+        const createdItemUri: Partial<vscode.Uri> = {
+            fsPath:'C:/site/action/createAction.js',
+        };
+        (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Yes, create content');
+
+        expect.assertions(3);
+
+        mockWatcher.onDidCreate = jest.fn((callback) => {
+            callback(createdItemUri);
+            setTimeout(() => {
+                expect(fsWriteFile).toHaveBeenCalledTimes(1);
+                expect(fsWriteFile.mock.calls[0][0]).toStrictEqual('C:/site/action/createAction.js');
+                expect(fsWriteFile.mock.calls[0][1]).toStrictEqual('const create = new Action();');
+                done(); 
+            }, 20);
         });
 
         activate(mockContext);
