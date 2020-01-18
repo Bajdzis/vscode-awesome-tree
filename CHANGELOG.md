@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.0.1...v1.1.0) (2020-01-18)
+
+
+### Features
+
+* add rxjs ([86fac15](https://github.com/Bajdzis/vscode-awesome-tree/commit/86fac15df9725e8e8d797e14e93fcf51c91c957c))
+
 ### [1.0.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.0.0...v1.0.1) (2019-10-20)
 
 
