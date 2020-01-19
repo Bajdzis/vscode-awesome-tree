@@ -12,6 +12,7 @@ import { createDocument } from '../../../fileSystem/createDocument';
 import { getMatchingTemplate } from '../../../savedTemplates/getMatchingTemplate';
 import { createVariableTemplate } from '../../../variableTemplate/createVariableTemplate';
 import { WebView } from '../webView/webView';
+import { splitStringWithSplitter } from '../../../strings/splitStringWithSplitter';
 
 export class Files {
     private chooseFilesTemplateWebView: string;
@@ -70,7 +71,6 @@ export class Files {
                     renderVariableTemplate(line, [infoAboutNewDirectory])
                 ).join('\n');
             }
-
             return { 
                 filePath, 
                 filePathTemplate, 
@@ -149,8 +149,8 @@ export class Files {
             .map(siblingFile => {
                 const filePath = path.join(parentDir, siblingFile);
                 const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
-                const lines = fs.readFileSync(filePath).toString().split('\n');
-                return lines.map(line => createVariableTemplate(line,[infoAboutFilePath]));
+                const lines = splitStringWithSplitter(fs.readFileSync(filePath).toString(), '\n{} ,()');
+                return lines.map(line => createVariableTemplate(line, [infoAboutFilePath]));
             });
 
         if (contents.length < 2) {
@@ -163,7 +163,7 @@ export class Files {
 
         const content = linesToGenerate.map(line => 
             renderVariableTemplate(line, [infoAboutNewFile])
-        ).join('\n');
+        ).join('');
 
         if (content.length === 0) {
             return;
@@ -202,7 +202,7 @@ export class Files {
             }
         });
 
-        return lineToGenerate.join('\n');
+        return lineToGenerate.join('');
     }
 
     allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean {
