@@ -127,20 +127,19 @@ export class Files {
         }
     }
 
-    async tryCreateFileContentForNewFile(createdItemUri: vscode.Uri) {
-        const savedTemplate = getMatchingTemplate(createdItemUri.fsPath);
+    createFileByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]){
         const relativePath = getRelativePath(createdItemUri.fsPath);
         const infoAboutNewFile = getInfoAboutPath(relativePath);
-        if (savedTemplate!==null) {
-         
-            const content = savedTemplate.map(line => 
-                renderVariableTemplate(line, [infoAboutNewFile])
-            ).join('\n');
+        const content = savedTemplate.map(line => 
+            renderVariableTemplate(line, [infoAboutNewFile])
+        ).join('\n');
 
-            createDocument(createdItemUri.fsPath, content);
-            return;
-        }
+        return createDocument(createdItemUri.fsPath, content);
+    }
 
+    getContentBySibling(createdItemUri: vscode.Uri): string {
+        const relativePath = getRelativePath(createdItemUri.fsPath);
+        const infoAboutNewFile = getInfoAboutPath(relativePath);
         const parentDir = path.dirname(createdItemUri.fsPath);
 
         const fileToSkip = path.basename(createdItemUri.fsPath);
@@ -154,7 +153,7 @@ export class Files {
             });
 
         if (contents.length < 2) {
-            return;
+            return '';
         }
 
         const [baseFile, ...otherFiles] = contents;
@@ -165,25 +164,7 @@ export class Files {
             renderVariableTemplate(line, [infoAboutNewFile])
         ).join('');
 
-        if (content.length === 0) {
-            return;
-        }
-
-        const answersQuestion = [
-            'Yes, create content', 
-            'No, thanks'
-        ];
-
-        const resultQuestion = await vscode.window.showInformationMessage(
-            `Do you want to create content for new file '${fileToSkip}' in folder "${parentDir}"?`,
-            ...answersQuestion
-        );
-
-        if (resultQuestion !== answersQuestion[0]) {
-            return;
-        }
-
-        createDocument(createdItemUri.fsPath, content);
+        return content;
     }
 
     createFileContent(templateStringPath:string, directories: DirectoriesInfo, variables: PathInfo[]): string {
