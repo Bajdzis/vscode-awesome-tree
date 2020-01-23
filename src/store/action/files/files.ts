@@ -5,6 +5,16 @@ const filesActionCreator = actionCreatorFactory('FILES');
 
 export const updateFileList = filesActionCreator<string[]>('UPDATE_FILE_LIST');
 export const onDidCreate = filesActionCreator<vscode.Uri>('ON_DID_CREATE');
+export const onDidChange = filesActionCreator<vscode.Uri>('ON_DID_CHANGE');
+export const onDidDelete = filesActionCreator<vscode.Uri>('ON_DID_DELETE');
+
+export interface OnRegisterWorkspaceParam {
+    filePaths: string[];
+    workspacePath: string;
+}
+
+export const onRegisterWorkspace = filesActionCreator<OnRegisterWorkspaceParam>('ON_REGISTER_WORKSPACE');
+
 export const createFileContentStarted = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_STARTED');
 export const createFilesInNewDirectory = filesActionCreator<vscode.Uri>('CREATE_FILES_IN_NEW_DIRECTORY');
 
