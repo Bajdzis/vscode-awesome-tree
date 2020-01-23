@@ -15,7 +15,9 @@ describe('extenstion', () => {
 
     beforeEach(() => {
         mockWatcher = {
-            onDidCreate: jest.fn()
+            onDidCreate: jest.fn(),
+            onDidChange: jest.fn(),
+            onDidDelete: jest.fn()
         };
         mockContext = {
             subscriptions: {
@@ -26,6 +28,8 @@ describe('extenstion', () => {
         const createSystemWatcher = vscode.workspace.createFileSystemWatcher as jest.Mock;
         fsWriteFile.mockClear();
         createSystemWatcher.mockReturnValueOnce(mockWatcher);
+        // @ts-ignore
+        vscode.workspace.onDidChangeWorkspaceFolders = jest.fn();
     });
 
     it('should start listen for create file', () => {
