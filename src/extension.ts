@@ -7,7 +7,7 @@ import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 export function activate(context: vscode.ExtensionContext) {
 
     const { store, dependencies } = createStore(context);
-    const { outputChannel } = dependencies;
+    const { outputChannel, config } = dependencies;
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');
     
     outputChannel.appendLine('Listening for file changes started!');
@@ -27,11 +27,9 @@ export function activate(context: vscode.ExtensionContext) {
     const sendFilesPathsToStore = () => {
         const { workspaceFolders } = vscode.workspace;
 
-        // TODO - filter register workspace
         workspaceFolders && workspaceFolders.forEach(element => {
             const workspacePath = element.uri.fsPath;
-            // TODO - filter files like node_modules
-            const filePaths = getAllFilesPath(workspacePath);
+            const filePaths = getAllFilesPath(workspacePath, config.getExcludeWatchRegExp());
 
             store.dispatch(onRegisterWorkspace({
                 filePaths,
@@ -41,9 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
         });
     };
 
-    context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(() => {
-        sendFilesPathsToStore();
-    }));
+    context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(sendFilesPathsToStore));
 
     sendFilesPathsToStore();
 
