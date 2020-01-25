@@ -39,6 +39,10 @@ export const lstatSync = (uri: string): Partial<fs.Stats> => ({
     isFile: () => !mockDirectory.includes(uri),
 });
 
+export const lstat = (uri: string, callback: (err?: Error, stats?: Partial<fs.Stats>) => void): void => {
+    callback(undefined, lstatSync(uri));
+};
+
 export const statSync = lstatSync;
 
 export const writeFile = jest.fn();

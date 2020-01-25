@@ -5,13 +5,13 @@ import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
 import { delay, filter, tap, ignoreElements, mergeMap, map } from 'rxjs/operators';
 import { RootEpic } from '..';
-import { onDidCreate, createFileContentStarted, createFilesInNewDirectory, createFileContentByTemplate, createFileContentBySibling, CreateFileContentByTemplateParam } from '../../action/files/files';
+import { onDidCreate, createFileContentStarted, createFilesInNewDirectory, createFileContentByTemplate, createFileContentBySibling, CreateFileContentByTemplateParam, WatchFileSystemParam } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
 import { getMatchingTemplate } from '../../../savedTemplates/getMatchingTemplate';
 import { createDocument } from '../../../fileSystem/createDocument';
 
 type InputAction = 
-Action<CreateFileContentByTemplateParam> | Action<vscode.Uri>;
+Action<CreateFileContentByTemplateParam> | Action<WatchFileSystemParam> | Action<vscode.Uri>;
 
 export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outputChannel, files }) =>
     merge( 
@@ -72,23 +72,23 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
             ignoreElements()
         ),
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(onDidCreate.type),
-            filter(({payload}: Action<vscode.Uri>) => {
-                if (config.getExcludeWatchRegExp().exec(payload.fsPath) !== null) {
-                    outputChannel.appendLine(`File '${payload.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
+            ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
+            filter(({payload}: Action<WatchFileSystemParam>) => {
+                if (config.getExcludeWatchRegExp().exec(payload.uri.fsPath) !== null) {
+                    outputChannel.appendLine(`File '${payload.uri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
                     return false;
                 }
                 return true;
             }),
             delay(10),
-            mergeMap(({payload}: Action<vscode.Uri>) => {
+            mergeMap(({payload}: Action<WatchFileSystemParam>) => {
                 // when directory or file is not empty probably change name parent directory
-                if (files.isEmptyDirectory(payload, outputChannel)) {
-                    return [createFilesInNewDirectory(payload)];
+                if (files.isEmptyDirectory(payload.uri, outputChannel)) {
+                    return [createFilesInNewDirectory(payload.uri)];
                 }
 
-                if (files.isEmptyFile(payload, outputChannel)) {
-                    return [createFileContentStarted(payload)];
+                if (files.isEmptyFile(payload.uri, outputChannel)) {
+                    return [createFileContentStarted(payload.uri)];
                 }
 
                 return [];
