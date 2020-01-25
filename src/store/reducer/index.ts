@@ -6,7 +6,7 @@ export interface RootState {
 }
 
 export const rootReducer = combineReducers({
-    goals: filesReducer,
+    files: filesReducer,
 });
 
 export type RootReducer = typeof rootReducer;

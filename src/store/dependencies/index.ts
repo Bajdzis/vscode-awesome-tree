@@ -7,7 +7,7 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
     const outputChannel = vscode.window.createOutputChannel('Awesome tree');
 
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
-    const config = new Config(settingProvider);
+    const config = new Config(settingProvider, outputChannel);
     const webView = new WebView(context);
     const files = new Files(webView);
 

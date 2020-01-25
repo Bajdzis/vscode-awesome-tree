@@ -3,9 +3,13 @@ import actionCreatorFactory from 'typescript-fsa';
  
 const filesActionCreator = actionCreatorFactory('FILES');
 
-export const updateFileList = filesActionCreator<string[]>('UPDATE_FILE_LIST');
-export const onDidCreate = filesActionCreator<vscode.Uri>('ON_DID_CREATE');
-export const onDidChange = filesActionCreator<vscode.Uri>('ON_DID_CHANGE');
+export interface WatchFileSystemParam {
+    uri: vscode.Uri,
+    type: 'file' | 'directory'
+}
+
+export const onDidCreate = filesActionCreator<WatchFileSystemParam>('ON_DID_CREATE');
+export const onDidChange = filesActionCreator<WatchFileSystemParam>('ON_DID_CHANGE');
 export const onDidDelete = filesActionCreator<vscode.Uri>('ON_DID_DELETE');
 
 export interface OnRegisterWorkspaceParam {
