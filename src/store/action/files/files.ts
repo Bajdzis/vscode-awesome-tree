@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import actionCreatorFactory from 'typescript-fsa';
+import { TemplateInfo } from '../../../savedTemplates/getMatchingTemplate';
  
 const filesActionCreator = actionCreatorFactory('FILES');
 
@@ -19,6 +20,12 @@ export interface OnRegisterWorkspaceParam {
 
 export const onRegisterWorkspace = filesActionCreator<OnRegisterWorkspaceParam>('ON_REGISTER_WORKSPACE');
 
+export interface RegisterTemplatesParam {
+    templates: TemplateInfo[];
+    workspacePath: string;
+}
+export const registerTemplates = filesActionCreator<RegisterTemplatesParam>('REGISTER_TEMPLATES');
+
 export const createFileContentStarted = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_STARTED');
 export const createFilesInNewDirectory = filesActionCreator<vscode.Uri>('CREATE_FILES_IN_NEW_DIRECTORY');
 
@@ -29,3 +36,15 @@ export interface CreateFileContentByTemplateParam {
 
 export const createFileContentByTemplate = filesActionCreator<CreateFileContentByTemplateParam>('CREATE_FILE_CONTENT_BY_TEMPLATE');
 export const createFileContentBySibling = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_BY_SIBLING');
+
+export interface CreateNewTemplateParam {
+    uri: vscode.Uri;
+    workspacePath: string;
+}
+
+export interface CreateNewTemplateResult extends TemplateInfo {
+    templateLines: string[];
+}
+
+export const createNewTemplate = filesActionCreator.async<CreateNewTemplateParam, CreateNewTemplateResult, Error>('CREATE_FILE_CONTENT_BY_SIBLING');
+
