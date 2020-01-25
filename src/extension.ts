@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { saveAsTemplate } from './commands/saveAsTemplate';
+import { findWorkspacePath } from './commands/saveAsTemplate';
 import { createStore } from './store';
-import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam } from './store/action/files/files';
+import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam, createNewTemplate } from './store/action/files/files';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { reportBug } from './errors/reportBug';
 import { ActionCreator } from 'typescript-fsa';
@@ -60,7 +60,19 @@ export function activate(context: vscode.ExtensionContext) {
 
     sendFilesPathsToStore();
 
-    context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', saveAsTemplate));
+    context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', (uri: vscode.Uri) => {
+        const workspacePath = findWorkspacePath(uri.fsPath);
+
+        if (workspacePath === undefined) {
+            vscode.window.showWarningMessage(`Can't find workspace directory for file: '${uri.fsPath}'`);
+            return;
+        }
+
+        store.dispatch(createNewTemplate.started({
+            uri,
+            workspacePath
+        }));
+    }));
 }
 
 export function deactivate() {}

@@ -73,13 +73,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
         ),
         action$.pipe(
             ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
-            filter(({payload}: Action<WatchFileSystemParam>) => {
-                if (config.getExcludeWatchRegExp().exec(payload.uri.fsPath) !== null) {
-                    outputChannel.appendLine(`File '${payload.uri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`);
-                    return false;
-                }
-                return true;
-            }),
+            filter(({payload}: Action<WatchFileSystemParam>) => config.canUseThisFile(payload.uri)),
             delay(10),
             mergeMap(({payload}: Action<WatchFileSystemParam>) => {
                 // when directory or file is not empty probably change name parent directory

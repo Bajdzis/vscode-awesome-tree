@@ -37,7 +37,7 @@ export function getMatchingTemplate (fileFsPath: string): null | string[] {
     return null;
 }
 
-interface TemplateInfo {
+export interface TemplateInfo {
     baseFilePath: string;
     pathsTemplate: string[];
     templateId: string;
@@ -51,4 +51,32 @@ function getTemplatesDatabase(workspacePath: string): TemplateInfo[] {
     } catch {   
         return [];
     }
+}
+
+export function getTemplatesDatabaseAsync(workspacePath: string): Promise<TemplateInfo[]> {
+    return new Promise((resolve) => {
+        const templateDatabasePath = path.join(workspacePath, DIRECTORY_FOR_TEMPLATES, 'database-awesome.json' );
+        fs.readFile(templateDatabasePath, (err, buffer) => {
+            if (err) {
+                // TODO - show error in output chanel
+                return resolve([]);
+            }
+            let data: Partial<TemplateInfo>[] = JSON.parse(buffer.toString());
+            if (!Array.isArray(data)) {
+                // TODO - show error in output chanel
+                return resolve([]);
+            }
+
+            resolve(data
+                .map((partialTemplate: Partial<TemplateInfo>): TemplateInfo => ({
+                    baseFilePath: partialTemplate.baseFilePath || '',
+                    pathsTemplate: partialTemplate.pathsTemplate || [],
+                    templateId: partialTemplate.templateId || '',
+                }))
+                .filter((template: TemplateInfo) => template)
+            );
+        });
+
+    });
+
 }

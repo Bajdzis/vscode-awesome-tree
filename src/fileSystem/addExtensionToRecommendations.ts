@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as process from 'child_process';
 
 export function addExtensionToRecommendations(workspaceDirectory: string){
     try {
@@ -21,9 +20,15 @@ export function addExtensionToRecommendations(workspaceDirectory: string){
         }
         fileData.recommendations.push('bajdzis.awesome-tree');
 
-        fs.writeFileSync(extensionsPath, JSON.stringify(fileData, null, 2));
+        const content = JSON.stringify(fileData, null, 2);
+        const parentDir = path.dirname(extensionsPath);
 
-        process.spawn('git add ".vscode/extensions.json" -f');
+        if (!fs.existsSync(parentDir)) {
+            fs.mkdirSync(parentDir);
+        }
+
+        fs.writeFileSync(extensionsPath, content, {});
+
     } catch (error) {
         console.log(error);
     }
