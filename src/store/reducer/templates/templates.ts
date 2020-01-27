@@ -1,5 +1,5 @@
 import { reducerWithInitialState } from 'typescript-fsa-reducers';
-import { registerTemplates, createNewTemplate } from '../../action/files/files';
+import { registerTemplates, createNewTemplate, registerTemplate } from '../../action/files/files';
 import { TemplateInfo } from '../../../savedTemplates/getMatchingTemplate';
 
 export interface TemplatesStateWorkspace {
@@ -27,6 +27,13 @@ export const templatesReducer = reducerWithInitialState<TemplatesState>(INITIAL_
             ...state.workspaces,
             [payload.workspacePath]: [...(state.workspaces[payload.workspacePath] || []), ...payload.templates]
         }
+    }))
+    .case(registerTemplate, (state: TemplatesState, payload): TemplatesState => ({
+        ...state,
+        contents: {
+            ...state.contents,
+            [payload.templateId]: payload.content
+        },
     }))
     .case(createNewTemplate.done, (state: TemplatesState, {params, result}): TemplatesState => ({
         ...state,
