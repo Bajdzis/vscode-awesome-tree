@@ -26,6 +26,12 @@ export interface RegisterTemplatesParam {
 }
 export const registerTemplates = filesActionCreator<RegisterTemplatesParam>('REGISTER_TEMPLATES');
 
+export interface RegisterTemplateParam {
+    templateId: string;
+    content: string[];
+}
+export const registerTemplate = filesActionCreator<RegisterTemplateParam>('REGISTER_TEMPLATE');
+
 export const createFileContentStarted = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_STARTED');
 export const createFilesInNewDirectory = filesActionCreator<vscode.Uri>('CREATE_FILES_IN_NEW_DIRECTORY');
 

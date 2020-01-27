@@ -43,6 +43,22 @@ export interface TemplateInfo {
     templateId: string;
 }
 
+export function getTemplateContent (workspacePath: string, templateId: string): Promise<string[]> {
+    const templatePath = path.join(workspacePath, DIRECTORY_FOR_TEMPLATES, 'templates', `template-${templateId}.json` );
+    return new Promise((resolve, reject) => {
+        fs.readFile(templatePath, (err, buffer) => {
+            if(err) {
+                return reject(err);
+            }
+            const template = JSON.parse(buffer.toString()) as string[];
+            if (Array.isArray(template)) {
+                return resolve(template);
+            } 
+            reject(`Invalid data in template: ${templateId}`);
+        });
+    });
+}
+
 function getTemplatesDatabase(workspacePath: string): TemplateInfo[] {
 
     const templateDatabasePath = path.join(workspacePath, DIRECTORY_FOR_TEMPLATES, 'database-awesome.json' );
