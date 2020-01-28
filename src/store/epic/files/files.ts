@@ -7,7 +7,7 @@ import { delay, filter, tap, ignoreElements, mergeMap, map } from 'rxjs/operator
 import { RootEpic } from '..';
 import { onDidCreate, createFileContentStarted, createFilesInNewDirectory, createFileContentByTemplate, createFileContentBySibling, CreateFileContentByTemplateParam, WatchFileSystemParam } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
-import { getMatchingTemplate } from '../../../savedTemplates/getMatchingTemplate';
+import { getMatchingTemplate } from '../../selectors/templates/templates';
 import { createDocument } from '../../../fileSystem/createDocument';
 
 type InputAction = 
@@ -18,7 +18,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(createFileContentStarted.type),
             map(({payload}: Action<vscode.Uri>) => {
-                const baseTemplate = getMatchingTemplate(payload.fsPath);
+                const baseTemplate = getMatchingTemplate(payload.fsPath)(state$.value);
                 if (baseTemplate !== null) {
                     return createFileContentByTemplate({
                         createPath: payload,

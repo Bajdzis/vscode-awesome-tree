@@ -7,6 +7,7 @@ import { getInfoAboutPath } from '../fileInfo/getInfoAboutPath';
 import { createVariableTemplate } from '../variableTemplate/createVariableTemplate';
 import { compareVariableTemplate } from '../variableTemplate/compareVariableTemplate';
 
+// TODO - delete (currently use only for generate structure)
 export function getMatchingTemplate (fileFsPath: string): null | string[] {
 
     const workspacePath = findWorkspacePath(fileFsPath);
@@ -16,7 +17,7 @@ export function getMatchingTemplate (fileFsPath: string): null | string[] {
     const relativePath = getRelativePath(fileFsPath);
     const infoAboutNewFile = getInfoAboutPath(relativePath);
     const templatePath = createVariableTemplate(relativePath, [infoAboutNewFile]);
-    const availableTemplates = getTemplatesDatabase(workspacePath);
+    const availableTemplates = getTemplatesDatabase_toDelete(workspacePath);
 
     for (let i = 0; i < availableTemplates.length; i++) {
         const templateInfo = availableTemplates[i];
@@ -59,7 +60,7 @@ export function getTemplateContent (workspacePath: string, templateId: string): 
     });
 }
 
-function getTemplatesDatabase(workspacePath: string): TemplateInfo[] {
+function getTemplatesDatabase_toDelete(workspacePath: string): TemplateInfo[] {
 
     const templateDatabasePath = path.join(workspacePath, DIRECTORY_FOR_TEMPLATES, 'database-awesome.json' );
     try {
@@ -69,7 +70,7 @@ function getTemplatesDatabase(workspacePath: string): TemplateInfo[] {
     }
 }
 
-export function getTemplatesDatabaseAsync(workspacePath: string): Promise<TemplateInfo[]> {
+export function getTemplatesDatabase(workspacePath: string): Promise<TemplateInfo[]> {
     return new Promise((resolve) => {
         const templateDatabasePath = path.join(workspacePath, DIRECTORY_FOR_TEMPLATES, 'database-awesome.json' );
         fs.readFile(templateDatabasePath, (err, buffer) => {
