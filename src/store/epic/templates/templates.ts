@@ -6,7 +6,7 @@ import { ofType } from 'redux-observable';
 import { mergeMap, ignoreElements, tap } from 'rxjs/operators';
 import { RootEpic } from '..';
 import { onRegisterWorkspace, OnRegisterWorkspaceParam, registerTemplates, createNewTemplate, CreateNewTemplateParam, CreateNewTemplateResult, RegisterTemplatesParam, registerTemplate } from '../../action/files/files';
-import { getTemplatesDatabaseAsync, getTemplateContent } from '../../../savedTemplates/getMatchingTemplate';
+import { getTemplatesDatabase, getTemplateContent } from '../../../savedTemplates/getMatchingTemplate';
 import { addExtensionToRecommendations } from '../../../fileSystem/addExtensionToRecommendations';
 import { getTemplateBaseOnFile, DIRECTORY_FOR_TEMPLATES } from '../../../commands/saveAsTemplate';
 import { createDocument } from '../../../fileSystem/createDocument';
@@ -19,7 +19,7 @@ export const templatesEpic: RootEpic<InputAction> = (action$, state$) =>
         action$.pipe(
             ofType<InputAction, Action<OnRegisterWorkspaceParam>>(onRegisterWorkspace.type),
             mergeMap(({payload}: Action<OnRegisterWorkspaceParam>) => 
-                getTemplatesDatabaseAsync(payload.workspacePath).then((baseTemplate) => 
+                getTemplatesDatabase(payload.workspacePath).then((baseTemplate) => 
                     registerTemplates({
                         templates: baseTemplate,
                         workspacePath: payload.workspacePath
