@@ -5,23 +5,23 @@ import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
 import { delay, filter, tap, ignoreElements, mergeMap, map } from 'rxjs/operators';
 import { RootEpic } from '..';
-import { onDidCreate, createFileContentStarted, createFilesInNewDirectory, createFileContentByTemplate, createFileContentBySibling, CreateFileContentByTemplateParam, WatchFileSystemParam } from '../../action/files/files';
+import { onDidCreate, fillFileContentStarted, createFilesInNewDirectory, createFileContentByTemplate, createFileContentBySibling, CreateFileContentByTemplateParam, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
 import { getMatchingTemplate } from '../../selectors/templates/templates';
 import { createDocument } from '../../../fileSystem/createDocument';
 
 type InputAction = 
-Action<CreateFileContentByTemplateParam> | Action<WatchFileSystemParam> | Action<vscode.Uri>;
+Action<CreateFileContentByTemplateParam> | Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
 
 export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outputChannel, files }) =>
     merge( 
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(createFileContentStarted.type),
+            ofType<InputAction, Action<vscode.Uri>>(fillFileContentStarted.type),
             map(({payload}: Action<vscode.Uri>) => {
                 const baseTemplate = getMatchingTemplate(payload.fsPath)(state$.value);
                 if (baseTemplate !== null) {
                     return createFileContentByTemplate({
-                        createPath: payload,
+                        createUri: payload,
                         baseTemplate
                     });
                 }
@@ -35,7 +35,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 content: files.getContentBySibling(payload)
             })),
             filter(({content}) => !!content.length),
-            tap(async ({createPath, content}) => {
+            mergeMap(async ({createPath, content}) => {
 
                 const parentDir = path.dirname(createPath.fsPath);
                 const fileName = path.basename(createPath.fsPath);
@@ -51,16 +51,24 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 );
         
                 if (resultQuestion === answersQuestion[0]) {
-                    createDocument(createPath.fsPath, content).catch(reportBug);
+                    return createFileContentStarted({uri: createPath,  content});//createDocument(createPath.fsPath, content).then(() => {}).catch(reportBug);
                 }
 
+                return createFileContentCancel(createPath);
+
             }),
-            ignoreElements()
         ),
         action$.pipe(
             ofType<InputAction, Action<CreateFileContentByTemplateParam>>(createFileContentByTemplate.type),
             tap(({payload}: Action<CreateFileContentByTemplateParam>) => {
-                files.createFileByTemplate(payload.createPath, payload.baseTemplate).catch(reportBug);
+                files.createFileByTemplate(payload.createUri, payload.baseTemplate).catch(reportBug);
+            }),
+            ignoreElements()
+        ),
+        action$.pipe(
+            ofType<InputAction, Action<CreateFileContentStartedParam>>(createFileContentStarted.type),
+            tap(({payload}: Action<CreateFileContentStartedParam>) => {
+                createDocument(payload.uri.fsPath, payload.content).catch(reportBug);
             }),
             ignoreElements()
         ),
@@ -82,7 +90,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 }
 
                 if (files.isEmptyFile(payload.uri, outputChannel)) {
-                    return [createFileContentStarted(payload.uri)];
+                    return [fillFileContentStarted(payload.uri)];
                 }
 
                 return [];

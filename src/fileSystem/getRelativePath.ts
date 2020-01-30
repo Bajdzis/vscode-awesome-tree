@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 
 export function getRelativePath(path: string) {
     const { workspaceFolders } = vscode.workspace;
-    if(!workspaceFolders){
+    if (!workspaceFolders) {
         return path;
     }
-    for (let i = 0; i < workspaceFolders.length; i++) {
-        const dirPath = workspaceFolders[i].uri.fsPath;
+    for (let workspaceFolder of workspaceFolders) {
+        const dirPath = workspaceFolder.uri.fsPath;
         path = path.replace(dirPath, '');
     }
     return path;

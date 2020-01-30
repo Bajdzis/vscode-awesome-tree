@@ -16,10 +16,8 @@ export function getMatchingTemplate (fileFsPath: string): (state: RootState) => 
         const templatePath = createVariableTemplate(relativePath, [infoAboutNewFile]);
         const availableTemplates = state.templates.workspaces[workspacePath];
         
-        for (let i = 0; i < availableTemplates.length; i++) {
-            const templateInfo = availableTemplates[i];
-            for (let j = 0; j < templateInfo.pathsTemplate.length; j++) {
-                const pathTemplate = templateInfo.pathsTemplate[j];
+        for (let templateInfo of availableTemplates) {
+            for (let pathTemplate of templateInfo.pathsTemplate) {
                 if(compareVariableTemplate(pathTemplate, templatePath)){
                     const templateId = templateInfo.templateId;
                     const content = state.templates.contents[templateId];
