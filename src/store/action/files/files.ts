@@ -32,11 +32,18 @@ export interface RegisterTemplateParam {
 }
 export const registerTemplate = filesActionCreator<RegisterTemplateParam>('REGISTER_TEMPLATE');
 
-export const createFileContentStarted = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_STARTED');
+export const fillFileContentStarted = filesActionCreator<vscode.Uri>('FILL_FILE_CONTENT_STARTED');
+
+export interface CreateFileContentStartedParam {
+    uri: vscode.Uri;
+    content: string;
+}
+export const createFileContentStarted = filesActionCreator<CreateFileContentStartedParam>('CREATE_FILE_CONTENT_STARTED');
+export const createFileContentCancel = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_CANCEL');
 export const createFilesInNewDirectory = filesActionCreator<vscode.Uri>('CREATE_FILES_IN_NEW_DIRECTORY');
 
 export interface CreateFileContentByTemplateParam {
-    createPath: vscode.Uri;
+    createUri: vscode.Uri;
     baseTemplate: string[];
 }
 

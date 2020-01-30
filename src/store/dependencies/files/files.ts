@@ -187,8 +187,7 @@ export class Files {
     }
 
     allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
+        for (let file of files) {
             if(!this.includesThisTemplate(file, line)){
                 return false;
             }
@@ -197,8 +196,7 @@ export class Files {
     }
 
     includesThisTemplate (templates: string [], templateToFind: string) {
-        for (let j = 0; j < templates.length; j++) {
-            const fileLine = templates[j];
+        for (let fileLine of templates) {
             if (compareVariableTemplate(fileLine, templateToFind)) {
                 return true;
             }
@@ -208,8 +206,7 @@ export class Files {
 
     countSameTemplates (templates: string [], templateToFind: string) {
         let counter = 0;
-        for (let j = 0; j < templates.length; j++) {
-            const template = templates[j];
+        for (let template of templates) {
             if (compareVariableTemplate(template, templateToFind)) {
                 counter++;
             }
