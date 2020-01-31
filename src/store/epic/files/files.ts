@@ -5,13 +5,13 @@ import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
 import { delay, filter, tap, ignoreElements, mergeMap, map } from 'rxjs/operators';
 import { RootEpic } from '..';
-import { onDidCreate, fillFileContentStarted, createFilesInNewDirectory, createFileContentByTemplate, createFileContentBySibling, CreateFileContentByTemplateParam, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel } from '../../action/files/files';
+import { onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFileContentBySibling, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
 import { getMatchingTemplate } from '../../selectors/templates/templates';
 import { createDocument } from '../../../fileSystem/createDocument';
 
 type InputAction = 
-Action<CreateFileContentByTemplateParam> | Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
+Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
 
 export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outputChannel, files }) =>
     merge( 
@@ -20,16 +20,14 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
             map(({payload}: Action<vscode.Uri>) => {
                 const baseTemplate = getMatchingTemplate(payload.fsPath)(state$.value);
                 if (baseTemplate !== null) {
-                    return createFileContentByTemplate({
-                        createUri: payload,
-                        baseTemplate
-                    });
+                    const content = files.generateFileContentByTemplate(payload, baseTemplate);
+                    return createFileContentStarted({uri: payload, content});
                 }
-                return createFileContentBySibling(payload);
+                return fillFileContentBySibling(payload);
             }),
         ),
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(createFileContentBySibling.type),
+            ofType<InputAction, Action<vscode.Uri>>(fillFileContentBySibling.type),
             map(({payload}: Action<vscode.Uri>) => ({
                 createPath: payload,
                 content: files.getContentBySibling(payload)
@@ -51,19 +49,12 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 );
         
                 if (resultQuestion === answersQuestion[0]) {
-                    return createFileContentStarted({uri: createPath,  content});//createDocument(createPath.fsPath, content).then(() => {}).catch(reportBug);
+                    return createFileContentStarted({uri: createPath,  content});
                 }
 
                 return createFileContentCancel(createPath);
 
             }),
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<CreateFileContentByTemplateParam>>(createFileContentByTemplate.type),
-            tap(({payload}: Action<CreateFileContentByTemplateParam>) => {
-                files.createFileByTemplate(payload.createUri, payload.baseTemplate).catch(reportBug);
-            }),
-            ignoreElements()
         ),
         action$.pipe(
             ofType<InputAction, Action<CreateFileContentStartedParam>>(createFileContentStarted.type),

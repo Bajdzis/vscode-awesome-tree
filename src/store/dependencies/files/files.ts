@@ -127,14 +127,14 @@ export class Files {
         }
     }
 
-    createFileByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]){
+    generateFileContentByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]): string{
         const relativePath = getRelativePath(createdItemUri.fsPath);
         const infoAboutNewFile = getInfoAboutPath(relativePath);
         const content = savedTemplate.map(line => 
             renderVariableTemplate(line, [infoAboutNewFile])
         ).join('\n');
 
-        return createDocument(createdItemUri.fsPath, content);
+        return content;
     }
 
     getContentBySibling(createdItemUri: vscode.Uri): string {
