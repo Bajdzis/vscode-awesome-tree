@@ -9,6 +9,12 @@ import { onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFil
 import { reportBug } from '../../../errors/reportBug';
 import { getMatchingTemplate } from '../../selectors/templates/templates';
 import { createDocument } from '../../../fileSystem/createDocument';
+import { getRelativePath } from '../../../fileSystem/getRelativePath';
+import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
+import { getSiblingInfo, DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
+import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
+import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
+import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
 
 type InputAction = 
 Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
@@ -65,8 +71,78 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
         ),
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(createFilesInNewDirectory.type),
-            tap(({payload}: Action<vscode.Uri>) => {
-                files.tryCreateStructureForNewDirectory(payload).catch(reportBug);
+            tap(async (
+                {payload}: Action<vscode.Uri>
+            ) => {
+
+                const relativePath = getRelativePath(payload.fsPath);
+                const infoAboutNewDirectory = getInfoAboutPath(relativePath);
+                const infoAboutSiblingDirectories: DirectoriesInfo = getSiblingInfo(payload.fsPath);
+                const siblingTemplatePathFiles = getPathTemplates(infoAboutSiblingDirectories);
+                
+                if (siblingTemplatePathFiles.length === 0) {
+                    return [];
+                }
+        
+                const uniquePathFiles = files.deleteSameTemplates(siblingTemplatePathFiles);
+        
+                const answersQuestion = [
+                    'Yes, generate files',
+                    'Yes, let me choose', 
+                    'No, thanks'
+                ];
+
+                const resultQuestion = await vscode.window.showInformationMessage(
+                    `Do you want to create ${uniquePathFiles.length} file(s) in new "${path.basename(payload.fsPath)}" folder?`,
+                    ...answersQuestion
+                );
+
+                if (resultQuestion === answersQuestion[2]) {
+                    return [];
+                }
+
+                const filesWithContent: WebViewInfoAboutFiles[] = uniquePathFiles.map( (filePathTemplate) => {
+                    const relativePathFile = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
+                    const filePath: string = path.join(payload.fsPath, relativePathFile);
+                    const savedTemplate = getMatchingTemplate(filePath)(state$.value);
+                    
+                    let content: string;
+                    let fromTemplate: boolean = false;
+                    if (savedTemplate === null) {
+                        content = files.createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
+                    } else {
+                        fromTemplate = true;
+                        content = savedTemplate.map(line => 
+                            renderVariableTemplate(line, [infoAboutNewDirectory])
+                        ).join('\n');
+                    }
+        
+                    return { 
+                        filePath, 
+                        filePathTemplate, 
+                        content, 
+                        fromTemplate, 
+                        relativePath: path.join(relativePath, relativePathFile)
+                    };
+        
+                });
+        
+                if (resultQuestion === answersQuestion[0]) {
+                    filesWithContent.forEach(async({filePath, content}) => {
+                        const textDocument = await createDocument(filePath, content);
+                        vscode.window.showTextDocument(textDocument);
+                    });
+                } else {
+                    files.showWebView(
+                        payload, 
+                        filesWithContent, 
+                        infoAboutSiblingDirectories,
+                        siblingTemplatePathFiles,
+                        (filePath: string, content: string) => {
+                            createDocument(filePath, content);
+                        }
+                    );
+                }
             }),
             ignoreElements()
         ),
