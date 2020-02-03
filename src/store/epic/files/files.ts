@@ -11,10 +11,11 @@ import { getMatchingTemplate } from '../../selectors/templates/templates';
 import { createDocument } from '../../../fileSystem/createDocument';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
-import { getSiblingInfo, DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
+import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
+import { getSimilarDirectoryInfo } from '../../selectors/files/files';
 
 type InputAction = 
 Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
@@ -77,9 +78,9 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
 
                 const relativePath = getRelativePath(payload.fsPath);
                 const infoAboutNewDirectory = getInfoAboutPath(relativePath);
-                const infoAboutSiblingDirectories: DirectoriesInfo = getSiblingInfo(payload.fsPath);
-                const siblingTemplatePathFiles = getPathTemplates(infoAboutSiblingDirectories);
-                
+                const similarDirectoriesInfo: DirectoriesInfo = getSimilarDirectoryInfo(payload.fsPath)(state$.value);
+                const siblingTemplatePathFiles = getPathTemplates(similarDirectoriesInfo);
+          
                 if (siblingTemplatePathFiles.length === 0) {
                     return [];
                 }
@@ -109,7 +110,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                     let content: string;
                     let fromTemplate: boolean = false;
                     if (savedTemplate === null) {
-                        content = files.createFileContent(filePathTemplate, infoAboutSiblingDirectories, [infoAboutNewDirectory]);
+                        content = files.createFileContent(filePathTemplate, similarDirectoriesInfo, [infoAboutNewDirectory]);
                     } else {
                         fromTemplate = true;
                         content = savedTemplate.map(line => 
@@ -136,7 +137,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                     files.showWebView(
                         payload, 
                         filesWithContent, 
-                        infoAboutSiblingDirectories,
+                        similarDirectoriesInfo,
                         siblingTemplatePathFiles,
                         (filePath: string, content: string) => {
                             createDocument(filePath, content);
