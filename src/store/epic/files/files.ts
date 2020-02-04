@@ -80,7 +80,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 const infoAboutNewDirectory = getInfoAboutPath(relativePath);
                 const similarDirectoriesInfo: DirectoriesInfo = getSimilarDirectoryInfo(payload.fsPath)(state$.value);
                 const siblingTemplatePathFiles = getPathTemplates(similarDirectoriesInfo);
-          
+
                 if (siblingTemplatePathFiles.length === 0) {
                     return [];
                 }

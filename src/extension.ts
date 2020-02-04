@@ -43,9 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     const sendFilesPathsToStore = () => {
         const { workspaceFolders } = vscode.workspace;
-
-        workspaceFolders && workspaceFolders.forEach(element => {
-            const workspacePath = element.uri.fsPath;
+        workspaceFolders && workspaceFolders.forEach(({ uri }) => {
+            const workspacePath = uri.fsPath;
             const filePaths = getAllFilesPath(workspacePath, config.getExcludeWatchRegExp());
 
             store.dispatch(onRegisterWorkspace({

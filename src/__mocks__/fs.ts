@@ -47,4 +47,9 @@ export const statSync = lstatSync;
 
 export const writeFile = jest.fn();
 
+export const readFile = (uri: string, callback: (err?: Error, stats?: string) => void): void => {
+    const data = mockFiles[uri];
+    callback(data === undefined ? new Error('not exist'): undefined, data);
+};
+
 export const existsSync = jest.fn(() => true);
