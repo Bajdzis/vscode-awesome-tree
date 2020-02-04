@@ -30,6 +30,18 @@ describe('extenstion', () => {
         createSystemWatcher.mockReturnValueOnce(mockWatcher);
         // @ts-ignore
         vscode.workspace.onDidChangeWorkspaceFolders = jest.fn();
+        const folder: vscode.WorkspaceFolder = {
+            index: 0,
+            name: 'site',
+            uri: {
+                authority: 'file',
+                fsPath: 'C:/site',
+            } as vscode.Uri
+        };
+        // @ts-ignore
+        vscode.workspace.workspaceFolders = [
+            folder
+        ];
     });
 
     it('should start listen for create file', () => {
