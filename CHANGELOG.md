@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.1.1...v1.2.0) (2020-02-19)
+
+
+### Features
+
+* add saved template to store on start ([4583de0](https://github.com/Bajdzis/vscode-awesome-tree/commit/4583de02958dcafe7201f4063d84a44af78159b7))
+* fix action logger ([3e4874b](https://github.com/Bajdzis/vscode-awesome-tree/commit/3e4874b7e0e979064b90f035f6f881928bcc8e85))
+* get info about directories from redux state ([ed86369](https://github.com/Bajdzis/vscode-awesome-tree/commit/ed863695f0c9df5d96911eff81b6f2e3662ce04f))
+* save all files in redux state ([2362293](https://github.com/Bajdzis/vscode-awesome-tree/commit/2362293c39f59ea122f9964f5a28986b67c1aaca))
+* save templates in store ([c744874](https://github.com/Bajdzis/vscode-awesome-tree/commit/c744874342c3f9ee7cf3570a5f7cd9e924327d73))
+* start use data about template from redux store ([1d6f8af](https://github.com/Bajdzis/vscode-awesome-tree/commit/1d6f8af10a44aa76d5ffb5712108ffa0ebb2f642))
+* start using template from redux in "directory generate proccess" ([9408cfe](https://github.com/Bajdzis/vscode-awesome-tree/commit/9408cfecabaade5dde3e10cd3d50d0bb1d954a4a))
+
 ### [1.1.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.1.0...v1.1.1) (2020-01-18)
 
 
