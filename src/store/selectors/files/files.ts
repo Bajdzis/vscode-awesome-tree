@@ -22,12 +22,28 @@ export function getAllDirectory (state: RootState) {
 
 export function getSimilarDirectory (searchPath: string) {
     const searchInfo = getInfoAboutPath(searchPath);
-    return (state: RootState) => getAllDirectory(state)
-        .filter((value) => {
-            const directoryInfo = getInfoAboutPath(value);
-            if (directoryInfo.pathParts.length !== searchInfo.pathParts.length) {
-                return false;
+    return (state: RootState) => {
+        
+        const similarPathInfo = getAllDirectory(state)
+            .map(value => getInfoAboutPath(value))
+            .filter((directoryInfo) =>  directoryInfo.pathParts.length === searchInfo.pathParts.length);
+
+        const siblingsPath = similarPathInfo.filter((directoryInfo) => {
+            for (let i = 0; i < searchInfo.pathParts.length - 1; i++) {
+                const search = searchInfo.pathParts[i];
+                const directory = directoryInfo.pathParts[i];
+                if (search.value !== directory.value) {
+                    return false;
+                }
             }
+            return true;
+        });
+
+        if (siblingsPath.length) {
+            return siblingsPath.map(info => info.path);
+        }
+
+        return similarPathInfo.filter((directoryInfo) => {
             const numberOfWordsNotMatching = directoryInfo.pathParts.reduce((counter, wordsInfo, index) => {
                 const searchWordsInfo = searchInfo.pathParts[index];
                 if(wordsInfo.textCase !== searchWordsInfo.textCase) {
@@ -39,7 +55,8 @@ export function getSimilarDirectory (searchPath: string) {
                 return counter;
             }, 0);
             return numberOfWordsNotMatching <= 1;
-        });
+        }).map(info => info.path);
+    };
 }
 
 export function getSimilarDirectoryInfo (searchPath: string) {

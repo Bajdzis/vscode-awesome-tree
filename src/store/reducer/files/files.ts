@@ -1,4 +1,3 @@
-import { omit } from 'lodash';
 import { reducerWithInitialState } from 'typescript-fsa-reducers';
 import { onRegisterWorkspace, onDidDelete, onDidCreate } from '../../action/files/files';
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
@@ -26,7 +25,12 @@ export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
     }))
     .case(onDidDelete, (state: FilesState, payload): FilesState => ({
         ...state,
-        pathToInfo: omit(state.pathToInfo, [payload.fsPath])
+        pathToInfo: Object.entries(state.pathToInfo).reduce((pathToInfo, [key, value]) => {
+            if(key.indexOf(payload.fsPath) !== 0) {
+                pathToInfo[key] = value;
+            }
+            return pathToInfo;
+        }, {} as { [key: string]: PathInfo })
     }))
     .case(onDidCreate, (state: FilesState, payload): FilesState => {
         if (payload.type !== 'file') {
