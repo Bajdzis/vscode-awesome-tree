@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.2.0...v1.2.1) (2020-02-20)
+
+
+### Bug Fixes
+
+* remove unavailable files form redux, ([f78c051](https://github.com/Bajdzis/vscode-awesome-tree/commit/f78c051e1c0144b49c7ad60396aaa158624081d5))
+
 ## [1.2.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.1.1...v1.2.0) (2020-02-19)
 
 
