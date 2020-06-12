@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.2](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.2.1...v1.2.2) (2020-06-12)
+
+
+### Bug Fixes
+
+* [#10](https://github.com/Bajdzis/vscode-awesome-tree/issues/10) catch read file error ([62efbf9](https://github.com/Bajdzis/vscode-awesome-tree/commit/62efbf99d04848a5c2f0d2fdedd88ef53d42ac20))
+
 ### [1.2.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.2.0...v1.2.1) (2020-02-20)
 
 
