@@ -13,8 +13,10 @@ export const createStore = (context: vscode.ExtensionContext) => {
     
     epicMiddleware.run(rootEpic as any);
 
-    // TODO - run only DEBUG mode
-    epicMiddleware.run(loggerEpic as any);
+    if (process.env.ENV_MODE !== 'production') {
+        dependencies.outputChannel.appendLine('start debug mode');
+        epicMiddleware.run(loggerEpic as any);
+    }
 
     return { store, dependencies };
 };

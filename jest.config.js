@@ -1,11 +1,12 @@
+/* global module */
 module.exports = {
-    "roots": [
-        "<rootDir>/src"
+    roots: [
+        '<rootDir>/src'
     ],
-    "transform": {
-        "^.+\\.tsx?$": "ts-jest"
+    transform: {
+        '^.+\\.tsx?$': 'ts-jest'
     },
-    "collectCoverageFrom": [
-        "./src/**/*.*"
+    collectCoverageFrom: [
+        './src/**/*.*'
     ]
-}
+};
