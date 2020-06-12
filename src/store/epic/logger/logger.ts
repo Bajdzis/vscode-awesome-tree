@@ -8,7 +8,7 @@ export const loggerEpic: RootEpic = (action$, state$, { outputChannel }) =>
             outputChannel.appendLine(`ACTION: ${action.type}`);
             outputChannel.appendLine(`PAYLOAD: ${JSON.stringify(action.payload, null, 4)}`);
             outputChannel.appendLine('-----------------------');
-            outputChannel.appendLine(`STATE: ${JSON.stringify(state$.value, null, 4)}`);
+            outputChannel.appendLine(`STATE: ${JSON.stringify(state$.value)}`);
             outputChannel.appendLine('=======================');
         }),
         ignoreElements()

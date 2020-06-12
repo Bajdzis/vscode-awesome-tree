@@ -82,6 +82,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 const siblingTemplatePathFiles = getPathTemplates(similarDirectoriesInfo);
 
                 if (siblingTemplatePathFiles.length === 0) {
+                    outputChannel.appendLine('[FilesEpic] not found sibling template');
                     return [];
                 }
         
@@ -99,6 +100,7 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 );
 
                 if (resultQuestion === answersQuestion[2]) {
+                    outputChannel.appendLine('[FilesEpic] abort by user');
                     return [];
                 }
 

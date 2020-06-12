@@ -14,9 +14,16 @@ export function getFilesContentAsTemplate(directoriesInfo: DirectoriesInfo, temp
             const pathTemplate = createVariableTemplate(fileRelativePath, [directory.directoryInfo]);
             if (compareVariableTemplate(pathTemplate, templateStringPath)) {
                 const filePath = path.join(directoryPath, fileRelativePath);
-                const lines = splitStringWithSplitter(fs.readFileSync(filePath).toString(), '\n ,');
-                const templateLines = lines.map(line => createVariableTemplate(line,[directory.directoryInfo]));
-                contents.push(templateLines);
+                let lines: string[];
+                try {
+                    lines = splitStringWithSplitter(fs.readFileSync(filePath).toString(), '\n ,');
+                } catch (error) {
+                    lines = [];
+                }
+                if (lines.length !== 0) {
+                    const templateLines = lines.map(line => createVariableTemplate(line,[directory.directoryInfo]));
+                    contents.push(templateLines);
+                }
             }
         });
     });

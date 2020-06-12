@@ -20,4 +20,13 @@ describe('fileInfo / getInfoAboutPath',() => {
         expect(fileInfo.pathParts[1].parts).toEqual(['wired','patch']);
         expect(fileInfo.pathParts[1].textCase).toEqual('snakeCase');
     });
+
+    it('should not edit path', () => {
+        const fileInfoWin = getInfoAboutPath('\\some\\window\\patch.json');
+        const fileInfoLinux = getInfoAboutPath('/some/linux/patch.json');
+
+        expect(fileInfoWin.path).toEqual('\\some\\window\\patch.json');
+        expect(fileInfoLinux.path).toEqual('/some/linux/patch.json');
+    });
+
 });
