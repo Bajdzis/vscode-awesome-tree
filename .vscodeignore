@@ -1,9 +1,15 @@
+.git/**
 .vscode/**
 .vscode-test/**
+node_modules/**
 out/test/**
 src/**
+coverage/**
 .gitignore
 vsc-extension-quickstart.md
+webpack.config.js
+jest.config.js
+readme/awesome-tree-icon.xcf
 **/tsconfig.json
 **/tslint.json
 **/*.map

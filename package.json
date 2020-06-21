@@ -66,9 +66,10 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "cross-env ENV_MODE=production npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"vscode:prepublish": "webpack --mode production",
+		"webpack:profile": "webpack --mode production --profile --json > stats.json",
+		"compile": "webpack --mode development",
+		"watch": "webpack --mode development",
 		"test": "jest",
 		"test:coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
 		"lint": "eslint ./ --ext .ts ",
@@ -104,8 +105,11 @@
 		"redux": "^4.0.5",
 		"redux-observable": "^1.2.0",
 		"rxjs": "^6.5.5",
+		"ts-loader": "^7.0.5",
 		"typescript-fsa": "^3.0.0",
 		"typescript-fsa-reducers": "^1.2.1",
-		"uuid": "^8.1.0"
+		"uuid": "^8.1.0",
+		"webpack": "^4.43.0",
+		"webpack-cli": "^3.3.12"
 	}
 }
