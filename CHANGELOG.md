@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.2.3...v1.3.0) (2020-06-21)
+
+
+### Features
+
+* build extension by webpack ([5e5638f](https://github.com/Bajdzis/vscode-awesome-tree/commit/5e5638f5e572a734030bffd234d69c09bd607d57))
+
 ### [1.2.3](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.2.2...v1.2.3) (2020-06-12)
 
 
