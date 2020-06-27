@@ -74,7 +74,8 @@
 		"test:coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
 		"lint": "eslint ./ --ext .ts ",
 		"prerelease": "standard-version",
-		"release": "git push --follow-tags origin master"
+		"release": "git push --follow-tags origin master",
+		"redux": "redux-devtools --hostname=localhost --port=8000"
 	},
 	"pre-commit": [
 		"lint",
@@ -103,7 +104,11 @@
 	"dependencies": {
 		"lodash": "^4.17.15",
 		"redux": "^4.0.5",
+		"redux-devtools": "^3.5.0",
+		"redux-devtools-cli": "0.0.1-1",
 		"redux-observable": "^1.2.0",
+		"redux-remotedev": "^0.3.0",
+		"remote-redux-devtools": "^0.5.16",
 		"rxjs": "^6.5.5",
 		"ts-loader": "^7.0.5",
 		"typescript-fsa": "^3.0.0",
