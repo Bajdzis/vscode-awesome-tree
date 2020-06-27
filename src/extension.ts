@@ -4,7 +4,6 @@ import { findWorkspacePath } from './commands/saveAsTemplate';
 import { createStore } from './store';
 import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam, createNewTemplate } from './store/action/files/files';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
-import { reportBug } from './errors/reportBug';
 import { ActionCreator } from 'typescript-fsa';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -22,7 +21,8 @@ export function activate(context: vscode.ExtensionContext) {
             }
             fs.lstat(uri.fsPath, (err, stats) => {
                 if (err) {
-                    reportBug(err);
+                    outputChannel.appendLine(`Failed read ${uri.fsPath}`);
+                    return;
                 }
                 const type = stats.isFile() ? 'file' : 'directory';
                 store.dispatch(action({
@@ -35,11 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     fileSystemWatcher.onDidCreate(dispatchFileSystemAction(onDidCreate));
     fileSystemWatcher.onDidChange(dispatchFileSystemAction(onDidChange));
-    fileSystemWatcher.onDidDelete((uri: vscode.Uri) => {
-        if (config.canUseThisFile(uri)) {
-            store.dispatch(onDidDelete(uri));
-        }
-    });
+    fileSystemWatcher.onDidDelete((uri) => store.dispatch(onDidDelete(uri)));
 
     const sendFilesPathsToStore = () => {
         const { workspaceFolders } = vscode.workspace;
