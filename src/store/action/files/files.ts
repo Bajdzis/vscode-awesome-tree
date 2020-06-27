@@ -42,6 +42,7 @@ export interface CreateFileContentStartedParam {
 export const createFileContentStarted = filesActionCreator<CreateFileContentStartedParam>('CREATE_FILE_CONTENT_STARTED');
 export const createFileContentCancel = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_CANCEL');
 export const createFilesInNewDirectory = filesActionCreator<vscode.Uri>('CREATE_FILES_IN_NEW_DIRECTORY');
+export const renameCopyDirectory = filesActionCreator<vscode.Uri>('RENAME_COPY_DIRECTORY');
 
 export interface CreateNewTemplateParam {
     uri: vscode.Uri;

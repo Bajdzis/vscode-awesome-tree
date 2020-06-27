@@ -1,0 +1,31 @@
+<template id="field-generated-template">
+    <blockquote class="panel" >
+        <p class="panel__text">
+            <div class="field">
+                <label class="field__label" for="{{name}}" style="display:flex;justify-content: space-between;">
+                    <b>{{title}}</b> <span>Generated!</span>
+                </label>
+            </div>
+        </p>
+    </blockquote>
+</template>
+
+<template id="field-template">
+    <blockquote class="panel" >
+        <p class="panel__text">
+            <div class="field">
+                <label class="field__label" for="{{name}}" style="display:flex;justify-content: space-between;">
+                    <b style="font-size:1.5rem">{{title}}</b> <button class="panel__button button button--primary" data-event="generate-single" data-id="{{id}}">Generate single file</button>
+                </label>
+                <pre class="field__code">{{code}}</pre>
+            </div>
+        </p>
+    </blockquote>
+</template>
+
+<template id="title-template">
+    <h2 style="display:flex;justify-content: space-between;">
+        <span>{{title}} <span style="font-weight: 400;">( {{count}} )</span></span>
+        <button class="button button--primary" data-event="generate-all">Generate all</button>
+    </h2>
+</template>

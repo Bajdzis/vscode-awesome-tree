@@ -32,8 +32,6 @@
         const initialState = {
             createdFolderName: "",
             allSiblingHave: [],
-            notAllSiblingHave: [],
-            fromTemplate: [],
         };
         let state = vscode.getState() || initialState;
 
@@ -82,7 +80,7 @@
             }
 
             container.appendChild(header);
-            items.forEach(({ filePath, filePathTemplate, content, fromTemplate, generated, relativePath }, index) => {
+            items.forEach(({ filePath, filePathTemplate, content, generated, relativePath }, index) => {
                 const fieldElement = renderFile({
                     title: relativePath,
                     code: content,
@@ -103,9 +101,7 @@
                 fields.firstChild.remove();
             }
 
-            generateGroup("From saved templates", "fromTemplate", fields);
             generateGroup("Always created in sibling directory", "allSiblingHave", fields);
-            generateGroup("Others", "notAllSiblingHave", fields);
 
             document.querySelector('#forDirectory').innerHTML = `For new "<b>${state.createdFolderName}</b>" directory`;
         }
@@ -114,8 +110,9 @@
 
         window.addEventListener('message', ({data}) => { 
             if (data.type === 'SET_DATA') {
-                const { allSiblingHave, notAllSiblingHave, fromTemplate, createdFolderName } = data.payload;
-                setState({ allSiblingHave, notAllSiblingHave, fromTemplate, createdFolderName })
+                const { allSiblingHave, createdFolderName } = data.payload;
+
+                setState({ allSiblingHave, createdFolderName })
             }
         })
     </script>

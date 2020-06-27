@@ -50,7 +50,7 @@ export const templatesEpic: RootEpic<InputAction> = (action$, state$) =>
             ofType<InputAction, Action<CreateNewTemplateParam>>(createNewTemplate.started.type),
             mergeMap(({payload}: Action<CreateNewTemplateParam>) => {
            
-                const newTemplate = getTemplateBaseOnFile(payload.uri);
+                const newTemplate = getTemplateBaseOnFile(payload.uri.fsPath);
                 const templatePath = path.join(payload.workspacePath, DIRECTORY_FOR_TEMPLATES, 'templates', `template-${newTemplate.templateId}.json` );
                 const templateDatabasePath = path.join(payload.workspacePath, DIRECTORY_FOR_TEMPLATES, 'database-awesome.json' );
 
