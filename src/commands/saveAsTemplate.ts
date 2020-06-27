@@ -20,12 +20,12 @@ export function findWorkspacePath(searchFsPath:string): string | undefined {
     }
 }
 
-export function getTemplateBaseOnFile(file: vscode.Uri) {
+export function getTemplateBaseOnFile(fsPath: string) {
 
-    const relativePath = getRelativePath(file.fsPath);
+    const relativePath = getRelativePath(fsPath);
     const templateId = uuid();
     const infoAboutNewFile = getInfoAboutPath(relativePath);
-    const lines = fs.readFileSync(file.fsPath).toString().split('\n');
+    const lines = fs.readFileSync(fsPath).toString().split('\n');
     const templateLines = lines.map(line => createVariableTemplate(line, [infoAboutNewFile]));
     
     return {

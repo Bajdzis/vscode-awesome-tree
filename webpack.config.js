@@ -37,7 +37,7 @@ const config = {
         }]
     },
     optimization: {
-        minimize: true, 
+        minimize: false, 
     }
 };
 

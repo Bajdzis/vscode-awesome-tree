@@ -169,8 +169,13 @@ export class Files {
         }, [] as string[]);
     }
 
-    isDirectory(uri: vscode.Uri): boolean  {
-        return fs.lstatSync(uri.fsPath).isDirectory();
+    isDirectory(uri: vscode.Uri, outputChannel?: vscode.OutputChannel): boolean  {
+        try {
+            return fs.lstatSync(uri.fsPath).isDirectory();
+        } catch {
+            outputChannel && outputChannel.appendLine(`We have problem with check file ${uri.fsPath}`);
+            return false;
+        }
     }
 
     isEmptyDirectory(uri: vscode.Uri, outputChannel: vscode.OutputChannel): boolean {

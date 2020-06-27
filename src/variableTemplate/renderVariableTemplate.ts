@@ -18,9 +18,9 @@ export function renderVariableTemplate(template:string, information: PathInfo[],
         });
     });
 
-    const otherTextCase = /\$\{:(.*):\}/g;
+    const otherTextCase = /\$\{:([^}]*):\}/g;
     const defaultValues = /\$\{[^${}]*\|\|'([^${}]*)'\}/g;
-
+    
     return decodeURIComponent(result.replace(otherTextCase, '$1').replace(defaultValues, '$1'));
 }
 
