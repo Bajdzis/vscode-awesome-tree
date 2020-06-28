@@ -12,7 +12,7 @@
             <p class="panel__text">
                 <div class="field">
                     <label class="field__label" for="{{name}}" style="display:flex;justify-content: space-between;">
-                        <b style="font-size:1.5rem">{{title}}</b> 
+                        <b style="font-size:0.75rem">{{title}}</b> 
                     </label>
                     <pre class="field__code">{{code}}</pre>
                 </div>
@@ -134,9 +134,9 @@
             })
         
             container.appendChild(header);
-            items.forEach(({ filePath, content }, index) => {
+            items.forEach(({ filePath, filePathFrom, content }, index) => {
                 const fieldElement = renderFile({
-                    title: filePath,
+                    title: `${filePathFrom} => ${filePath}`,
                     code: content,
                     id: index,
                 });

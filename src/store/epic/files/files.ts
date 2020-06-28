@@ -167,17 +167,17 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 const fileName = path.basename(createFolder.fsPath);
 
                 const answersQuestion = [
-                    'Yes, create content',
+                    'Yes, rename directory',
                     'No, thanks'
                 ];
 
                 const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to rename directory '${fileName}' with content in folder "${parentDir}" base on ${baseFolder}?`,
+                    `Do you want to rename directory '${fileName}' with content in folder "${parentDir}" base on ${path.basename(baseFolder as string)}?`,
                     ...answersQuestion
                 );
 
                 if (baseFolder !== null && resultQuestion === answersQuestion[0]) {
-                    await directoryRename.showWebView(createFolder, dirFiles, baseFolder);
+                    await directoryRename.showWebView(createFolder, dirFiles);
                     return {
                         type: '',
                         payload: {}

@@ -10,6 +10,10 @@ export function getAllFiles (state: RootState) {
 }
 
 export function getFilesInDirectory (directoryPath: string) {
+    if(directoryPath[directoryPath.length-1] !== path.sep){
+        directoryPath += path.sep;
+    }
+
     return (state: RootState) => getAllFiles(state)
         .filter(path => path.indexOf(directoryPath) === 0)
         .map(path => path.replace(directoryPath, ''));
@@ -24,7 +28,11 @@ export function getAllDirectory (state: RootState) {
 export function getFirstDirectoryWithSameFiles (directoryPath: string){
     return (state: RootState): null | string  => {
         const searchFiles = getFilesInDirectory(directoryPath)(state).sort();
-        const searchDirectories = getAllDirectory(state).filter(path => path.indexOf(directoryPath) === -1);
+        const directoryBasename = path.basename(directoryPath);
+        const searchDirectories = getAllDirectory(state).filter(filePath => {
+            return path.basename(filePath) !== directoryBasename;
+        } );
+
         for (let i = 0; i < searchDirectories.length; i++) {
             const searchDirectory = searchDirectories[i];
             const files = getFilesInDirectory(searchDirectory)(state).sort();

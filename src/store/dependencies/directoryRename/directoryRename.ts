@@ -5,11 +5,13 @@ import { WebView } from '../webView/webView';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
 import { createVariableTemplate } from '../../../variableTemplate/createVariableTemplate';
+import { getRelativePath } from '../../../fileSystem/getRelativePath';
 
 
 export type WebViewInfoAboutFiles = {
     content: string;
     filePath: string;
+    filePathFrom: string;
 };
 
 export class DirectoryRename {
@@ -24,17 +26,20 @@ export class DirectoryRename {
 
     getFilesToRender(
         createdDirectoryUri: vscode.Uri,
-        infoAboutNewName: PathInfo,
+        newName: string,
         infoAboutNameBaseDirectory: PathInfo,
     ) {
         return (filePath: string): WebViewInfoAboutFiles => {
 
-            const fileContent = fs.readFileSync(path.join(createdDirectoryUri.fsPath, filePath)).toString();
+            const infoAboutNewName = getInfoAboutPath(newName);
+            const fullPath = path.join(createdDirectoryUri.fsPath, filePath);
+            const fileContent = fs.readFileSync(fullPath).toString();
             const templateLines = createVariableTemplate(fileContent, [infoAboutNameBaseDirectory]);
             const filePathTemplate = createVariableTemplate(filePath, [infoAboutNameBaseDirectory]);
             return ({
                 content: renderVariableTemplate(templateLines, [infoAboutNewName]),
-                filePath: renderVariableTemplate(filePathTemplate, [infoAboutNewName]),
+                filePath: getRelativePath(path.join(path.dirname(createdDirectoryUri.fsPath), newName, renderVariableTemplate(filePathTemplate, [infoAboutNewName]))),
+                filePathFrom: getRelativePath(fullPath),
             });
 
         };
@@ -43,15 +48,13 @@ export class DirectoryRename {
     async showWebView(
         createdDirectoryUri: vscode.Uri,
         dirFiles: string[],
-        baseFolder: string,
     ): Promise<vscode.WebviewPanel> {
 
         let chooseFilesPanel = await this.webView.showWebView(this.renameFilesTemplateWebView, 'Rename copy directory');
 
         const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(createdDirectoryUri.fsPath));
-        const createdFolderName = path.basename(baseFolder);
-        const infoAboutNewName = getInfoAboutPath(createdFolderName);
-        const allSiblingHave: WebViewInfoAboutFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, infoAboutNewName, infoAboutNameBaseDirectory));
+        const createdFolderName = path.basename(createdDirectoryUri.fsPath);
+        const allSiblingHave: WebViewInfoAboutFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, createdFolderName, infoAboutNameBaseDirectory));
         
         chooseFilesPanel.webview.postMessage({ 
             type: 'SET_DATA', 
@@ -68,8 +71,7 @@ export class DirectoryRename {
             } else if (action.type === 'CHANGE_NAME') {
                 const { value } = action.payload;
 
-                const infoAboutNewName = getInfoAboutPath(value);
-                const allSiblingHave: WebViewInfoAboutFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, infoAboutNewName, infoAboutNameBaseDirectory));
+                const allSiblingHave: WebViewInfoAboutFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, value, infoAboutNameBaseDirectory));
                 
                 chooseFilesPanel.webview.postMessage({ 
                     type: 'SET_DATA', 
