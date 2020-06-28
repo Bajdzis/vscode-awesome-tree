@@ -32,11 +32,10 @@
 <body>
     <div class="container">
         <h1>Type new directory name</h1>
-        <p id="forDirectory"></p>
         
         <div class="field field--text">
             <label class="field__label" for="createdFolderName">
-                <b>Name copy directory</b> base
+                <b>Directory name</b>
             </label>
             <input class="field__input" id="createdFolderName" type="text" value=""/>
         </div>
@@ -154,9 +153,7 @@
                 createdFolderNameInput.value = state.createdFolderName;
             }
 
-            generateGroup("Files", "allSiblingHave", fields);
-
-            document.querySelector('#forDirectory').innerHTML = `For new "<b>${state.createdFolderName}</b>" directory`;
+            generateGroup("Preview", "allSiblingHave", fields);
         }
 
         refreshView(state);
