@@ -14,12 +14,13 @@ async function deleteDirectoryRecursive(dirPath: string): Promise<void> {
 
     const parentDirectory = path.dirname(dirPath);
     let list: string[];
+
     try {
         list = fs.readdirSync(parentDirectory);
-
     } catch (error) {
         list = [];
     }
+    
     if (list.length === 0) {
         await deleteDirectoryRecursive(parentDirectory);
     }
@@ -38,9 +39,9 @@ export async function deleteDocument(filePath: string): Promise<void> {
 
     const directory = path.dirname(filePath);
     let list: string[];
+
     try {
         list = fs.readdirSync(directory);
-
     } catch (error) {
         list = [];
     }

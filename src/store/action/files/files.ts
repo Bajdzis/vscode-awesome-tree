@@ -55,3 +55,4 @@ export interface CreateNewTemplateResult extends TemplateInfo {
 
 export const createNewTemplate = filesActionCreator.async<CreateNewTemplateParam, CreateNewTemplateResult, Error>('CREATE_FILE_CONTENT_BY_SIBLING');
 
+export const renameDirectory = filesActionCreator.async<vscode.Uri, void, Error>('RENAME_DIRECTORY');

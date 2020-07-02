@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { findWorkspacePath } from './commands/saveAsTemplate';
 import { createStore } from './store';
-import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam, createNewTemplate } from './store/action/files/files';
+import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam, createNewTemplate, renameDirectory } from './store/action/files/files';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { ActionCreator } from 'typescript-fsa';
 
@@ -68,6 +68,11 @@ export function activate(context: vscode.ExtensionContext) {
             workspacePath
         }));
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {
+        store.dispatch(renameDirectory.started(uri));
+    }));
+
 }
 
 export function deactivate() {}

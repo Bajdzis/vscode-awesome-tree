@@ -43,7 +43,7 @@ export class DirectoryRename {
             return ({
                 content: renderVariableTemplate(templateLines, [infoAboutNewName]),
                 filePath,
-                filePathRelative: getRelativePath(filePathFromFull),
+                filePathRelative: getRelativePath(filePath),
                 filePathFrom,
                 filePathFromRelative: getRelativePath(filePathFrom),
             });
@@ -52,15 +52,15 @@ export class DirectoryRename {
     }
 
     async showWebView(
-        createdDirectoryUri: vscode.Uri,
+        directoryToRenameUri: vscode.Uri,
         dirFiles: string[],
     ): Promise<WebViewInfoAboutRenameFiles[]> {
 
-        let chooseFilesPanel = await this.webView.showWebView(this.renameFilesTemplateWebView, 'Rename copy directory');
+        let chooseFilesPanel = await this.webView.showWebView(this.renameFilesTemplateWebView, 'Rename directory');
 
-        const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(createdDirectoryUri.fsPath));
-        const createdFolderName = path.basename(createdDirectoryUri.fsPath);
-        let allSiblingHave: WebViewInfoAboutRenameFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, createdFolderName, infoAboutNameBaseDirectory));
+        const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(directoryToRenameUri.fsPath));
+        const createdFolderName = path.basename(directoryToRenameUri.fsPath);
+        let allSiblingHave: WebViewInfoAboutRenameFiles[] = dirFiles.map(this.getFilesToRender(directoryToRenameUri, createdFolderName, infoAboutNameBaseDirectory));
 
 
         chooseFilesPanel.webview.postMessage({ 
@@ -80,7 +80,7 @@ export class DirectoryRename {
                 } else if (action.type === 'CHANGE_NAME') {
                     const { value } = action.payload;
     
-                    allSiblingHave = dirFiles.map(this.getFilesToRender(createdDirectoryUri, value, infoAboutNameBaseDirectory));
+                    allSiblingHave = dirFiles.map(this.getFilesToRender(directoryToRenameUri, value, infoAboutNameBaseDirectory));
                     
                     chooseFilesPanel.webview.postMessage({ 
                         type: 'SET_DATA', 

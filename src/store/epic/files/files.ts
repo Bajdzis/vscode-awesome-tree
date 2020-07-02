@@ -5,7 +5,7 @@ import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
 import { delay, filter, tap, ignoreElements, mergeMap, map, bufferTime } from 'rxjs/operators';
 import { RootEpic } from '..';
-import { renameCopyDirectory, onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFileContentBySibling, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel } from '../../action/files/files';
+import { renameCopyDirectory, onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFileContentBySibling, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel, renameDirectory } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
 import { getMatchingTemplate } from '../../selectors/templates/templates';
 import { createDocument } from '../../../fileSystem/createDocument';
@@ -162,16 +162,11 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 }
                 return acc;
             }, actions[0])),
-            map(({ payload }) => ({
-                createFolder: payload,
-                baseFolder: getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)
-            })),
-            filter(({ baseFolder }) => !!baseFolder),
-            mergeMap(async ({ createFolder, baseFolder }) => {
+            filter(({ payload }) => !!getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)),
+            mergeMap(async ({ payload }) => {
 
-                const dirFiles = getFilesInDirectory(baseFolder as string)(state$.value);
-                const parentDir = path.dirname(createFolder.fsPath);
-                const fileName = path.basename(createFolder.fsPath);
+                const parentDir = path.dirname(payload.fsPath);
+                const fileName = path.basename(payload.fsPath);
 
                 const answersQuestion = [
                     'Yes, rename directory',
@@ -179,25 +174,36 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 ];
 
                 const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to rename directory '${fileName}' with content in folder "${parentDir}" base on ${path.basename(baseFolder as string)}?`,
+                    `Do you want to rename directory '${fileName}' from "${parentDir}"?`,
                     ...answersQuestion
                 );
 
-                if (baseFolder !== null && resultQuestion === answersQuestion[0]) {
-            
-                    return await directoryRename.showWebView(createFolder, dirFiles);
+                if (resultQuestion === answersQuestion[0]) {
+                    return renameDirectory.started(payload);
                 }
 
-                return [] as WebViewInfoAboutRenameFiles[];
+                return [];
 
+            })
+        ),
+        action$.pipe(
+            ofType<InputAction, Action<vscode.Uri>>(renameDirectory.started.type),
+            mergeMap(async ({payload}) => {
+                const dirFiles = getFilesInDirectory(payload.fsPath)(state$.value);
+                renameDirectory.started(payload);
+                return await directoryRename.showWebView(payload, dirFiles);
             }),
             mergeMap((files: WebViewInfoAboutRenameFiles[]) => new Observable<Action<any>>((observer) => {
                 observer.next(generateStarted());
-                const filesOperation = files.map(file => 
-                    createDocument(file.filePath, file.content)
-                        .then(() => deleteDocument(file.filePathFrom))
-                );
-                Promise.all(filesOperation).catch((err)=> {
+
+                const filesOperation = async () => {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        await createDocument(file.filePath, file.content).then(() => deleteDocument(file.filePathFrom));
+                    }
+                };
+  
+                filesOperation().catch((err)=> {
                     observer.error(err);
                 }).finally(() => {
                     setTimeout(() => {
@@ -207,8 +213,6 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 });
             }))
         ),
-
-
         action$.pipe(
             ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
             filter(({ payload }: Action<WatchFileSystemParam>) => config.canUseThisFile(payload.uri)),

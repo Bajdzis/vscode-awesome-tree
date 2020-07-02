@@ -55,6 +55,7 @@
         const initialState = {
             createdFolderName: "",
             allSiblingHave: [],
+            generated: false
         };
         let state = vscode.getState() || initialState;
 
@@ -77,8 +78,8 @@
             });
         });
 
-        const renderFile = ({ name, title, value, code, generated }) => {
-            const fieldTemplate = document.querySelector(generated ? '#field-generated-template' : '#field-template');
+        const renderFile = ({ name, title, value, code }) => {
+            const fieldTemplate = document.querySelector(state.generated ? '#field-generated-template' : '#field-template');
             const html = fieldTemplate.innerHTML;
             const span = document.createElement('span');
             span.innerText = code;
@@ -104,15 +105,13 @@
         };
 
 
-        const generateFile = (key, index) => {
-            const payload = state[key][index];
-            if (!state[key][index].generated) {
-                vscode.postMessage({
-                    type: 'GENERATE_ALL'
-                });
-            }
-            state[key][index].generated = true;
-            setState(state);
+        const generateFiles = () => {
+            vscode.postMessage({
+                type: 'GENERATE_ALL'
+            });
+            setState({
+                generated: true
+            });
         }
 
         const generateGroup = (title, key, container) => {
@@ -124,18 +123,17 @@
                 title,
                 count: items.length
             });
-            const headerButton = header.querySelector('button')
-      
-            headerButton.addEventListener("click", () => {
-                items.forEach((_, index) => {
-                    generateFile(key, index);
-                });
-            })
+            const headerButton = header.querySelector('[data-event="generate-all"]')
+            if (state.generated) {
+                headerButton.style.display = "none";
+            } else {
+                headerButton.addEventListener("click", generateFiles);
+            }
         
             container.appendChild(header);
-            items.forEach(({ filePath, filePathFrom, content }, index) => {
+            items.forEach(({ filePathRelative, filePathFromRelative, content }, index) => {
                 const fieldElement = renderFile({
-                    title: `${filePathFrom} => ${filePath}`,
+                    title: `${filePathFromRelative} => ${filePathRelative}`,
                     code: content,
                     id: index,
                 });
