@@ -3,7 +3,7 @@ import * as path from 'path';
 import { merge, Observable } from 'rxjs';
 import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
-import { delay, filter, tap, ignoreElements, mergeMap, map } from 'rxjs/operators';
+import { delay, filter, tap, ignoreElements, mergeMap, map, bufferTime } from 'rxjs/operators';
 import { RootEpic } from '..';
 import { renameCopyDirectory, onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFileContentBySibling, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
@@ -152,16 +152,20 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
             }),
             ignoreElements()
         ),
-
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(renameCopyDirectory.type),
-            delay(1000),
-            map(({ payload }) => {
-                return {
-                    createFolder: payload,
-                    baseFolder: getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)
-                };
-            }),
+            bufferTime(300),
+            filter(events => !!events.length),
+            map((actions) => actions.reduce((acc, next) => {
+                if(acc.payload.fsPath.length > next.payload.fsPath.length) {
+                    return next;
+                }
+                return acc;
+            }, actions[0])),
+            map(({ payload }) => ({
+                createFolder: payload,
+                baseFolder: getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)
+            })),
             filter(({ baseFolder }) => !!baseFolder),
             mergeMap(async ({ createFolder, baseFolder }) => {
 
