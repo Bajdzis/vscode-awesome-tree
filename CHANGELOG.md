@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.3.1...v1.4.0) (2020-07-02)
+
+
+### Features
+
+* rename directory with content ([640b39a](https://github.com/Bajdzis/vscode-awesome-tree/commit/640b39a1eb29fd19473dbdc70511dd7d0984551a))
+
 ### [1.3.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.3.0...v1.3.1) (2020-06-27)
 
 
