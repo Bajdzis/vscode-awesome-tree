@@ -8,10 +8,12 @@ import { createVariableTemplate } from '../../../variableTemplate/createVariable
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 
 
-export type WebViewInfoAboutFiles = {
+export type WebViewInfoAboutRenameFiles = {
     content: string;
     filePath: string;
     filePathFrom: string;
+    filePathRelative: string;
+    filePathFromRelative: string;
 };
 
 export class DirectoryRename {
@@ -29,17 +31,21 @@ export class DirectoryRename {
         newName: string,
         infoAboutNameBaseDirectory: PathInfo,
     ) {
-        return (filePath: string): WebViewInfoAboutFiles => {
+        return (filePathFromFull: string): WebViewInfoAboutRenameFiles => {
 
             const infoAboutNewName = getInfoAboutPath(newName);
-            const fullPath = path.join(createdDirectoryUri.fsPath, filePath);
-            const fileContent = fs.readFileSync(fullPath).toString();
+            const filePathFrom = path.join(createdDirectoryUri.fsPath, filePathFromFull);
+            const fileContent = fs.readFileSync(filePathFrom).toString();
             const templateLines = createVariableTemplate(fileContent, [infoAboutNameBaseDirectory]);
-            const filePathTemplate = createVariableTemplate(filePath, [infoAboutNameBaseDirectory]);
+            const filePathTemplate = createVariableTemplate(filePathFromFull, [infoAboutNameBaseDirectory]);
+            const filePath = path.join(path.dirname(createdDirectoryUri.fsPath), newName, renderVariableTemplate(filePathTemplate, [infoAboutNewName]));
+
             return ({
                 content: renderVariableTemplate(templateLines, [infoAboutNewName]),
-                filePath: getRelativePath(path.join(path.dirname(createdDirectoryUri.fsPath), newName, renderVariableTemplate(filePathTemplate, [infoAboutNewName]))),
-                filePathFrom: getRelativePath(fullPath),
+                filePath,
+                filePathRelative: getRelativePath(filePathFromFull),
+                filePathFrom,
+                filePathFromRelative: getRelativePath(filePathFrom),
             });
 
         };
@@ -48,14 +54,15 @@ export class DirectoryRename {
     async showWebView(
         createdDirectoryUri: vscode.Uri,
         dirFiles: string[],
-    ): Promise<vscode.WebviewPanel> {
+    ): Promise<WebViewInfoAboutRenameFiles[]> {
 
         let chooseFilesPanel = await this.webView.showWebView(this.renameFilesTemplateWebView, 'Rename copy directory');
 
         const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(createdDirectoryUri.fsPath));
         const createdFolderName = path.basename(createdDirectoryUri.fsPath);
-        const allSiblingHave: WebViewInfoAboutFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, createdFolderName, infoAboutNameBaseDirectory));
-        
+        let allSiblingHave: WebViewInfoAboutRenameFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, createdFolderName, infoAboutNameBaseDirectory));
+
+
         chooseFilesPanel.webview.postMessage({ 
             type: 'SET_DATA', 
             payload : {
@@ -63,29 +70,30 @@ export class DirectoryRename {
                 allSiblingHave
             }
         });
-
-        chooseFilesPanel.webview.onDidReceiveMessage((action) => {
-            if (action.type === 'GENERATE_FILE') {
-                const { filePath, content } = action.payload;
-                console.log(filePath, content);
-            } else if (action.type === 'CHANGE_NAME') {
-                const { value } = action.payload;
-
-                const allSiblingHave: WebViewInfoAboutFiles[] = dirFiles.map(this.getFilesToRender(createdDirectoryUri, value, infoAboutNameBaseDirectory));
-                
-                chooseFilesPanel.webview.postMessage({ 
-                    type: 'SET_DATA', 
-                    payload : {
-                        createdFolderName : value,
+        return new Promise((resolve) => {
+            chooseFilesPanel.webview.onDidReceiveMessage((action) => {
+                if (action.type === 'GENERATE_ALL') {
+                 
+                    resolve(
                         allSiblingHave
-                    }
-                });
-
-            }
-            
+                    );
+                } else if (action.type === 'CHANGE_NAME') {
+                    const { value } = action.payload;
+    
+                    allSiblingHave = dirFiles.map(this.getFilesToRender(createdDirectoryUri, value, infoAboutNameBaseDirectory));
+                    
+                    chooseFilesPanel.webview.postMessage({ 
+                        type: 'SET_DATA', 
+                        payload : {
+                            createdFolderName : value,
+                            allSiblingHave
+                        }
+                    });
+    
+                }
+                
+            });
         });
-
-        return chooseFilesPanel;
     }
     
 }

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { merge } from 'rxjs';
+import { merge, Observable } from 'rxjs';
 import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
 import { delay, filter, tap, ignoreElements, mergeMap, map } from 'rxjs/operators';
@@ -16,6 +16,9 @@ import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
 import { getSimilarDirectoryInfo, getFirstDirectoryWithSameFiles, getFilesInDirectory } from '../../selectors/files/files';
+import { generateStarted, generateFinish } from '../../action/lock/lock';
+import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
+import { deleteDocument } from '../../../fileSystem/deleteDocument';
 
 type InputAction =
     Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
@@ -177,25 +180,35 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
                 );
 
                 if (baseFolder !== null && resultQuestion === answersQuestion[0]) {
-                    await directoryRename.showWebView(createFolder, dirFiles);
-                    return {
-                        type: '',
-                        payload: {}
-                    };
+            
+                    return await directoryRename.showWebView(createFolder, dirFiles);
                 }
 
-                return {
-                    type: '',
-                    payload: {}
-                };
+                return [] as WebViewInfoAboutRenameFiles[];
 
             }),
+            mergeMap((files: WebViewInfoAboutRenameFiles[]) => new Observable<Action<any>>((observer) => {
+                observer.next(generateStarted());
+                const filesOperation = files.map(file => 
+                    createDocument(file.filePath, file.content)
+                        .then(() => deleteDocument(file.filePathFrom))
+                );
+                Promise.all(filesOperation).catch((err)=> {
+                    observer.error(err);
+                }).finally(() => {
+                    setTimeout(() => {
+                        observer.next(generateFinish());
+                        observer.complete();
+                    }, 1500);
+                });
+            }))
         ),
 
 
         action$.pipe(
             ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
             filter(({ payload }: Action<WatchFileSystemParam>) => config.canUseThisFile(payload.uri)),
+            filter(() => !state$.value.lock.locked),
             delay(10),
             mergeMap(({ payload }: Action<WatchFileSystemParam>) => {
                 // when directory or file is not empty probably change name parent directory
