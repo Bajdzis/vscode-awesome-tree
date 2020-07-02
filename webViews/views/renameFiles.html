@@ -12,7 +12,7 @@
             <p class="panel__text">
                 <div class="field">
                     <label class="field__label" for="{{name}}" style="display:flex;justify-content: space-between;">
-                        <b style="font-size:1.5rem">{{title}}</b> <button class="panel__button button button--primary" data-event="generate-single" data-id="{{id}}">Generate single file</button>
+                        <b style="font-size:0.75rem">{{title}}</b> 
                     </label>
                     <pre class="field__code">{{code}}</pre>
                 </div>
@@ -23,18 +23,22 @@
     <template id="title-template">
         <h2 style="display:flex;justify-content: space-between;">
             <span>{{title}} <span style="font-weight: 400;">( {{count}} )</span></span>
-            <button class="button button--primary" data-event="generate-all">Generate all</button>
+            <button class="button button--primary" data-event="generate-all">Rename all</button>
         </h2>
     </template>
-    <title>Choose files to create</title>
+    <title>Type new directory name</title>
 </head>
 
 <body>
     <div class="container">
-        <h1>Choose files to create</h1>
-        <p id="forDirectory"></p>
-        <ul class="tab" id="tabs">
-        </ul>
+        <h1>Type new directory name</h1>
+        
+        <div class="field field--text">
+            <label class="field__label" for="createdFolderName">
+                <b>Directory name</b>
+            </label>
+            <input class="field__input" id="createdFolderName" type="text" value=""/>
+        </div>
 
         <div id="fields" data-type="none"></div>
 
@@ -51,8 +55,7 @@
         const initialState = {
             createdFolderName: "",
             allSiblingHave: [],
-            notAllSiblingHave: [],
-            fromTemplate: [],
+            generated: false
         };
         let state = vscode.getState() || initialState;
 
@@ -64,23 +67,55 @@
             refreshView(state);
             vscode.setState(state);
         };
+        const createdFolderNameInput = document.querySelector('#createdFolderName');
+
+        createdFolderNameInput.addEventListener('input', e => {
+            vscode.postMessage({
+                type: 'CHANGE_NAME',
+                payload: {
+                    value: createdFolderNameInput.value
+                }
+            });
+        });
+
+        const renderFile = ({ name, title, value, code }) => {
+            const fieldTemplate = document.querySelector(state.generated ? '#field-generated-template' : '#field-template');
+            const html = fieldTemplate.innerHTML;
+            const span = document.createElement('span');
+            span.innerText = code;
+            const escapedCode = span.innerHTML;
+
+            const fragment = document.createElement('template');
+            fragment.innerHTML = html
+                .replace(/\{\{title\}\}/gi, title)
+                .replace(/\{\{code\}\}/gi, escapedCode);
+
+            return fragment.content;
+        };
+
+        const renderTitle = ({ title, count }) => {
+            const fieldTemplate = document.querySelector('#title-template');
+            const html = fieldTemplate.innerHTML;
+            const fragment = document.createElement('template');
+            fragment.innerHTML = html
+                .replace(/\{\{title\}\}/gi, title)
+                .replace(/\{\{count\}\}/gi, count);
+
+            return fragment.content;
+        };
 
 
-        const generateFile = (key, index) => {
-            const payload = state[key][index];
-            if (!state[key][index].generated) {
-                vscode.postMessage({
-                    type: 'GENERATE_FILE',
-                    payload: {...payload}
-                });
-            }
-            state[key][index].generated = true;
-            setState(state);
+        const generateFiles = () => {
+            vscode.postMessage({
+                type: 'GENERATE_ALL'
+            });
+            setState({
+                generated: true
+            });
         }
 
         const generateGroup = (title, key, container) => {
             const items = state[key];
-            const generatedAll = items.every((item) => item.generated);
             if (items.length === 0) {
                 return;
             }
@@ -88,30 +123,20 @@
                 title,
                 count: items.length
             });
-            const headerButton = header.querySelector('button')
-            
-            if (generatedAll) {
+            const headerButton = header.querySelector('[data-event="generate-all"]')
+            if (state.generated) {
                 headerButton.style.display = "none";
             } else {
-                headerButton.addEventListener("click", () => {
-                    items.forEach((_, index) => {
-                        generateFile(key, index);
-                    });
-                })
+                headerButton.addEventListener("click", generateFiles);
             }
-
+        
             container.appendChild(header);
-            items.forEach(({ filePath, filePathTemplate, content, fromTemplate, generated, relativePath }, index) => {
+            items.forEach(({ filePathRelative, filePathFromRelative, content }, index) => {
                 const fieldElement = renderFile({
-                    title: relativePath,
+                    title: `${filePathFromRelative} => ${filePathRelative}`,
                     code: content,
                     id: index,
-                    generated: !!generated
                 });
-                const button = fieldElement.querySelector('button');
-                button && button.addEventListener("click", () => {
-                    generateFile(key, index);
-                })
                 container.appendChild(fieldElement);
             });
         }
@@ -121,20 +146,20 @@
             while (fields.firstChild) {
                 fields.firstChild.remove();
             }
+            const createdFolderNameInput = document.querySelector('#createdFolderName');
+            if (createdFolderNameInput.value !== state.createdFolderName) {
+                createdFolderNameInput.value = state.createdFolderName;
+            }
 
-            generateGroup("From saved templates", "fromTemplate", fields);
-            generateGroup("Always created in sibling directory", "allSiblingHave", fields);
-            generateGroup("Others", "notAllSiblingHave", fields);
-
-            document.querySelector('#forDirectory').innerHTML = `For new "<b>${state.createdFolderName}</b>" directory`;
+            generateGroup("Preview", "allSiblingHave", fields);
         }
 
         refreshView(state);
 
         window.addEventListener('message', ({data}) => { 
             if (data.type === 'SET_DATA') {
-                const { allSiblingHave, notAllSiblingHave, fromTemplate, createdFolderName } = data.payload;
-                setState({ allSiblingHave, notAllSiblingHave, fromTemplate, createdFolderName })
+                const { allSiblingHave, createdFolderName } = data.payload;
+                setState({ allSiblingHave, createdFolderName })
             }
         })
     </script>

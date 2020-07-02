@@ -1,4 +1,5 @@
 import * as path from 'path';
+import { isEqual } from 'lodash';
 import { RootState } from '../../reducer';
 import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
@@ -9,6 +10,10 @@ export function getAllFiles (state: RootState) {
 }
 
 export function getFilesInDirectory (directoryPath: string) {
+    if(directoryPath[directoryPath.length-1] !== path.sep){
+        directoryPath += path.sep;
+    }
+
     return (state: RootState) => getAllFiles(state)
         .filter(path => path.indexOf(directoryPath) === 0)
         .map(path => path.replace(directoryPath, ''));
@@ -19,6 +24,26 @@ export function getAllDirectory (state: RootState) {
         .map(filePath => path.dirname(filePath))
         .filter((value, index, self) => self.indexOf(value) === index);
 }
+
+export function getFirstDirectoryWithSameFiles (directoryPath: string){
+    return (state: RootState): null | string  => {
+        const searchFiles = getFilesInDirectory(directoryPath)(state).sort();
+        const directoryBasename = path.basename(directoryPath);
+        const searchDirectories = getAllDirectory(state).filter(filePath => {
+            return path.basename(filePath) !== directoryBasename;
+        } );
+
+        for (let i = 0; i < searchDirectories.length; i++) {
+            const searchDirectory = searchDirectories[i];
+            const files = getFilesInDirectory(searchDirectory)(state).sort();
+            if(isEqual(searchFiles, files)) {
+                return searchDirectory;
+            }
+        }
+        return null;
+    };
+}
+
 
 export function getSimilarDirectory (searchPath: string) {
     const searchInfo = getInfoAboutPath(searchPath);

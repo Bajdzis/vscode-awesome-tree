@@ -8,3 +8,5 @@ export const join = jest.fn((...args) => changeToUnixSlashes(pathNode.join(...ar
 export const dirname = jest.fn((args) => changeToUnixSlashes(pathNode.dirname(args)));
 
 export const basename = jest.fn((args) => changeToUnixSlashes(pathNode.basename(args)));
+
+export const sep = '/';
