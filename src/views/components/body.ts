@@ -3,10 +3,9 @@ import { renderFooter } from './footer';
 interface BodyProps {
     title: string;
     content: string;
-    scripts: string;
 }
 
-export const renderBody = ({title, content, scripts}: BodyProps) => `<div class="container">
+export const renderBody = ({title, content }: BodyProps) => `<div class="container">
     <h1>${title}</h1>
     ${content}
     ${renderFooter()}
@@ -24,5 +23,20 @@ export const renderBody = ({title, content, scripts}: BodyProps) => `<div class=
         refreshView(state);
         vscode.setState(state);
     };
-    ${scripts}
+
+    window.addEventListener('message', ({data}) => { 
+        if (data.type === 'setState') {
+            const { allSiblingHave, createdFolderName } = data.payload;
+            setState({ ...data.payload });
+            vscode.postMessage({
+                type: 'RENDER_STARTED',
+                payload: {
+                    value: createdFolderNameInput.value
+                }
+            });
+        } else if (data.type === 'render') {
+            const { allSiblingHave, createdFolderName } = data.payload;
+            setState({ ...data.payload })
+        }
+    })
 </script>`;
