@@ -5,6 +5,7 @@ import { createStore } from './store';
 import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam, createNewTemplate, renameDirectory } from './store/action/files/files';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { ActionCreator } from 'typescript-fsa';
+import { RenameFilesWebView } from './views/pages/renameFiles';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -73,6 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
         store.dispatch(renameDirectory.started(uri));
     }));
 
+
+    const abc = new RenameFilesWebView();
+    abc.show();
 }
 
 export function deactivate() {}

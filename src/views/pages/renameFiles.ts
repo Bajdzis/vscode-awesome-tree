@@ -1,21 +1,33 @@
-import { renderHtml } from '../components/html';
 import { renderBody } from '../components/body';
+import { WebView } from '../classes/WebView';
+import { WebViewInfoAboutRenameFiles } from '../../store/dependencies/directoryRename/directoryRename';
 
-export const renderRenameFiles = (state = {
-    createdFolderName: '',
-    allSiblingHave: [],
-    generated: false
-}) => {
+interface RenameFilesWebViewState {
+    allSiblingHave: WebViewInfoAboutRenameFiles[];
+    createdFolderName: string;
+    generated: boolean;
+}
 
-    const body = renderBody({
-        title: 'abc',
-        content: state.createdFolderName
-    });
+export class RenameFilesWebView extends WebView<RenameFilesWebViewState> {
+    constructor(){
+        super({
+            createdFolderName: '',
+            allSiblingHave: [],
+            generated: false
+        });
 
-    const html = renderHtml({
-        title: 'abc',
-        content: body
-    });
+        this.title = 'Rename directory name';
+    }
 
-    return html;
-};
+    render(state: RenameFilesWebViewState) {
+
+        return renderBody({
+            title: 'abc',
+            content: state.createdFolderName
+        });
+    }
+
+    onDidReceiveMessage(event: any) {
+        console.log(event);
+    }
+}

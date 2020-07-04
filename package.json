@@ -111,6 +111,7 @@
 		"glob": "^7.1.6",
 		"jest": "^26.0.1",
 		"pre-commit": "^1.2.2",
+		"raw-loader": "^4.0.1",
 		"standard-version": "^7.0.1",
 		"ts-jest": "^26.1.0",
 		"typescript": "^3.9.5",

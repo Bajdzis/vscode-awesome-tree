@@ -1,5 +1,6 @@
 import { renderFooter } from './footer';
 
+
 interface BodyProps {
     title: string;
     content: string;
@@ -12,31 +13,15 @@ export const renderBody = ({title, content }: BodyProps) => `<div class="contain
 </div>
 <script>
     const vscode = acquireVsCodeApi();
-    const initialState = {};
-    let state = vscode.getState() || initialState;
 
-    const setState = (newState) => {
-        state = {
-            ...state,
-            ...newState,
-        };
-        refreshView(state);
-        vscode.setState(state);
-    };
+    vscode.postMessage({
+        type: 'OPEN_WEB_VIEW',
+    });
 
     window.addEventListener('message', ({data}) => { 
-        if (data.type === 'setState') {
-            const { allSiblingHave, createdFolderName } = data.payload;
-            setState({ ...data.payload });
-            vscode.postMessage({
-                type: 'RENDER_STARTED',
-                payload: {
-                    value: createdFolderNameInput.value
-                }
-            });
-        } else if (data.type === 'render') {
-            const { allSiblingHave, createdFolderName } = data.payload;
-            setState({ ...data.payload })
+        if (data.type === 'render') {
+            const { html } = data.payload;
+            document.innerHTML = html;
         }
     })
 </script>`;
