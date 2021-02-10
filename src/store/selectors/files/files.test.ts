@@ -1,7 +1,7 @@
 jest.mock('path');
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
 import { RootState } from '../../reducer';
-import { getAllDirectory, getFilesInDirectory, getFirstDirectoryWithSameFiles, getGitIgnoreFiles, getSimilarDirectory } from './files';
+import { getAllDirectory, getFilesInDirectory, getFirstDirectoryWithSameFiles, findGitIgnoreFileBySomeFilePathInRepo, getSimilarDirectory } from './files';
 
 describe('selectors / files', () => {
 
@@ -102,6 +102,7 @@ describe('selectors / files', () => {
             '/home/path/project/src/tests/content',
             '/home/path/project/src/tests/header',
             '/home/path/project/src',
+            '/home/path/project',
         ]);
     });
 
@@ -126,10 +127,17 @@ describe('selectors / files', () => {
         expect(similarPaths).toEqual(null);
     });
 
-    it('getGitIgnoreFiles should return path to gitignore file', () => {
-        const selector = getGitIgnoreFiles('/home/path/project/src/component/content/hooks/useContentStyle.js');
+    it('findGitIgnoreFileBySomeFilePathInRepo should return path to gitignore file', () => {
+        const selector = findGitIgnoreFileBySomeFilePathInRepo('/home/path/project/src/component/content/hooks/useContentStyle.js');
         const similarPaths = selector(mockState as any as RootState);
 
-        expect(similarPaths).toEqual('/home/path/project/src/component/content/hooks/useContentStyle.js');
+        expect(similarPaths).toEqual('/home/path/project/.gitignore');
+    });
+
+    it('findGitIgnoreFileBySomeFilePathInRepo should return null when .gitignore not exist', () => {
+        const selector = findGitIgnoreFileBySomeFilePathInRepo('/home/path/otherProject/someFile.js');
+        const similarPaths = selector(mockState as any as RootState);
+
+        expect(similarPaths).toEqual(null);
     });
 });
