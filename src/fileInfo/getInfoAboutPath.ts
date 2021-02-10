@@ -1,8 +1,9 @@
-import { WordsInfo, getInfoWords } from './getInfoWords';
 import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
+import { getInfoWords, WordsInfo } from './getInfoWords';
 
 export interface PathInfo {
     path: string;
+    parts: string[];
     pathParts: WordsInfo[];
     isFile: boolean;
     extension: string;
@@ -17,6 +18,7 @@ export function getInfoAboutPath(path: string): PathInfo {
 
     return {
         path,
+        parts,
         pathParts,
         isFile: result !== null,
         extension: result && result.groups && result.groups.extension || ''

@@ -1,9 +1,32 @@
-import * as path from 'path';
 import { isEqual } from 'lodash';
-import { RootState } from '../../reducer';
+import * as path from 'path';
 import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
+import { changeToUnixSlashes } from '../../../strings/changeToUnixSlashes';
+import { RootState } from '../../reducer';
+
+
+export function getGitIgnoreFiles (pathScopeSearch: string) {
+    return (state: RootState) => {
+
+        const parts = changeToUnixSlashes(pathScopeSearch).replace(/^\/|\/$/g,'').split('/');
+
+        while (parts.pop()) {
+            const directoryPath = parts.join('/');
+            const files = getFilesInDirectory(directoryPath)(state);
+
+            const gitIgnorePath = files.find(file => file.match(/\.gitignore$/));
+
+            if (gitIgnorePath) {
+                return `${directoryPath}/${gitIgnorePath}`;
+            }
+        }
+        return null;
+
+    };
+}
+
 
 export function getAllFiles (state: RootState) {
     return Object.keys(state.files.pathToInfo);

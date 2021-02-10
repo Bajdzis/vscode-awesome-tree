@@ -1,7 +1,7 @@
 jest.mock('path');
-import { getSimilarDirectory, getFirstDirectoryWithSameFiles, getFilesInDirectory, getAllDirectory } from './files';
-import { RootState } from '../../reducer';
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
+import { RootState } from '../../reducer';
+import { getAllDirectory, getFilesInDirectory, getFirstDirectoryWithSameFiles, getGitIgnoreFiles, getSimilarDirectory } from './files';
 
 describe('selectors / files', () => {
 
@@ -27,6 +27,7 @@ describe('selectors / files', () => {
                 '/home/path/project/src/app.js',
                 '/home/path/project/src/app.css',
                 '/home/path/project/src/app.html',
+                '/home/path/project/.gitignore',
             ].reduce((pathToInfo, next) => {
                 pathToInfo[next] = getInfoAboutPath(next);
                 return pathToInfo;
@@ -123,5 +124,12 @@ describe('selectors / files', () => {
         const similarPaths = selector(mockState as any as RootState);
 
         expect(similarPaths).toEqual(null);
+    });
+
+    it('getGitIgnoreFiles should return path to gitignore file', () => {
+        const selector = getGitIgnoreFiles('/home/path/project/src/component/content/hooks/useContentStyle.js');
+        const similarPaths = selector(mockState as any as RootState);
+
+        expect(similarPaths).toEqual('/home/path/project/src/component/content/hooks/useContentStyle.js');
     });
 });
