@@ -75,7 +75,7 @@
 			"properties": {
 				"awesomeTree.excludeWatchRegExp": {
 					"type": "string",
-					"default": "bower_components|node_modules|\\.git|\\.svn|\\.hg|\\.DS_Store",
+					"default": "bower_components|node_modules|\\.svn|\\.hg|\\.DS_Store",
 					"description": "Regular expressions for exclude watch files."
 				}
 			}
@@ -117,7 +117,9 @@
 		"vscode-test": "^1.4.0"
 	},
 	"dependencies": {
+		"@types/parse-gitignore": "^1.0.0",
 		"lodash": "^4.17.15",
+		"parse-gitignore": "^1.0.1",
 		"redux": "^4.0.5",
 		"redux-observable": "^1.2.0",
 		"rxjs": "^6.5.5",

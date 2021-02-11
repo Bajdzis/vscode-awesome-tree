@@ -1,27 +1,29 @@
-import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as parseGitignore from 'parse-gitignore';
 import * as path from 'path';
-import { merge, Observable } from 'rxjs';
-import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
-import { delay, filter, tap, ignoreElements, mergeMap, map, bufferTime } from 'rxjs/operators';
+import { from, merge, Observable } from 'rxjs';
+import { bufferTime, delay, filter, ignoreElements, map, mergeMap, tap } from 'rxjs/operators';
+import { Action } from 'typescript-fsa';
+import * as vscode from 'vscode';
 import { RootEpic } from '..';
-import { renameCopyDirectory, onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFileContentBySibling, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel, renameDirectory } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
-import { getMatchingTemplate } from '../../selectors/templates/templates';
-import { createDocument } from '../../../fileSystem/createDocument';
-import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
-import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
-import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
-import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
-import { getSimilarDirectoryInfo, getFirstDirectoryWithSameFiles, getFilesInDirectory } from '../../selectors/files/files';
-import { generateStarted, generateFinish } from '../../action/lock/lock';
-import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
+import { createDocument } from '../../../fileSystem/createDocument';
 import { deleteDocument } from '../../../fileSystem/deleteDocument';
+import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
+import { getRelativePath } from '../../../fileSystem/getRelativePath';
+import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
+import { createFileContentCancel, createFileContentStarted, CreateFileContentStartedParam, createFilesInNewDirectory, fillFileContentBySibling, fillFileContentStarted, onDidChange, onDidCreate, onRegisterWorkspace, OnRegisterWorkspaceParam, renameCopyDirectory, renameDirectory, updateGitIgnoreFile, WatchFileSystemParam } from '../../action/files/files';
+import { generateFinish, generateStarted } from '../../action/lock/lock';
+import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
+import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
+import { getFilesInDirectory, getFirstDirectoryWithSameFiles, getSimilarDirectoryInfo } from '../../selectors/files/files';
+import { getMatchingTemplate } from '../../selectors/templates/templates';
 
 type InputAction =
-    Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
+    Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam> | Action<OnRegisterWorkspaceParam>;
 
 export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outputChannel, files, directoryRename }) =>
     merge(
@@ -214,8 +216,49 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
             }))
         ),
         action$.pipe(
+            ofType<InputAction, Action<WatchFileSystemParam>>(onDidChange.type),
+            filter(({payload}: Action<WatchFileSystemParam>) => payload.type === 'file' && !!payload.uri.path.match(/\.gitignore$/)),
+            mergeMap(({payload}: Action<WatchFileSystemParam>) => {
+                const path = `${payload.uri.fsPath}`;
+                return new Promise<string[]>((resolve, reject) => {
+                    fs.readFile(path, (err, buffer) => {
+                        if(err) {
+                            return reject(err);
+                        }
+                        resolve(parseGitignore(buffer.toString()));
+                    });
+                }).then(lines => updateGitIgnoreFile({
+                    lines,
+                    path 
+                }));
+            }),
+        ),
+        action$.pipe(
+            ofType<InputAction, Action<OnRegisterWorkspaceParam>>(onRegisterWorkspace.type),
+            mergeMap(({payload}: Action<OnRegisterWorkspaceParam>) => {
+                return payload.filePaths.filter(path => !!path.match(/\.gitignore$/)).map(path => from(new Promise<string[]>((resolve, reject) => {
+                    fs.readFile(path, (err, buffer) => {
+                        if(err) {
+                            return reject(err);
+                        }
+                        resolve(parseGitignore(buffer.toString()));
+                    });
+                }).then(lines => updateGitIgnoreFile({
+                    lines,
+                    path 
+                }))));
+            }),
+            mergeMap(result => result),
+        ),
+        action$.pipe(
             ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
             filter(({ payload }: Action<WatchFileSystemParam>) => config.canUseThisFile(payload.uri)),
+            // filter(({ payload }: Action<WatchFileSystemParam>) => {
+            //     const gitIgnore = findGitIgnoreFileBySomeFilePathInRepo(payload.uri.fsPath)(state$.value);
+
+            //     console.log({gitIgnore});
+            //     return true;
+            // }),
             filter(() => !state$.value.lock.locked),
             delay(10),
             mergeMap(({ payload }: Action<WatchFileSystemParam>) => {
