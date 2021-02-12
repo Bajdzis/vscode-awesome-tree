@@ -1,9 +1,7 @@
-import * as fs from 'fs';
-import * as parseGitignore from 'parse-gitignore';
 import * as path from 'path';
 import { ofType } from 'redux-observable';
-import { from, merge, Observable } from 'rxjs';
-import { bufferTime, delay, filter, ignoreElements, map, mergeMap, tap } from 'rxjs/operators';
+import { merge } from 'rxjs';
+import { filter, ignoreElements, map, mergeMap, tap } from 'rxjs/operators';
 import { Action } from 'typescript-fsa';
 import * as vscode from 'vscode';
 import { RootEpic } from '..';
@@ -11,21 +9,18 @@ import { reportBug } from '../../../errors/reportBug';
 import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { createDocument } from '../../../fileSystem/createDocument';
-import { deleteDocument } from '../../../fileSystem/deleteDocument';
 import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
-import { createFileContentCancel, createFileContentStarted, CreateFileContentStartedParam, createFilesInNewDirectory, fillFileContentBySibling, fillFileContentStarted, onDidChange, onDidCreate, onRegisterWorkspace, OnRegisterWorkspaceParam, renameCopyDirectory, renameDirectory, updateGitIgnoreFile, WatchFileSystemParam } from '../../action/files/files';
-import { generateFinish, generateStarted } from '../../action/lock/lock';
-import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
+import { createFileContentCancel, createFileContentStarted, CreateFileContentStartedParam, createFilesInNewDirectory, fillFileContentBySibling, fillFileContentStarted, OnRegisterWorkspaceParam, WatchFileSystemParam } from '../../action/files/files';
 import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
-import { getFilesInDirectory, getFirstDirectoryWithSameFiles, getSimilarDirectoryInfo } from '../../selectors/files/files';
+import { getSimilarDirectoryInfo } from '../../selectors/files/files';
 import { getMatchingTemplate } from '../../selectors/templates/templates';
 
 type InputAction =
     Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam> | Action<OnRegisterWorkspaceParam>;
 
-export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outputChannel, files, directoryRename }) =>
+export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files }) =>
     merge(
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentStarted.type),
@@ -154,128 +149,5 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
             }),
             ignoreElements()
         ),
-        action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(renameCopyDirectory.type),
-            bufferTime(300),
-            filter(events => !!events.length),
-            map((actions) => actions.reduce((acc, next) => {
-                if(acc.payload.fsPath.length > next.payload.fsPath.length) {
-                    return next;
-                }
-                return acc;
-            }, actions[0])),
-            filter(({ payload }) => !!getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)),
-            mergeMap(async ({ payload }) => {
-
-                const parentDir = path.dirname(payload.fsPath);
-                const fileName = path.basename(payload.fsPath);
-
-                const answersQuestion = [
-                    'Yes, rename directory',
-                    'No, thanks'
-                ];
-
-                const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to rename directory '${fileName}' from "${parentDir}"?`,
-                    ...answersQuestion
-                );
-
-                if (resultQuestion === answersQuestion[0]) {
-                    return renameDirectory.started(payload);
-                }
-
-                return [];
-
-            })
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(renameDirectory.started.type),
-            mergeMap(async ({payload}) => {
-                const dirFiles = getFilesInDirectory(payload.fsPath)(state$.value);
-                renameDirectory.started(payload);
-                return await directoryRename.showWebView(payload, dirFiles);
-            }),
-            mergeMap((files: WebViewInfoAboutRenameFiles[]) => new Observable<Action<any>>((observer) => {
-                observer.next(generateStarted());
-
-                const filesOperation = async () => {
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        await createDocument(file.filePath, file.content).then(() => deleteDocument(file.filePathFrom));
-                    }
-                };
-  
-                filesOperation().catch((err)=> {
-                    observer.error(err);
-                }).finally(() => {
-                    setTimeout(() => {
-                        observer.next(generateFinish());
-                        observer.complete();
-                    }, 1500);
-                });
-            }))
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<WatchFileSystemParam>>(onDidChange.type),
-            filter(({payload}: Action<WatchFileSystemParam>) => payload.type === 'file' && !!payload.uri.path.match(/\.gitignore$/)),
-            mergeMap(({payload}: Action<WatchFileSystemParam>) => {
-                const path = `${payload.uri.fsPath}`;
-                return new Promise<string[]>((resolve, reject) => {
-                    fs.readFile(path, (err, buffer) => {
-                        if(err) {
-                            return reject(err);
-                        }
-                        resolve(parseGitignore(buffer.toString()));
-                    });
-                }).then(lines => updateGitIgnoreFile({
-                    lines,
-                    path 
-                }));
-            }),
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<OnRegisterWorkspaceParam>>(onRegisterWorkspace.type),
-            mergeMap(({payload}: Action<OnRegisterWorkspaceParam>) => {
-                return payload.filePaths.filter(path => !!path.match(/\.gitignore$/)).map(path => from(new Promise<string[]>((resolve, reject) => {
-                    fs.readFile(path, (err, buffer) => {
-                        if(err) {
-                            return reject(err);
-                        }
-                        resolve(parseGitignore(buffer.toString()));
-                    });
-                }).then(lines => updateGitIgnoreFile({
-                    lines,
-                    path 
-                }))));
-            }),
-            mergeMap(result => result),
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
-            filter(({ payload }: Action<WatchFileSystemParam>) => config.canUseThisFile(payload.uri)),
-            // filter(({ payload }: Action<WatchFileSystemParam>) => {
-            //     const gitIgnore = findGitIgnoreFileBySomeFilePathInRepo(payload.uri.fsPath)(state$.value);
-
-            //     console.log({gitIgnore});
-            //     return true;
-            // }),
-            filter(() => !state$.value.lock.locked),
-            delay(10),
-            mergeMap(({ payload }: Action<WatchFileSystemParam>) => {
-                // when directory or file is not empty probably change name parent directory
-                if (files.isEmptyDirectory(payload.uri, outputChannel)) {
-                    return [createFilesInNewDirectory(payload.uri)];
-                }
-
-                if (files.isEmptyFile(payload.uri, outputChannel)) {
-                    return [fillFileContentStarted(payload.uri)];
-                }
-
-                if (files.isDirectory(payload.uri, outputChannel)) {
-                    return [renameCopyDirectory(payload.uri)];
-                }
-
-                return [];
-            }),
-        )
+      
     );
