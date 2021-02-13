@@ -25,13 +25,13 @@ const config = {
         vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     },
     resolve: { // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-        extensions: ['.ts', '.js']
+        extensions: ['.tsx', '.ts', '.js']
     },
     plugins: [
     ],
     module: {
         rules: [{
-            test: /\.ts$/,
+            test: /\.tsx?$/,
             exclude: /node_modules/,
             use:  'ts-loader'
         }]
@@ -41,4 +41,40 @@ const config = {
     }
 };
 
-module.exports = config;
+/**@type {import('webpack').Configuration}*/
+const configReactView = {
+    target: 'web',
+
+    entry: {
+        reactViewsDebugger: './src/reactViews/debugger.tsx',
+        // shared: ['react', 'react-dom'], //, 'redux', 'react-redux'],
+    },
+    output: { 
+        path: path.resolve(__dirname, 'out'),
+        filename: '[name].js',
+    },
+    devtool: 'source-map',
+    externals: {
+        vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
+    },
+    resolve: { // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+        extensions: ['.tsx', '.ts', '.js']
+    },
+    plugins: [
+    ],
+    module: {
+        rules: [{
+            test: /\.tsx?$/,
+            exclude: /node_modules/,
+            use:  'ts-loader'
+        },{
+            test: /\.css$/i,
+            use: ['style-loader', 'css-loader'],
+        }]
+    },
+    optimization: {
+        minimize: true, 
+    }
+};
+
+module.exports = [config, configReactView];
