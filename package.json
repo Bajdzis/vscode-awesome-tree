@@ -75,8 +75,26 @@
 			"properties": {
 				"awesomeTree.excludeWatchRegExp": {
 					"type": "string",
-					"default": "bower_components|node_modules|\\.git|\\.svn|\\.hg|\\.DS_Store",
-					"description": "Regular expressions for exclude watch files."
+					"default": "bower_components|node_modules|(\\.git[\\\\|\\/])|\\.svn|\\.hg|\\.DS_Store",
+					"description": "Regular expressions for exclude watch files.",
+					"deprecationMessage": "Deprecated: Please use awesomeTree.ignorePathsGlob instead."
+				},
+				"awesomeTree.excludeByGitIgnoreFile": {
+					"type": "boolean",
+					"default": true,
+					"description": "When set to true extension exclude watch files by .gitingore file content"
+				},
+				"awesomeTree.ignorePathsGlob": {
+					"type": "array",
+					"description": "Array globs with exclude path.",
+					"default": [
+						"bower_components/**",
+						"node_modules/**",
+						".git/**",
+						".svn",
+						".hg",
+						".DS_Store"
+					]
 				}
 			}
 		}
@@ -117,7 +135,11 @@
 		"vscode-test": "^1.4.0"
 	},
 	"dependencies": {
+		"@types/minimatch": "^3.0.3",
+		"@types/parse-gitignore": "^1.0.0",
 		"lodash": "^4.17.15",
+		"minimatch": "^3.0.4",
+		"parse-gitignore": "^1.0.1",
 		"redux": "^4.0.5",
 		"redux-observable": "^1.2.0",
 		"rxjs": "^6.5.5",

@@ -1,10 +1,10 @@
 import * as redux from 'redux';
-import * as vscode from 'vscode';
-import { rootReducer } from './reducer';
 import { createEpicMiddleware } from 'redux-observable';
-import { rootEpic } from './epic';
+import * as vscode from 'vscode';
 import { createDependency } from './dependencies';
+import { rootEpic } from './epic';
 import { loggerEpic } from './epic/logger/logger';
+import { rootReducer } from './reducer';
 
 export const createStore = (context: vscode.ExtensionContext) => {
     const dependencies = createDependency(context);

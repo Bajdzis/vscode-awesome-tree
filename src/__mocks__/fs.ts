@@ -1,30 +1,35 @@
 import * as fs from 'fs';
 
 const mockFiles: { [key:string]: string } = {
-    'C:/site/nav/nav.js': 'function NavComponent () {',
-    'C:/site/nav/nav.css': '.nav { margin:5px; }',
-    'C:/site/btn/btn.js': 'function BtnComponent () {',
-    'C:/site/btn/btn.css': '.btn { margin:5px; }',
+    'C:/site/components/nav/nav.js': 'function NavComponent () {',
+    'C:/site/components/nav/nav.css': '.nav { margin:5px; }',
+    'C:/site/components/btn/btn.js': 'function BtnComponent () {',
+    'C:/site/components/btn/btn.css': '.btn { margin:5px; }',
     'C:/site/action/firstAction.js': 'const first = new Action();',
     'C:/site/action/importantAction.js': 'const important = new Action();',
     'C:/site/action/createAction.js': ''
 };
 
 const mockDirectory = [
-    'C:/site/nav', 'C:/site/btn', 'C:/site/new', 'C:/site/action'
+    'C:/site/components', 'C:/site/components/nav', 'C:/site/components/btn', 'C:/site/components/new', 'C:/site/action'
 ];
 
 export const readdirSync = jest.fn((path: string) => {
-    if (path === 'C:/site') {
+    const normalize = path.replace(/\\/g,'/');
+
+    if (normalize === 'C:/site') {
+        return ['components', 'action'];
+    }
+    if (normalize === 'C:/site/components') {
         return ['nav', 'btn'];
     }
-    if (path === 'C:/site/action') {
+    if (normalize === 'C:/site/action') {
         return ['firstAction.js', 'importantAction.js', 'createAction.js'];
     }
-    if (path === 'C:/site/nav') {
+    if (normalize === 'C:/site/components/nav') {
         return ['nav.js', 'nav.css'];
     }
-    if (path === 'C:/site/btn') {
+    if (normalize === 'C:/site/components/btn') {
         return ['btn.js', 'btn.css'];
     }
     return [];

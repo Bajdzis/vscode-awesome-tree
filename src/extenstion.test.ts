@@ -28,20 +28,6 @@ describe('extenstion', () => {
         const createSystemWatcher = vscode.workspace.createFileSystemWatcher as jest.Mock;
         fsWriteFile.mockClear();
         createSystemWatcher.mockReturnValueOnce(mockWatcher);
-        // @ts-ignore
-        vscode.workspace.onDidChangeWorkspaceFolders = jest.fn();
-        const folder: vscode.WorkspaceFolder = {
-            index: 0,
-            name: 'site',
-            uri: {
-                authority: 'file',
-                fsPath: 'C:/site',
-            } as vscode.Uri
-        };
-        // @ts-ignore
-        vscode.workspace.workspaceFolders = [
-            folder
-        ];
     });
 
     it('should start listen for create file', () => {
@@ -54,7 +40,7 @@ describe('extenstion', () => {
 
     it('should create files when directory is created', (done) => {
         const createdItemUri: Partial<vscode.Uri> = {
-            fsPath:'C:/site/new',
+            fsPath:'C:/site/components/new',
         };
         (vscode.window.showInformationMessage as jest.Mock).mockResolvedValue('Yes, generate files');
 
@@ -64,9 +50,9 @@ describe('extenstion', () => {
             callback(createdItemUri);
             setTimeout(() => {
                 expect(fsWriteFile).toHaveBeenCalledTimes(2);
-                expect(fsWriteFile.mock.calls[0][0]).toStrictEqual('C:/site/new/new.js');
+                expect(fsWriteFile.mock.calls[0][0]).toStrictEqual('C:/site/components/new/new.js');
                 expect(fsWriteFile.mock.calls[0][1]).toStrictEqual('function NewComponent () {');
-                expect(fsWriteFile.mock.calls[1][0]).toStrictEqual('C:/site/new/new.css');
+                expect(fsWriteFile.mock.calls[1][0]).toStrictEqual('C:/site/components/new/new.css');
                 expect(fsWriteFile.mock.calls[1][1]).toStrictEqual('.new { margin:5px; }');
                 done(); 
             }, 20);

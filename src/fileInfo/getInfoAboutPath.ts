@@ -1,5 +1,5 @@
-import { WordsInfo, getInfoWords } from './getInfoWords';
 import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
+import { getInfoWords, WordsInfo } from './getInfoWords';
 
 export interface PathInfo {
     path: string;

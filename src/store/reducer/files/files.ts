@@ -1,14 +1,16 @@
 import { reducerWithInitialState } from 'typescript-fsa-reducers';
-import { onRegisterWorkspace, onDidDelete, onDidCreate } from '../../action/files/files';
+import { onRegisterWorkspace, onDidDelete, onDidCreate, updateGitIgnoreFile } from '../../action/files/files';
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 
 export interface FilesState {
     pathToInfo: { [key: string]: PathInfo }
+    gitIgnoreCache: {[patch: string]: string[]}
 }
 
 const INITIAL_STATE: FilesState = {
-    pathToInfo: {}
+    pathToInfo: {},
+    gitIgnoreCache: {}
 };
 
 export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
@@ -45,6 +47,15 @@ export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
             pathToInfo: {
                 ...state.pathToInfo,
                 [payload.uri.fsPath]: info
+            }
+        };
+    })
+    .case(updateGitIgnoreFile, (state: FilesState, payload): FilesState  => {
+        return {
+            ...state,
+            gitIgnoreCache: {
+                ...state.gitIgnoreCache,
+                [payload.path]: payload.lines
             }
         };
     });

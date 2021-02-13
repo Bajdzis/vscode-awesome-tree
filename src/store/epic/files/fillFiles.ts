@@ -1,29 +1,26 @@
-import * as vscode from 'vscode';
 import * as path from 'path';
-import { merge, Observable } from 'rxjs';
-import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
-import { delay, filter, tap, ignoreElements, mergeMap, map, bufferTime } from 'rxjs/operators';
+import { merge } from 'rxjs';
+import { filter, ignoreElements, map, mergeMap, tap } from 'rxjs/operators';
+import { Action } from 'typescript-fsa';
+import * as vscode from 'vscode';
 import { RootEpic } from '..';
-import { renameCopyDirectory, onDidCreate, fillFileContentStarted, createFilesInNewDirectory, fillFileContentBySibling, WatchFileSystemParam, createFileContentStarted, CreateFileContentStartedParam, createFileContentCancel, renameDirectory } from '../../action/files/files';
 import { reportBug } from '../../../errors/reportBug';
-import { getMatchingTemplate } from '../../selectors/templates/templates';
-import { createDocument } from '../../../fileSystem/createDocument';
-import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
+import { createDocument } from '../../../fileSystem/createDocument';
 import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
+import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
+import { createFileContentCancel, createFileContentStarted, CreateFileContentStartedParam, createFilesInNewDirectory, fillFileContentBySibling, fillFileContentStarted, OnRegisterWorkspaceParam, WatchFileSystemParam } from '../../action/files/files';
 import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
-import { getSimilarDirectoryInfo, getFirstDirectoryWithSameFiles, getFilesInDirectory } from '../../selectors/files/files';
-import { generateStarted, generateFinish } from '../../action/lock/lock';
-import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
-import { deleteDocument } from '../../../fileSystem/deleteDocument';
+import { getSimilarDirectoryInfo } from '../../selectors/files/files';
+import { getMatchingTemplate } from '../../selectors/templates/templates';
 
 type InputAction =
-    Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam>;
+    Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam> | Action<OnRegisterWorkspaceParam>;
 
-export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outputChannel, files, directoryRename }) =>
+export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files }) =>
     merge(
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentStarted.type),
@@ -152,87 +149,5 @@ export const filesEpic: RootEpic<InputAction> = (action$, state$, { config, outp
             }),
             ignoreElements()
         ),
-        action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(renameCopyDirectory.type),
-            bufferTime(300),
-            filter(events => !!events.length),
-            map((actions) => actions.reduce((acc, next) => {
-                if(acc.payload.fsPath.length > next.payload.fsPath.length) {
-                    return next;
-                }
-                return acc;
-            }, actions[0])),
-            filter(({ payload }) => !!getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)),
-            mergeMap(async ({ payload }) => {
-
-                const parentDir = path.dirname(payload.fsPath);
-                const fileName = path.basename(payload.fsPath);
-
-                const answersQuestion = [
-                    'Yes, rename directory',
-                    'No, thanks'
-                ];
-
-                const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to rename directory '${fileName}' from "${parentDir}"?`,
-                    ...answersQuestion
-                );
-
-                if (resultQuestion === answersQuestion[0]) {
-                    return renameDirectory.started(payload);
-                }
-
-                return [];
-
-            })
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(renameDirectory.started.type),
-            mergeMap(async ({payload}) => {
-                const dirFiles = getFilesInDirectory(payload.fsPath)(state$.value);
-                renameDirectory.started(payload);
-                return await directoryRename.showWebView(payload, dirFiles);
-            }),
-            mergeMap((files: WebViewInfoAboutRenameFiles[]) => new Observable<Action<any>>((observer) => {
-                observer.next(generateStarted());
-
-                const filesOperation = async () => {
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        await createDocument(file.filePath, file.content).then(() => deleteDocument(file.filePathFrom));
-                    }
-                };
-  
-                filesOperation().catch((err)=> {
-                    observer.error(err);
-                }).finally(() => {
-                    setTimeout(() => {
-                        observer.next(generateFinish());
-                        observer.complete();
-                    }, 1500);
-                });
-            }))
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<WatchFileSystemParam>>(onDidCreate.type),
-            filter(({ payload }: Action<WatchFileSystemParam>) => config.canUseThisFile(payload.uri)),
-            filter(() => !state$.value.lock.locked),
-            delay(10),
-            mergeMap(({ payload }: Action<WatchFileSystemParam>) => {
-                // when directory or file is not empty probably change name parent directory
-                if (files.isEmptyDirectory(payload.uri, outputChannel)) {
-                    return [createFilesInNewDirectory(payload.uri)];
-                }
-
-                if (files.isEmptyFile(payload.uri, outputChannel)) {
-                    return [fillFileContentStarted(payload.uri)];
-                }
-
-                if (files.isDirectory(payload.uri, outputChannel)) {
-                    return [renameCopyDirectory(payload.uri)];
-                }
-
-                return [];
-            }),
-        )
+      
     );

@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { Config } from './config/config';
+import { DirectoryRename } from './directoryRename/directoryRename';
 import { Files } from './files/files';
 import { WebView } from './webView/webView';
-import { DirectoryRename } from './directoryRename/directoryRename';
 
 export const createDependency = (context: vscode.ExtensionContext): RootDependency => {
     const outputChannel = vscode.window.createOutputChannel('Awesome tree');
