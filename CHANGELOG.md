@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.4.0...v1.5.0) (2021-02-13)
+
+
+### Features
+
+* ignore files by gitignore content and globs ([7b6844b](https://github.com/Bajdzis/vscode-awesome-tree/commit/7b6844bc544b02c69ef8f02f6a0d8ab699c4adfb))
+
 ## [1.4.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.3.1...v1.4.0) (2020-07-02)
 
 
