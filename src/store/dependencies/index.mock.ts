@@ -9,11 +9,10 @@ type RootDependencyMocked = {
     [key in keyof RootDependency]: MockService<Extract<keyof RootDependency[key],string>>
 }
 
-export const createMockDependency = (): RootDependency => {
+export const createMockDependency = (): RootDependencyMocked => {
     const dependency: RootDependencyMocked = {
         config: {
             canUseThisFile: jest.fn(),
-            getExcludeWatchRegExp: jest.fn(),
             getIgnorePathsGlob: jest.fn(),
             shouldExcludeByGitIgnoreFile: jest.fn(),
         },
@@ -50,6 +49,6 @@ export const createMockDependency = (): RootDependency => {
             show: jest.fn(),
         }
     };
-    return dependency as any as RootDependency;
+    return dependency;
 };
 

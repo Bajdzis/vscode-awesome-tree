@@ -1,12 +1,13 @@
 jest.mock('path');
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
 import { RootState } from '../../reducer';
-import { getAllDirectory, getFilesInDirectory, getFirstDirectoryWithSameFiles, findGitIgnoreFileBySomeFilePathInRepo, getSimilarDirectory } from './files';
+import { findGitIgnoreFileBySomeFilePathInRepo, getAllDirectory, getFilesInDirectory, getFirstDirectoryWithSameFiles, getSimilarDirectory } from './files';
 
 describe('selectors / files', () => {
 
     const mockState: Partial<RootState> = {
         files: {
+            gitIgnoreCache: {},
             pathToInfo: [
                 '/home/path/project/src/component/header/header.js',
                 '/home/path/project/src/component/header/header.css',

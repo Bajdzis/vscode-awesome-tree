@@ -1,10 +1,10 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { findWorkspacePath } from './commands/saveAsTemplate';
-import { createStore } from './store';
-import { onDidCreate, onDidDelete, onDidChange, onRegisterWorkspace, WatchFileSystemParam, createNewTemplate, renameDirectory } from './store/action/files/files';
-import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { ActionCreator } from 'typescript-fsa';
+import * as vscode from 'vscode';
+import { findWorkspacePath } from './commands/saveAsTemplate';
+import { getAllFilesPath } from './fileSystem/getAllFilesPath';
+import { createStore } from './store';
+import { createNewTemplate, onDidChange, onDidCreate, onDidDelete, onRegisterWorkspace, renameDirectory, WatchFileSystemParam } from './store/action/files/files';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
         const { workspaceFolders } = vscode.workspace;
         workspaceFolders && workspaceFolders.forEach(({ uri }) => {
             const workspacePath = uri.fsPath;
-            const filePaths = getAllFilesPath(workspacePath, config.getExcludeWatchRegExp());
+            const filePaths = getAllFilesPath(workspacePath, config.getIgnorePathsGlob());
 
             store.dispatch(onRegisterWorkspace({
                 filePaths,

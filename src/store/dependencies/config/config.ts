@@ -10,13 +10,6 @@ export class Config {
         this.outputChannel = outputChannel;
     }
 
-    getExcludeWatchRegExp(): RegExp {
-        const defaultSettingValue = 'bower_components|node_modules|\\.svn|\\.hg|\\.DS_Store';
-        const settingValue = this.settingProvider.get<string>('excludeWatchRegExp', defaultSettingValue);
-    
-        return new RegExp(settingValue);
-    }
-
     shouldExcludeByGitIgnoreFile() : boolean {
         const defaultSettingValue = true;
         const settingValue = this.settingProvider.get<boolean>('excludeByGitIgnoreFile', defaultSettingValue);
@@ -47,11 +40,6 @@ export class Config {
                 this.outputChannel.appendLine(msg);
                 return false;
             }
-        }
-        if (this.getExcludeWatchRegExp().exec(uri.fsPath) !== null) {
-            const msg = `File '${uri.fsPath}' is exclude in setting! Check 'awesomeTree.excludeWatchRegExp' setting.`;
-            this.outputChannel.appendLine(msg);
-            return false;
         }
         return true;
     }
