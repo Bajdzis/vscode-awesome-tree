@@ -1,7 +1,12 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
+import { WebViewInfoAboutRenameFiles } from '../../../store/dependencies/directoryRename/directoryRename';
+import { Button } from '../../components/Button/Button';
+import { Container } from '../../components/Container/Container';
 import { Footer } from '../../components/Footer/Footer';
 import { Input } from '../../components/Input/Input';
+import { Panel } from '../../components/Panel/Panel';
+import { useVscodeState } from '../../hooks/useVscodeState';
 import { changeNameAction } from './actions/action';
 
 declare global {
@@ -16,7 +21,7 @@ declare global {
 
 interface RenameFilesState {
     createdFolderName: string;
-    allSiblingHave: any[];
+    allSiblingHave: WebViewInfoAboutRenameFiles[];
     generated: boolean;
 }
 
@@ -27,128 +32,104 @@ const initialState: RenameFilesState = {
     allSiblingHave: [],
     generated: false
 };
+interface HeaderProps {
+    title: string;
+    count: number;
+}
 
-let state = vscode.getState() || initialState;
+const Header: React.FC<HeaderProps> = ({title, count}) => {
 
-const setState = (newState) => {
-    state = {
-        ...state,
-        ...newState,
-    };
-    refreshView(state);
-    vscode.setState(state);
-};
-const createdFolderNameInput = document.querySelector('#createdFolderName');
+    const { setState } = useVscodeState<RenameFilesState>(initialState);
 
-createdFolderNameInput.addEventListener('input', e => {
-    const abc = changeNameAction({
-        value: ''
-    });
-
-    vscode.postMessage({
-        type: 'CHANGE_NAME',
-        payload: {
-            value: createdFolderNameInput.value
-        }
-    });
-});
-
-const renderFile = ({ name, title, value, code }) => {
-    const fieldTemplate = document.querySelector(state.generated ? '#field-generated-template' : '#field-template');
-    const html = fieldTemplate.innerHTML;
-    const span = document.createElement('span');
-    span.innerText = code;
-    const escapedCode = span.innerHTML;
-
-    const fragment = document.createElement('template');
-    fragment.innerHTML = html
-        .replace(/\{\{title\}\}/gi, title)
-        .replace(/\{\{code\}\}/gi, escapedCode);
-
-    return fragment.content;
+    return <h2 style={{display:'flex',justifyContent: 'space-between'}}>
+        <span>{title} <span>( {count} )</span></span>
+        <button className="button button--primary" data-event="generate-all"></button>
+        <Button onClick={() => {
+            vscode.postMessage({
+                type: 'GENERATE_ALL'
+            });
+            setState({
+                generated: true
+            });
+        }}>Rename all</Button>
+    </h2>;
 };
 
-const renderTitle = ({ title, count }) => {
-    const fieldTemplate = document.querySelector('#title-template');
-    const html = fieldTemplate.innerHTML;
-    const fragment = document.createElement('template');
-    fragment.innerHTML = html
-        .replace(/\{\{title\}\}/gi, title)
-        .replace(/\{\{count\}\}/gi, count);
+interface RenameFieldProps {
+    files: WebViewInfoAboutRenameFiles[];
+}
 
-    return fragment.content;
+const RenameField: React.FC<RenameFieldProps> = ({files}) => {
+
+    return <div>
+        {files.map(({ filePathRelative, filePathFromRelative, content }, index) => {
+            return <Panel key={index}>
+                <div className="field">
+                    <label className="field__label" style={{display:'flex',justifyContent: 'space-between'}}>
+                        <b style={{fontSize:'0.75rem'}}>{`${filePathFromRelative} => ${filePathRelative}`}</b> 
+                    </label>
+                    <pre className="field__code">{content}</pre>
+                </div>
+            </Panel>;
+        })}
+    </div>;
 };
 
+interface GeneratedRenameFieldProps {
+    files: WebViewInfoAboutRenameFiles[];
+}
 
-const generateFiles = () => {
-    vscode.postMessage({
-        type: 'GENERATE_ALL'
-    });
-    setState({
-        generated: true
-    });
+const GeneratedRenameField: React.FC<GeneratedRenameFieldProps> = ({files}) => {
+
+    return <div>
+        {files.map(({ filePathRelative, filePathFromRelative }, index) => {
+            return <Panel key={index}>
+                <div className="field">
+                    <label className="field__label" style={{display:'flex',justifyContent: 'space-between'}}>
+                        <b>{`${filePathFromRelative} => ${filePathRelative}`}</b> <span>Generated!</span>
+                    </label>
+                </div>
+            </Panel>;
+        })}
+    </div>;
 };
 
-const generateGroup = (title, key, container) => {
-    const items = state[key];
-    if (items.length === 0) {
-        return;
-    }
-    const header = renderTitle({
-        title,
-        count: items.length
-    });
-    const headerButton = header.querySelector('[data-event="generate-all"]');
-    if (state.generated) {
-        headerButton.style.display = 'none';
-    } else {
-        headerButton.addEventListener('click', generateFiles);
-    }
+const App = () => {
+    const {state, setState} = useVscodeState<RenameFilesState>(initialState);
+    
+    React.useEffect(() => {
 
-    container.appendChild(header);
-    items.forEach(({ filePathRelative, filePathFromRelative, content }, index) => {
-        const fieldElement = renderFile({
-            title: `${filePathFromRelative} => ${filePathRelative}`,
-            code: content,
-            id: index,
-        });
-        container.appendChild(fieldElement);
-    });
+        const handler = ({data}: MessageEvent<any>) => { 
+            if (data.type === 'SET_DATA') {
+                const { allSiblingHave, createdFolderName } = data.payload;
+                setState({ allSiblingHave, createdFolderName });
+            }
+        };
+        window.addEventListener('message',handler);
+        return () => window.removeEventListener('message',handler);
+    },[]);
+
+    return <Container>
+        REACT !!!!
+        <h1>Type new directory name</h1>
+        {!state?.generated && <Input 
+            id="createdFolderName"
+            label="Directory name"
+            onChange={(e) => {
+                vscode.postMessage(changeNameAction({
+                    value: e.target.value
+                }));
+            }} 
+        />}
+        <Header title={'Preview'} count={state?.allSiblingHave?.length || 0}/>
+        {state?.allSiblingHave && <RenameField files={state.allSiblingHave}/>}
+        {state?.allSiblingHave && <GeneratedRenameField files={state.allSiblingHave}/>}
+        <Footer/>
+    </Container>;
 };
-
-const refreshView = state => {
-    const fields = document.querySelector('#fields');
-    while (fields.firstChild) {
-        fields.firstChild.remove();
-    }
-    const createdFolderNameInput = document.querySelector('#createdFolderName');
-    if (createdFolderNameInput.value !== state.createdFolderName) {
-        createdFolderNameInput.value = state.createdFolderName;
-    }
-
-    generateGroup('Preview', 'allSiblingHave', fields);
-};
-
-refreshView(state);
-
-window.addEventListener('message', ({data}) => { 
-    if (data.type === 'SET_DATA') {
-        const { allSiblingHave, createdFolderName } = data.payload;
-        setState({ allSiblingHave, createdFolderName });
-    }
-});
-
 
 const rootElement = document.getElementById('root');
 
-rootElement && ReactDom.render(<div>
-    
-    <Input 
-        label="dir name"
-        onChange={() => {
-            vscode.postMessage(changeNameAction({
-                value: ''
-            }));
-        }} />
-    <Footer/></div>,rootElement);
+rootElement && ReactDom.render(<App />,rootElement);
+
 

@@ -8,7 +8,7 @@ export class WebViewReact {
         this.context = context;
     }
 
-    showWebView(title: string): Promise<vscode.WebviewPanel> {
+    showWebView(title: string, appMainFile: string): Promise<vscode.WebviewPanel> {
         return new Promise((resolve) => {
             const panel = vscode.window.createWebviewPanel(
                 'vscode-awesome-tree', title, vscode.ViewColumn.One, {
@@ -16,7 +16,7 @@ export class WebViewReact {
                 }
             );
             const reactAppPath = vscode.Uri.file(
-                path.join(this.context.extensionPath, 'out', 'reactViewsDebugger.js')
+                path.join(this.context.extensionPath, 'out', appMainFile)
             );
             const reactAppSrc = panel.webview.asWebviewUri(reactAppPath);
 

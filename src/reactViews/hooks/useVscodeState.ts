@@ -7,9 +7,14 @@ export function useVscodeState<T> (initialState:T){
     
     const [state, setReactState] = useState(() => vscode.getState() || initialState);
 
-    const setState = (state: T) => {
-        setReactState(state);
-        vscode.setState(state);
+    const setState = (newState: Partial<T>) => {
+        const fullState: T = {
+            ...state,
+            ...newState
+        };
+        
+        setReactState(fullState);
+        vscode.setState(fullState);
     };
 
     return {

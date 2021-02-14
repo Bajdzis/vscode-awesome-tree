@@ -3,6 +3,7 @@ import { Config } from './config/config';
 import { DirectoryRename } from './directoryRename/directoryRename';
 import { Files } from './files/files';
 import { WebView } from './webView/webView';
+import { WebViewReact } from './webView/webViewReact';
 
 export const createDependency = (context: vscode.ExtensionContext): RootDependency => {
     const outputChannel = vscode.window.createOutputChannel('Awesome tree');
@@ -11,7 +12,8 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
     const config = new Config(settingProvider, outputChannel);
     const webView = new WebView(context);
     const files = new Files(webView);
-    const directoryRename = new DirectoryRename(webView);
+    const webViewReact = new WebViewReact(context);
+    const directoryRename = new DirectoryRename(webViewReact);
 
 
     return {

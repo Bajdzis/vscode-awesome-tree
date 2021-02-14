@@ -1,0 +1,7 @@
+.panel {
+    margin: auto;
+    padding-left: 24px;
+    padding-right: 24px;
+    max-width: 1000px;
+    box-sizing: border-box;
+}

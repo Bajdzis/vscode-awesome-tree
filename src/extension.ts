@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     const test = new WebViewReact(context);
-    test.showWebView('title');
+    test.showWebView('title', 'reactViewsDebugger.js');
     const { store, dependencies } = createStore(context);
     const { outputChannel, config } = dependencies;
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');
