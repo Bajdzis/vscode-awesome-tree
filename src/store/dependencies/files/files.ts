@@ -18,6 +18,7 @@ export type WebViewInfoAboutFiles = {
     filePathTemplate: string;
     relativePath: string;
     fromTemplate: boolean;
+    generated: boolean;
 };
 
 export class Files {

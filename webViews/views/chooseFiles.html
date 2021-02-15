@@ -32,7 +32,6 @@
 <body>
     <div class="container">
         <h1>Choose files to create</h1>
-        <p id="forDirectory"></p>
         <ul class="tab" id="tabs">
         </ul>
 
@@ -126,7 +125,6 @@
             generateGroup("Always created in sibling directory", "allSiblingHave", fields);
             generateGroup("Others", "notAllSiblingHave", fields);
 
-            document.querySelector('#forDirectory').innerHTML = `For new "<b>${state.createdFolderName}</b>" directory`;
         }
 
         refreshView(state);
