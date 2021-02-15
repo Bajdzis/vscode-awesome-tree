@@ -54,7 +54,7 @@ export class DirectoryRename {
         dirFiles: string[],
     ): Promise<WebViewInfoAboutRenameFiles[]> {
 
-        let chooseFilesPanel = await this.webView.showWebView('Rename directory', 'rename.js');
+        let chooseFilesPanel = await this.webView.showWebView('Rename directory', 'reactAppRenameFiles.js');
 
         const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(directoryToRenameUri.fsPath));
         const createdFolderName = path.basename(directoryToRenameUri.fsPath);

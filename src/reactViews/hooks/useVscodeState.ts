@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useAcquireVsCodeApi } from './useAcquireVsCodeApi';
 
 
 export function useVscodeState<T> (initialState:T){
 
-    const vscode = window.acquireVsCodeApi<T>();
+    const vscode = useAcquireVsCodeApi<T>();
     
     const [state, setReactState] = useState(() => vscode.getState() || initialState);
 

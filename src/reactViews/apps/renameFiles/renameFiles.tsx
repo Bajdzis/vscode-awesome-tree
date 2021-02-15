@@ -6,26 +6,14 @@ import { Container } from '../../components/Container/Container';
 import { Footer } from '../../components/Footer/Footer';
 import { Input } from '../../components/Input/Input';
 import { Panel } from '../../components/Panel/Panel';
+import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';
 import { useVscodeState } from '../../hooks/useVscodeState';
 import { changeNameAction } from './actions/action';
-
-declare global {
-    interface Window { 
-        acquireVsCodeApi: <T = unknown>() => {
-            getState: () => T;
-            setState: (data: T) => void;
-            postMessage: (msg: unknown) => void;
-        } 
-    }
-}
-
 interface RenameFilesState {
     createdFolderName: string;
     allSiblingHave: WebViewInfoAboutRenameFiles[];
     generated: boolean;
 }
-
-const vscode = window.acquireVsCodeApi<RenameFilesState>();
 
 const initialState: RenameFilesState = {
     createdFolderName: '',
@@ -38,7 +26,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({title, count}) => {
-
+    const vscode = useAcquireVsCodeApi<RenameFilesState>();
     const { setState } = useVscodeState<RenameFilesState>(initialState);
 
     return <h2 style={{display:'flex',justifyContent: 'space-between'}}>
@@ -96,6 +84,8 @@ const GeneratedRenameField: React.FC<GeneratedRenameFieldProps> = ({files}) => {
 
 const App = () => {
     const {state, setState} = useVscodeState<RenameFilesState>(initialState);
+    
+    const vscode = useAcquireVsCodeApi<RenameFilesState>();
     
     React.useEffect(() => {
 
