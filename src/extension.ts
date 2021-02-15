@@ -9,9 +9,11 @@ import { WebViewReact } from './store/dependencies/webView/webViewReact';
 
 export function activate(context: vscode.ExtensionContext) {
 
-
-    const test = new WebViewReact(context);
-    test.showWebView('title', 'reactViewsDebugger.js');
+    if (process.env.ENV_MODE !== 'production') {
+        const DebuggerView = new WebViewReact(context);
+        DebuggerView.showWebView('Debugger', 'reactViewsDebugger.js');
+    }
+    
     const { store, dependencies } = createStore(context);
     const { outputChannel, config } = dependencies;
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');

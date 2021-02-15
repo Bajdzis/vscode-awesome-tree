@@ -11,8 +11,8 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
     const settingProvider = vscode.workspace.getConfiguration('awesomeTree');
     const config = new Config(settingProvider, outputChannel);
     const webView = new WebView(context);
-    const files = new Files(webView);
     const webViewReact = new WebViewReact(context);
+    const files = new Files(webViewReact);
     const directoryRename = new DirectoryRename(webViewReact);
 
 
@@ -20,6 +20,7 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
         config,
         files,
         webView,
+        webViewReact,
         directoryRename,
         outputChannel
     };
@@ -29,6 +30,7 @@ export interface RootDependency {
     config: Config;
     files: Files;
     webView: WebView;
+    webViewReact: WebViewReact;
     directoryRename: DirectoryRename;
     outputChannel: vscode.OutputChannel;
 }

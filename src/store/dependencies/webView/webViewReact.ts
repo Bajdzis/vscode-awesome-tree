@@ -26,7 +26,7 @@ export class WebViewReact {
     }
 
 
-    getTemplate (title:string, reactAppPath: string) {
+    private getTemplate (title:string, reactAppPath: string) {
 
         return `<!DOCTYPE html>
         <html>

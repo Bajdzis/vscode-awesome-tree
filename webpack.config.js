@@ -46,8 +46,9 @@ const configReactView = {
     target: 'web',
 
     entry: {
-        reactViewsDebugger: './src/reactViews/debugger.tsx',
+        reactViewsDebugger: './src/reactViews/apps/debugger/debugger.tsx',
         reactAppRenameFiles:'./src/reactViews/apps/renameFiles/renameFiles.tsx',
+        reactAppChooseFiles:'./src/reactViews/apps/chooseFiles/chooseFiles.tsx',
         // shared: ['react', 'react-dom'], //, 'redux', 'react-redux'],
     },
     output: { 
