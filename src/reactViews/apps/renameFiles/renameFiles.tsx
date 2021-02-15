@@ -8,18 +8,22 @@ import { Input } from '../../components/Input/Input';
 import { Panel } from '../../components/Panel/Panel';
 import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';
 import { useVscodeState } from '../../hooks/useVscodeState';
-import { changeNameAction } from './actions/action';
+import { changeNameAction, generateAllAction, setDataAction } from './actions/action';
+
 interface RenameFilesState {
     createdFolderName: string;
+    newFolderName: string;
     allSiblingHave: WebViewInfoAboutRenameFiles[];
     generated: boolean;
 }
 
 const initialState: RenameFilesState = {
     createdFolderName: '',
+    newFolderName: '',
     allSiblingHave: [],
     generated: false
 };
+
 interface HeaderProps {
     title: string;
     count: number;
@@ -27,19 +31,16 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({title, count}) => {
     const vscode = useAcquireVsCodeApi<RenameFilesState>();
-    const { setState } = useVscodeState<RenameFilesState>(initialState);
+    const { setState, state } = useVscodeState<RenameFilesState>(initialState);
 
     return <h2 style={{display:'flex',justifyContent: 'space-between'}}>
         <span>{title} <span>( {count} )</span></span>
-        <button className="button button--primary" data-event="generate-all"></button>
-        <Button onClick={() => {
-            vscode.postMessage({
-                type: 'GENERATE_ALL'
-            });
+        {!state.generated && <Button onClick={() => {
+            vscode.postMessage(generateAllAction());
             setState({
                 generated: true
             });
-        }}>Rename all</Button>
+        }}>Rename all</Button>}
     </h2>;
 };
 
@@ -90,7 +91,7 @@ const App = () => {
     React.useEffect(() => {
 
         const handler = ({data}: MessageEvent<any>) => { 
-            if (data.type === 'SET_DATA') {
+            if (data.type === setDataAction.type && state.generated === false) {
                 const { allSiblingHave, createdFolderName } = data.payload;
                 setState({ allSiblingHave, createdFolderName });
             }
@@ -100,20 +101,24 @@ const App = () => {
     },[]);
 
     return <Container>
-        REACT !!!!
         <h1>Type new directory name</h1>
-        {!state?.generated && <Input 
+        {!state.generated && <Input 
             id="createdFolderName"
             label="Directory name"
             onChange={(e) => {
+                const newFolderName = e.target.value;
+                setState({
+                    newFolderName
+                });
                 vscode.postMessage(changeNameAction({
-                    value: e.target.value
+                    value: newFolderName
                 }));
             }} 
+            defaultValue={state.newFolderName || state.createdFolderName}
         />}
         <Header title={'Preview'} count={state?.allSiblingHave?.length || 0}/>
-        {state?.allSiblingHave && <RenameField files={state.allSiblingHave}/>}
-        {state?.allSiblingHave && <GeneratedRenameField files={state.allSiblingHave}/>}
+        {state.generated && <GeneratedRenameField files={state.allSiblingHave}/>}
+        {!state.generated && <RenameField files={state.allSiblingHave}/>}
         <Footer/>
     </Container>;
 };
