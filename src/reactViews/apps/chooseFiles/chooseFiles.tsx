@@ -7,8 +7,9 @@ import { FileWithCode } from '../../components/FilesWithCode/FileWithCode';
 import { Footer } from '../../components/Footer/Footer';
 import { HeaderWithButton } from '../../components/HeaderWithButton/HeaderWithButton';
 import { LoggerWebViewMessage } from '../../components/LoggerWebViewMessage/LoggerWebViewMessage';
+import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';
 import { useVscodeState } from '../../hooks/useVscodeState';
-import { setDataAction } from './actions/action';
+import { generateFileAction, setDataAction } from './actions/action';
 
 interface ChooseFilesState {
     createdFolderName: string;
@@ -22,6 +23,69 @@ const initialState: ChooseFilesState = {
     allSiblingHave: [],
     notAllSiblingHave: [],
     fromTemplate: []
+};
+
+interface FileGroupProps {
+    title: string;
+    keyGroup: 'allSiblingHave' | 'notAllSiblingHave' | 'fromTemplate';
+}
+
+
+const FileGroup: React.FC<FileGroupProps> = ({title, keyGroup}) => {
+    const {state, setState} = useVscodeState<ChooseFilesState>(initialState);
+    const vscode = useAcquireVsCodeApi<ChooseFilesState>();
+    const count = state[keyGroup].length;
+
+    if (count === 0) {
+        return <div/>;
+    }
+
+    const generateAll = state[keyGroup].every(({ generated }) => generated);
+
+    return <div>
+        <HeaderWithButton title={title} count={count}>
+            {!generateAll && <Button onClick={() => {
+                const state = vscode.getState();
+
+                state[keyGroup]
+                    .forEach(({content, filePath}) => {
+                        vscode.postMessage(generateFileAction({
+                            content,
+                            filePath
+                        }));
+                    });
+                    
+                setState({
+                    ...state,
+                    [keyGroup]: state[keyGroup]
+                        .map((file) => ({
+                            ...file,
+                            generated:true
+                        }))
+                });
+            }}>
+                Generate All
+            </Button>}
+        </HeaderWithButton>
+
+        {state[keyGroup].map((file,i) => {
+            return <FileWithCode key={i} title={file.relativePath} code={file.content} generated={file.generated} button={<Button className="panel__button" onClick={() => {
+                vscode.postMessage(generateFileAction({
+                    content: file.content,
+                    filePath: file.filePath
+                }));
+                const state = vscode.getState();
+                setState({
+                    ...state,
+                    [keyGroup]: state[keyGroup]
+                        .map((file,j) =>  i !== j ? file : {
+                            ...file,
+                            generated:true
+                        })
+                });
+            }}>Generate single file</Button>}/>;
+        })} 
+    </div>;
 };
 
 const App = () => {
@@ -42,29 +106,11 @@ const App = () => {
         <h1>Choose files to create</h1>
         <p>For new <b>{state.createdFolderName}</b> directory</p>
         
-        <HeaderWithButton title={'From saved templates'} count={state.fromTemplate.length}>
-            <Button>Generate All</Button>
-        </HeaderWithButton>
+        <FileGroup title={'From saved templates'} keyGroup="fromTemplate" />
 
-        {state.fromTemplate.map((file,i) => {
-            return <FileWithCode key={i} title={file.relativePath} code={file.content} />;
-        })}
+        <FileGroup title={'Always created in sibling directory'} keyGroup="allSiblingHave" />
 
-        <HeaderWithButton title={'Always created in sibling directory'} count={state.allSiblingHave.length}>
-            <Button>Generate All</Button>
-        </HeaderWithButton>
-
-        {state.allSiblingHave.map((file,i) => {
-            return <FileWithCode key={i} title={file.relativePath} code={file.content} />;
-        })}
-
-        <HeaderWithButton title={'Others'} count={state.notAllSiblingHave.length}>
-            <Button>Generate All</Button>
-        </HeaderWithButton>
-
-        {state.notAllSiblingHave.map((file,i) => {
-            return <FileWithCode key={i} title={file.relativePath} code={file.content} />;
-        })}
+        <FileGroup title={'Others'} keyGroup="notAllSiblingHave" />
 
         <LoggerWebViewMessage />
         

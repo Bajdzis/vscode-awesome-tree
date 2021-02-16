@@ -15,12 +15,6 @@
     cursor: pointer;
 }
 
-.field__code {
-    overflow: auto;
-    max-width: 100%;
-    max-height: 200px;
-}
-
 .field--checkbox .field__label {
     margin: 2px 4px;
 }
