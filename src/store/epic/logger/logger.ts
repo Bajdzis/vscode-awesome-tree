@@ -1,8 +1,13 @@
-import { tap, ignoreElements } from 'rxjs/operators';
+import { ignoreElements, tap } from 'rxjs/operators';
 import { RootEpic } from '..';
 
-export const loggerEpic: RootEpic = (action$, state$, { outputChannel }) =>
-    action$.pipe(
+export const loggerEpic: RootEpic = (action$, state$, { outputChannel }) =>{
+
+    // if (process.env.ENV_MODE !== 'production') {
+    //     webViewReact.showWebView('Debugger', 'reactViewsDebugger.js');
+    // }
+    
+    return action$.pipe(
         tap(action => {
             outputChannel.appendLine('-----------------------');
             outputChannel.appendLine(`ACTION: ${action.type}`);
@@ -13,3 +18,4 @@ export const loggerEpic: RootEpic = (action$, state$, { outputChannel }) =>
         }),
         ignoreElements()
     );
+};

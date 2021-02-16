@@ -5,15 +5,9 @@ import { findWorkspacePath } from './commands/saveAsTemplate';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { createStore } from './store';
 import { createNewTemplate, onDidChange, onDidCreate, onDidDelete, onRegisterWorkspace, renameDirectory, WatchFileSystemParam } from './store/action/files/files';
-import { WebViewReact } from './store/dependencies/webView/webViewReact';
 
 export function activate(context: vscode.ExtensionContext) {
 
-    if (process.env.ENV_MODE !== 'production') {
-        const DebuggerView = new WebViewReact(context);
-        DebuggerView.showWebView('Debugger', 'reactViewsDebugger.js');
-    }
-    
     const { store, dependencies } = createStore(context);
     const { outputChannel, config } = dependencies;
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');
