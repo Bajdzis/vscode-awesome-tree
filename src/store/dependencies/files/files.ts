@@ -22,12 +22,10 @@ export type WebViewInfoAboutFiles = {
 };
 
 export class Files {
-    // private chooseFilesTemplateWebView: string;
     private webView: WebViewReact;
 
     constructor(webView: WebViewReact){
         this.webView = webView;
-        // this.chooseFilesTemplateWebView = this.webView.getWebViewTemplate('chooseFiles');
     }
 
     async showWebView(
