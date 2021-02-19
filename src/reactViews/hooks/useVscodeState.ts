@@ -30,7 +30,7 @@ export function useVscodeState<T> (initialState:T){
     }, []);
 
     const setState = (newState: Partial<T>) => {
-        const currentState = vscode.getState();
+        const currentState = vscode.getState() || initialState;
         const fullState: T = {
             ...currentState,
             ...newState
