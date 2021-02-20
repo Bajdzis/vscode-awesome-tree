@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactDom from 'react-dom';
 import { WebViewInfoAboutRenameFiles } from '../../../store/dependencies/directoryRename/directoryRename';
 import { Button } from '../../components/Button/Button';
 import { Container } from '../../components/Container/Container';
@@ -26,7 +25,7 @@ const initialState: RenameFilesState = {
     generated: false
 };
 
-const App = () => {
+export const RenameFilesApp = () => {
     const {state, setState} = useVscodeState<RenameFilesState>(initialState);
     
     const vscode = useAcquireVsCodeApi<RenameFilesState>();
@@ -77,6 +76,3 @@ const App = () => {
     </Container>;
 };
 
-const rootElement = document.getElementById('root');
-
-rootElement && ReactDom.render(<App />,rootElement);

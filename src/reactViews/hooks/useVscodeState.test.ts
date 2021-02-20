@@ -1,17 +1,15 @@
-let globalVsCodeState: any = null;
-global.window.acquireVsCodeApi = <T>() => ({
-    getState: () => (globalVsCodeState as any as T),
-    setState: (newState) => {globalVsCodeState = newState;},
-    postMessage: () => {}
-});
 
+import { resetState } from './acquireVsCodeApiMock';
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useVscodeState } from './useVscodeState';
 
 describe('useVscodeState', () => {
 
+    beforeEach(() => {
+        resetState();
+    });
+
     it('should return initialState', () => {
-        globalVsCodeState = null;
         const initialState = {
             name: 'Rafal',
             age: 26
@@ -23,7 +21,6 @@ describe('useVscodeState', () => {
     });
 
     it('should update partial state', async () => {
-        globalVsCodeState = null;
         const initialState = {
             name: 'Rafal',
             age: 26
@@ -44,7 +41,6 @@ describe('useVscodeState', () => {
     });
 
     it('should have one global state for app', async () => {
-        globalVsCodeState = null;
         const initialState = {
             fileName: 'script',
             extension: 'js'
