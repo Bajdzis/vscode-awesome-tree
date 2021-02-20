@@ -1,15 +1,16 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
-import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
-import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
-import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { getFilesContentAsTemplate } from '../../../fileSystem/getFilesContentAsTemplate';
-import { createVariableTemplate } from '../../../variableTemplate/createVariableTemplate';
-import { WebView } from '../webView/webView';
+import { getRelativePath } from '../../../fileSystem/getRelativePath';
+import { generateFileAction, setDataAction } from '../../../reactViews/apps/chooseFiles/actions/action';
 import { splitStringWithSplitter } from '../../../strings/splitStringWithSplitter';
+import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
+import { createVariableTemplate } from '../../../variableTemplate/createVariableTemplate';
+import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
+import { WebViewReact } from '../webView/webViewReact';
 
 export type WebViewInfoAboutFiles = {
     content: string;
@@ -17,15 +18,14 @@ export type WebViewInfoAboutFiles = {
     filePathTemplate: string;
     relativePath: string;
     fromTemplate: boolean;
+    generated: boolean;
 };
 
 export class Files {
-    private chooseFilesTemplateWebView: string;
-    private webView: WebView;
+    private webView: WebViewReact;
 
-    constructor(webView: WebView){
+    constructor(webView: WebViewReact){
         this.webView = webView;
-        this.chooseFilesTemplateWebView = this.webView.getWebViewTemplate('chooseFiles');
     }
 
     async showWebView(
@@ -36,7 +36,7 @@ export class Files {
         onHandleEvent: ((filePath: string, content: string) => void)
     ): Promise<vscode.WebviewPanel> {
 
-        let chooseFilesPanel = await this.webView.showWebView(this.chooseFilesTemplateWebView, 'Choose files to create');
+        let chooseFilesPanel = await this.webView.showWebView('Choose files to create', 'reactAppChooseFiles.js');
 
         const countSiblingDirectories = Object.keys(infoAboutSiblingDirectories).length;
         const allSiblingHave: WebViewInfoAboutFiles[] = [];
@@ -53,18 +53,15 @@ export class Files {
             }
         });
 
-        chooseFilesPanel.webview.postMessage({ 
-            type: 'SET_DATA', 
-            payload : {
-                createdFolderName: path.basename(createdItemUri.fsPath),
-                allSiblingHave,
-                notAllSiblingHave,
-                fromTemplate
-            }
-        });
+        chooseFilesPanel.webview.postMessage(setDataAction({
+            createdFolderName: path.basename(createdItemUri.fsPath),
+            allSiblingHave,
+            notAllSiblingHave,
+            fromTemplate
+        }));
 
         chooseFilesPanel.webview.onDidReceiveMessage((action) => {
-            if (action.type === 'GENERATE_FILE') {
+            if (action.type === generateFileAction.type) {
                 const { filePath, content } = action.payload;
                 onHandleEvent(filePath, content);
             }

@@ -1,0 +1,20 @@
+.panel {
+    margin: 0 7px 0 5px;
+    padding: 0 16px 0 10px;
+    /* border-left-width: 5px;
+    border-left-style: solid; */
+    background: var(--vscode-textBlockQuote-background);
+    /* border-color: var(--vscode-inputValidation-errorBorder); */
+}
+
+.panel__text{
+    line-height: 2;
+}
+
+.panel__button {
+    visibility: hidden;
+}
+
+.panel:hover .panel__button {
+    visibility: visible;
+}

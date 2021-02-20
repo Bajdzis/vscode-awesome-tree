@@ -1,8 +1,8 @@
+import { AwesomeTreeError } from '../errors/AwesomeTreeError';
 import { PathInfo } from '../fileInfo/getInfoAboutPath';
 import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
-import { AwesomeTreeError } from '../errors/AwesomeTreeError';
-import { getTextCaseSingleWord, getTextCase } from '../textCase/getTextCase';
-
+import { escapeRegExp } from '../strings/splitStringWithSplitter';
+import { getTextCase, getTextCaseSingleWord } from '../textCase/getTextCase';
 
 export function createVariableTemplate(search:string, information: PathInfo[], maxIterate: number = 500) {
     const variables: {
@@ -27,13 +27,13 @@ export function createVariableTemplate(search:string, information: PathInfo[], m
 
     words.forEach((variableName) => {
         const [type, index0, index1, index2] = variables[variableName];
-        const regExp = new RegExp(`(?<=^([^\\$\\{]|\\$\\{[^"]*\\})*)(?<varName>${variableName})`,'i');
+        const regExp = new RegExp(`(?<=^([^\\$\\{]|\\$\\{[^"]*\\})*)(?<varName>${escapeRegExp(variableName)})`,'i');
         let regExpResult: RegExpExecArray|null = null;
 
         while ((regExpResult = regExp.exec(result)) !== null) {
             const word = regExpResult[0];
             const textCase = type === 'singleWord' ? getTextCaseSingleWord(word) : getTextCase(word);
-            const allCurrentWord = new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${word})`, 'g');
+            const allCurrentWord = new RegExp(`(?<=^([^\\$\{]|\\$\\{[^"]*\\})*)(?<varName>${escapeRegExp(word)})`, 'g');
             if (textCase === 'other') {
                 result = result.replace( allCurrentWord, `\${:${word}:}` );
             } else {

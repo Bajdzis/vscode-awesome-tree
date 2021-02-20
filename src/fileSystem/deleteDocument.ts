@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 async function deleteDirectoryRecursive(dirPath: string): Promise<void> {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         fs.rmdir(dirPath, (err) => {
             if (err) {
                 return reject(err);
@@ -27,7 +27,7 @@ async function deleteDirectoryRecursive(dirPath: string): Promise<void> {
 }
 
 export async function deleteDocument(filePath: string): Promise<void> {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
         fs.unlink(filePath, (err) => {
             if (err) {
                 return reject(err);

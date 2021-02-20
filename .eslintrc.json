@@ -4,14 +4,16 @@
 		"es6": true
 	},
 	"extends": [
-		"eslint:recommended"
+		"eslint:recommended",
+		"plugin:react/recommended"
 	],
 	"parserOptions": {
 		"sourceType": "module",
 		"ecmaVersion": 10
 	},
 	"plugins": [
-		"@typescript-eslint"
+		"@typescript-eslint",
+		"react"
 	],
 	"rules": {
 		"indent": [
@@ -32,12 +34,16 @@
 		"eol-last": [
 			"error",
 			"always"
+		],
+		"react/prop-types": [
+			"off"
 		]
 	},
 	"overrides": [
 		{
 			"files": [
-				"**/*.ts"
+				"**/*.ts",
+				"**/*.tsx"
 			],
 			"parser": "@typescript-eslint/parser",
 			"parserOptions": {
@@ -55,6 +61,15 @@
 				"@typescript-eslint/no-unused-vars": [
 					"error"
 				]
+			}
+		},
+		{
+			"files": [
+				"**/*.tsx"
+			],
+			"env": {
+				"browser": true,
+				"es6": true
 			}
 		}
 	]

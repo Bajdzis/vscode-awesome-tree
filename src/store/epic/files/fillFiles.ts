@@ -125,7 +125,8 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                         filePathTemplate,
                         content,
                         fromTemplate,
-                        relativePath: path.join(relativePath, relativePathFile)
+                        relativePath: path.join(relativePath, relativePathFile),
+                        generated: false
                     };
 
                 });

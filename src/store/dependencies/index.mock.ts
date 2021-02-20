@@ -30,10 +30,8 @@ export const createMockDependency = (): RootDependencyMocked => {
             isFile: jest.fn(),
             showWebView: jest.fn(),
         },
-        webView:{
-            getTemplates: jest.fn(),
-            getWebViewTemplate: jest.fn(),
-            showWebView: jest.fn(),
+        webViewReact: {
+            showWebView:jest.fn(),
         },
         directoryRename:{
             getFilesToRender: jest.fn(),
