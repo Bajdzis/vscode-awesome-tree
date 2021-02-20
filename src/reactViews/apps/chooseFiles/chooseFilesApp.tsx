@@ -1,12 +1,10 @@
 import * as React from 'react';
-import * as ReactDom from 'react-dom';
 import { WebViewInfoAboutFiles } from '../../../store/dependencies/files/files';
 import { Button } from '../../components/Button/Button';
 import { Container } from '../../components/Container/Container';
 import { FileWithCode } from '../../components/FilesWithCode/FileWithCode';
 import { Footer } from '../../components/Footer/Footer';
 import { HeaderWithButton } from '../../components/HeaderWithButton/HeaderWithButton';
-import { LoggerWebViewMessage } from '../../components/LoggerWebViewMessage/LoggerWebViewMessage';
 import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';
 import { useVscodeState } from '../../hooks/useVscodeState';
 import { generateFileAction, setDataAction } from './actions/action';
@@ -29,7 +27,6 @@ interface FileGroupProps {
     title: string;
     keyGroup: 'allSiblingHave' | 'notAllSiblingHave' | 'fromTemplate';
 }
-
 
 const FileGroup: React.FC<FileGroupProps> = ({title, keyGroup}) => {
     const {state, setState} = useVscodeState<ChooseFilesState>(initialState);
@@ -88,7 +85,7 @@ const FileGroup: React.FC<FileGroupProps> = ({title, keyGroup}) => {
     </div>;
 };
 
-const App = () => {
+export const ChooseFilesApp = () => {
     const {state, setState} = useVscodeState<ChooseFilesState>(initialState);
     
     React.useEffect(() => {
@@ -112,12 +109,6 @@ const App = () => {
 
         <FileGroup title={'Others'} keyGroup="notAllSiblingHave" />
 
-        <LoggerWebViewMessage />
-        
         <Footer/>
     </Container>;
 };
-
-const rootElement = document.getElementById('root');
-
-rootElement && ReactDom.render(<App />,rootElement);

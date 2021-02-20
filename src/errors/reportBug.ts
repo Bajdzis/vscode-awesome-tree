@@ -4,7 +4,7 @@ import { createGithubIssue } from './createGithubIssue';
 export async function reportBug(error: any) {
 
     const result = await vscode.window.showErrorMessage(
-        `Something go wrong :( ${error.toString()}`,
+        `Something go wrong :( ${error?.toString() || ''}`,
         'Create issue on GitHub'
     );
 

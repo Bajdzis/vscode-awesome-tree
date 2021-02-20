@@ -19,6 +19,7 @@ export const workspace = {
     })),
     createFileSystemWatcher: jest.fn(),
     onDidChangeWorkspaceFolders: jest.fn(),
+    openTextDocument: jest.fn(() => new Promise(() => {})),
     workspaceFolders: [
         folder
     ]
@@ -27,14 +28,17 @@ export const workspace = {
 export const window = {
     createOutputChannel: jest.fn(() => outputChanelMock),
     showInformationMessage: jest.fn(),
+    showErrorMessage: jest.fn(),
 } as {[key in keyof typeof vscode.window]: jest.Mock};
 
 export const commands = {
     registerCommand: jest.fn(),
+    executeCommand: jest.fn(),
 } as {[key in keyof typeof vscode.commands]: jest.Mock};
 
 export const Uri = {
     file: jest.fn(() => ({
         with: jest.fn(() => '')
     })),
+    parse: jest.fn(data => data)
 };

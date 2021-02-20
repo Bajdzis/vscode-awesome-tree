@@ -50,7 +50,11 @@ export const lstat = (uri: string, callback: (err?: Error, stats?: Partial<fs.St
 
 export const statSync = lstatSync;
 
-export const writeFile = jest.fn();
+export const writeFile = jest.fn((path, content, option, callback) => callback());
+
+export const unlink = jest.fn((path, callback) => callback());
+
+export const rmdir = jest.fn((path, callback) => callback());
 
 export const readFile = (uri: string, callback: (err?: Error, stats?: string) => void): void => {
     const data = mockFiles[uri];
