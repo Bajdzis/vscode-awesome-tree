@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.5.0...v1.6.0) (2021-02-20)
+
+
+### Features
+
+* render all web view by react.js lib ([ee369ca](https://github.com/Bajdzis/vscode-awesome-tree/commit/ee369cadf67133b45f136acd5209b23beb9524e7))
+
 ## [1.5.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.4.0...v1.5.0) (2021-02-13)
 
 
