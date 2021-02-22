@@ -26,6 +26,8 @@ function addTextToSymbol(item: FileSymbol): FileSymbol[]{
             textToSplit = lastValue.text;
         } else if (lastValue) {
             result.push(lastValue);
+            result.push(...addTextToSymbol(child));
+            return result;
         }
 
         const [beginText, ...afterStrings] = textToSplit.split(child.text);
@@ -40,7 +42,7 @@ function addTextToSymbol(item: FileSymbol): FileSymbol[]{
             });
         }
 
-        result.push(child);
+        result.push(...addTextToSymbol(child));
 
         if (afterText) {
             result.push({
@@ -108,15 +110,16 @@ export async function getFileSymbols(uri: vscode.Uri){
     
     let document = await vscode.workspace.openTextDocument(uri);
     if(success) {
-
-        return addTextToSymbol({
+        const main = {
             value: '',
             // rangeStart: item.range.start,
             // rangeEnd: item.range.end,
             kind: SpecialSymbol.DOCUMENT,
             children:mapToMoreSpecificSymbol(success, document),
             text: document.getText()
-        });
+        };
+        console.log({main})
+        return addTextToSymbol(main);
     }
 }
 

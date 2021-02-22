@@ -72,8 +72,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameFile', async (uri: vscode.Uri) => {
-        const symbols = getFileSymbols(uri);
+        const symbols = await getFileSymbols(uri);
         console.log({symbols});
+        console.log("TAK")
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {
