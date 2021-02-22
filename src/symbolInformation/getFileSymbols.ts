@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { addTextToSymbol } from './addTextToSymbol';
 
 export enum SpecialSymbol {
     TEXT = -1,
@@ -12,55 +13,6 @@ export interface FileSymbol {
     text: string;
     kind: vscode.SymbolKind | SpecialSymbol; 
     children: FileSymbol[];
-}
-
-function addTextToSymbol(item: FileSymbol): FileSymbol[]{
-
-    const childWithText = item.children.reduce((result, child): FileSymbol[] => {
-        // const result: FileSymbol[] = [];
-
-        const lastValue = result.pop();
-        let textToSplit = item.text;
-
-        if(lastValue && lastValue.kind === SpecialSymbol.TEXT) {
-            textToSplit = lastValue.text;
-        } else if (lastValue) {
-            result.push(lastValue);
-            result.push(...addTextToSymbol(child));
-            return result;
-        }
-
-        const [beginText, ...afterStrings] = textToSplit.split(child.text);
-        const afterText = afterStrings.join('');
-
-        if (beginText) {
-            result.push({
-                children:[],
-                kind: SpecialSymbol.TEXT,
-                text: beginText,
-                value: beginText
-            });
-        }
-
-        result.push(...addTextToSymbol(child));
-
-        if (afterText) {
-            result.push({
-                children:[],
-                kind: SpecialSymbol.TEXT,
-                text: afterText,
-                value: afterText
-            });
-        }
-
-        return result;
-    }, [] as FileSymbol[]);
-
-
-    return [{
-        ...item,
-        children: childWithText
-    }];
 }
 
 
@@ -118,7 +70,7 @@ export async function getFileSymbols(uri: vscode.Uri){
             children:mapToMoreSpecificSymbol(success, document),
             text: document.getText()
         };
-        console.log({main})
+        console.log({main});
         return addTextToSymbol(main);
     }
 }
