@@ -11,11 +11,14 @@ export function joinSymbolToFlattArray(symbols: FileSymbolCompare[]): FileSymbol
     const flatten: FileSymbolCompare[] = [];
     symbols.forEach(symbol => {
 
-        flatten.push({
-            ...symbol,
-            children: []
-        });
-        flatten.push(...symbol.children);
+        
+        if(symbol.children.length !== 0 ) {
+
+            flatten.push(...symbol.children);
+        }else {
+
+            flatten.push(symbol);
+        }
     });
 
     return joinSymbolToFlattArray(flatten);
