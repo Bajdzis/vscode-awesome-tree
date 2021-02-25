@@ -35,9 +35,9 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
         ),
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentBySibling.type),
-            map(({ payload }: Action<vscode.Uri>) => ({
+            mergeMap(async ({ payload }: Action<vscode.Uri>) => ({
                 createPath: payload,
-                content: files.getContentBySibling(payload)
+                content: await files.getContentBySibling(payload)
             })),
             filter(({ content }) => !!content.length),
             mergeMap(async ({ createPath, content }) => {

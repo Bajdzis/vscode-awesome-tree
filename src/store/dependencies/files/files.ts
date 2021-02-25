@@ -6,9 +6,10 @@ import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { getFilesContentAsTemplate } from '../../../fileSystem/getFilesContentAsTemplate';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { generateFileAction, setDataAction } from '../../../reactViews/apps/chooseFiles/actions/action';
-import { splitStringWithSplitter } from '../../../strings/splitStringWithSplitter';
+import { compareTree, filterTree } from '../../../symbolInformation/compareTree';
+import { getFileSymbols } from '../../../symbolInformation/getFileSymbols';
+import { joinSymbolToString } from '../../../symbolInformation/joinSymbolToString';
 import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
-import { createVariableTemplate } from '../../../variableTemplate/createVariableTemplate';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewReact } from '../webView/webViewReact';
 
@@ -80,32 +81,49 @@ export class Files {
         return content;
     }
 
-    getContentBySibling(createdItemUri: vscode.Uri): string {
-        const relativePath = getRelativePath(createdItemUri.fsPath);
-        const infoAboutNewFile = getInfoAboutPath(relativePath);
+    async getContentBySibling(createdItemUri: vscode.Uri): Promise<string> {
+        // const relativePath = getRelativePath(createdItemUri.fsPath);
+        // const infoAboutNewFile = getInfoAboutPath(relativePath);
         const parentDir = path.dirname(createdItemUri.fsPath);
 
         const fileToSkip = path.basename(createdItemUri.fsPath);
         const contents = fs.readdirSync(parentDir)
-            .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip)
-            .map(siblingFile => {
-                const filePath = path.join(parentDir, siblingFile);
-                const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
-                const lines = splitStringWithSplitter(fs.readFileSync(filePath).toString(), '\n{} ,()');
-                return lines.map(line => createVariableTemplate(line, [infoAboutFilePath]));
-            });
+            .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip);
+
+        // .map(siblingFile => {
+        //     const filePath = path.join(parentDir, siblingFile);
+        //     const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
+        //     const lines = splitStringWithSplitter(fs.readFileSync(filePath).toString(), '\n{} ,()');
+        //     return lines.map(line => createVariableTemplate(line, [infoAboutFilePath]));
+        // });
 
         if (contents.length < 2) {
             return '';
         }
 
-        const [baseFile, ...otherFiles] = contents;
-        const linesToGenerate: string[] = baseFile
-            .filter((line) => this.allFilesIncludeThisLine(otherFiles, line));
+        const files = contents.map(siblingFile => {
+            const filePath = path.join(parentDir, siblingFile);
+            const fileUri = vscode.Uri.file(filePath);
+            console.log( {fileUri} );
+            return getFileSymbols(fileUri);
+        });
 
-        const content = linesToGenerate.map(line => 
-            renderVariableTemplate(line, [infoAboutNewFile])
-        ).join('');
+        const filesContent = await Promise.all(files).then(data => {
+
+            return compareTree(data);
+
+        }).then(data => filterTree(data, 0.75));
+
+        console.log({ filesContent });
+        
+        const content = joinSymbolToString(filesContent);
+        // const [baseFile, ...otherFiles] = contents;
+        // const linesToGenerate: string[] = baseFile
+        //     .filter((line) => this.allFilesIncludeThisLine(otherFiles, line));
+
+        // const content = linesToGenerate.map(line => 
+        //     renderVariableTemplate(line, [infoAboutNewFile])
+        // ).join('');
 
         return content;
     }
