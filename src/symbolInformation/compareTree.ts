@@ -20,7 +20,7 @@ function haveSameValue (elem1:FileSymbol, elem2:FileSymbol) {
     if(elem1.children.length > 0 &&  elem2.children.length > 0) {
         return true;
     }
-    return compareVariableTemplate(elem1.value, elem2.value);
+    return  elem1.value === elem2.value || compareVariableTemplate(elem1.text, elem2.text);
 }
 
 // function haveSameFirstChildren (elem1:FileSymbol, elem2:FileSymbol) {
@@ -110,7 +110,7 @@ export function createTemplateInTree(trees: FileSymbol[], infoAboutFile: PathInf
     
     return trees.map(tree => ({
         ...tree,
-        value: createVariableTemplate(tree.value, infoAboutFile),
+        text: createVariableTemplate(tree.text, infoAboutFile),
         children: createTemplateInTree(tree.children, infoAboutFile)
     }));
 }

@@ -90,13 +90,6 @@ export class Files {
         const contents = fs.readdirSync(parentDir)
             .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip);
 
-        // .map(siblingFile => {
-        //     const filePath = path.join(parentDir, siblingFile);
-        //     const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
-        //     const lines = splitStringWithSplitter(fs.readFileSync(filePath).toString(), '\n{} ,()');
-        //     return lines.map(line => createVariableTemplate(line, [infoAboutFilePath]));
-        // });
-
         if (contents.length < 2) {
             return '';
         }
@@ -105,7 +98,7 @@ export class Files {
             const filePath = path.join(parentDir, siblingFile);
             const fileUri = vscode.Uri.file(filePath);
             const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
-            console.log( {fileUri} );
+            
             return getFileSymbols(fileUri).then(data => createTemplateInTree([data], [infoAboutFilePath])[0]);
         });
 
@@ -114,22 +107,7 @@ export class Files {
             .then(data => filterTree(data, 0.75))
             .then(data => treeSymbolToFlattArray(data));
 
-            
-
-        console.log({ files, filesContent });
-        
-        const content = joinSymbolToString(filesContent, [infoAboutNewFile]);
-
-
-        // const [baseFile, ...otherFiles] = contents;
-        // const linesToGenerate: string[] = baseFile
-        //     .filter((line) => this.allFilesIncludeThisLine(otherFiles, line));
-
-        // const content = linesToGenerate.map(line => 
-        //     renderVariableTemplate(line, [infoAboutNewFile])
-        // ).join('');
-
-        return content;
+        return joinSymbolToString(filesContent, [infoAboutNewFile]);
     }
 
     createFileContent(templateStringPath:string, directories: DirectoriesInfo, variables: PathInfo[]): string {
