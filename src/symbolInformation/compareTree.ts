@@ -1,3 +1,6 @@
+import { PathInfo } from '../fileInfo/getInfoAboutPath';
+import { compareVariableTemplate } from '../variableTemplate/compareVariableTemplate';
+import { createVariableTemplate } from '../variableTemplate/createVariableTemplate';
 import { FileSymbol } from './getFileSymbols';
 
 
@@ -7,11 +10,59 @@ export interface FileSymbolCompare {
     children: FileSymbolCompare[];
 }
 
-function compareFileSymbol (elem1:FileSymbol, elem2:FileSymbol) {
+
+function haveSameKind (elem1:FileSymbol, elem2:FileSymbol) {
+    return elem1.kind === elem2.kind ;
+}
+
+function haveSameValue (elem1:FileSymbol, elem2:FileSymbol) {
+
     if(elem1.children.length > 0 &&  elem2.children.length > 0) {
-        return elem1.kind === elem2.kind;
+        return true;
     }
-    return elem1.kind === elem2.kind && elem1.value === elem2.value;
+    return compareVariableTemplate(elem1.value, elem2.value);
+}
+
+// function haveSameFirstChildren (elem1:FileSymbol, elem2:FileSymbol) {
+
+//     if(elem1.children.length === 0 && elem2.children.length === 0) {
+//         return true;
+//     }
+
+//     if(elem1.children.length > 0 && elem2.children.length > 0) {
+//         return haveSameKind(elem1.children[0], elem2.children[0]) && haveSameValue(elem1.children[0], elem2.children[0]);
+//     }
+
+//     return false;
+// }
+
+// function haveSameLastChildren (elem1:FileSymbol, elem2:FileSymbol) {
+
+//     if(elem1.children.length === 0 && elem2.children.length === 0) {
+//         return true;
+//     }
+
+//     if(elem1.children.length > 0 && elem2.children.length > 0) {
+//         return haveSameKind(elem1.children[elem1.children.length-1], elem2.children[elem2.children.length-1]) && haveSameValue(elem1.children[elem1.children.length-1], elem2.children[elem2.children.length-1]);
+//     }
+
+//     return false;
+// }
+
+
+function compareFileSymbol (elem1:FileSymbol, elem2:FileSymbol) {
+    if(!haveSameKind(elem1, elem2)){
+        return false;
+    }
+
+    // if(!haveSameFirstChildren(elem1, elem2)){
+    //     return false;
+    // }
+
+    // if(!haveSameLastChildren(elem1, elem2)){
+    //     return false;
+    // }
+    return haveSameValue(elem1, elem2);
 }
 
 export function compareTree(trees: FileSymbol[], isSameElement = compareFileSymbol, numberOfFiles = trees.length): FileSymbolCompare[] {
@@ -51,5 +102,15 @@ export function filterTree(trees: FileSymbolCompare[], minPercentValue = 0.8): F
     return trees.filter(tree => tree.percent >= minPercentValue).map(tree => ({
         ...tree,
         children: filterTree(tree.children, minPercentValue)
+    }));
+}
+
+
+export function createTemplateInTree(trees: FileSymbol[], infoAboutFile: PathInfo[]): FileSymbol[] {
+    
+    return trees.map(tree => ({
+        ...tree,
+        value: createVariableTemplate(tree.value, infoAboutFile),
+        children: createTemplateInTree(tree.children, infoAboutFile)
     }));
 }

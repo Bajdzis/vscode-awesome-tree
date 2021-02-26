@@ -6,9 +6,9 @@ import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { getFilesContentAsTemplate } from '../../../fileSystem/getFilesContentAsTemplate';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { generateFileAction, setDataAction } from '../../../reactViews/apps/chooseFiles/actions/action';
-import { compareTree, filterTree } from '../../../symbolInformation/compareTree';
+import { compareTree, createTemplateInTree, filterTree } from '../../../symbolInformation/compareTree';
 import { getFileSymbols } from '../../../symbolInformation/getFileSymbols';
-import { joinSymbolToString } from '../../../symbolInformation/joinSymbolToString';
+import { joinSymbolToString, treeSymbolToFlattArray } from '../../../symbolInformation/joinSymbolToString';
 import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewReact } from '../webView/webViewReact';
@@ -82,8 +82,8 @@ export class Files {
     }
 
     async getContentBySibling(createdItemUri: vscode.Uri): Promise<string> {
-        // const relativePath = getRelativePath(createdItemUri.fsPath);
-        // const infoAboutNewFile = getInfoAboutPath(relativePath);
+        const relativePath = getRelativePath(createdItemUri.fsPath);
+        const infoAboutNewFile = getInfoAboutPath(relativePath);
         const parentDir = path.dirname(createdItemUri.fsPath);
 
         const fileToSkip = path.basename(createdItemUri.fsPath);
@@ -104,19 +104,23 @@ export class Files {
         const files = contents.map(siblingFile => {
             const filePath = path.join(parentDir, siblingFile);
             const fileUri = vscode.Uri.file(filePath);
+            const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
             console.log( {fileUri} );
-            return getFileSymbols(fileUri);
+            return getFileSymbols(fileUri).then(data => createTemplateInTree([data], [infoAboutFilePath])[0]);
         });
 
-        const filesContent = await Promise.all(files).then(data => {
+        const filesContent = await Promise.all(files)
+            .then(data => compareTree(data))
+            .then(data => filterTree(data, 0.75))
+            .then(data => treeSymbolToFlattArray(data));
 
-            return compareTree(data);
+            
 
-        }).then(data => filterTree(data, 0.75));
-
-        console.log({ filesContent });
+        console.log({ files, filesContent });
         
-        const content = joinSymbolToString(filesContent);
+        const content = joinSymbolToString(filesContent, [infoAboutNewFile]);
+
+
         // const [baseFile, ...otherFiles] = contents;
         // const linesToGenerate: string[] = baseFile
         //     .filter((line) => this.allFilesIncludeThisLine(otherFiles, line));
