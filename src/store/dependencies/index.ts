@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Config } from './config/config';
 import { DirectoryRename } from './directoryRename/directoryRename';
 import { Files } from './files/files';
+import { TemplateManager } from './templateManager/templateManager';
 import { WebViewReact } from './webView/webViewReact';
 
 export const createDependency = (context: vscode.ExtensionContext): RootDependency => {
@@ -12,6 +13,7 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
     const webViewReact = new WebViewReact(context);
     const files = new Files(webViewReact);
     const directoryRename = new DirectoryRename(webViewReact);
+    const templateManager = new TemplateManager(webViewReact);
 
 
     return {
@@ -19,7 +21,8 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
         files,
         webViewReact,
         directoryRename,
-        outputChannel
+        outputChannel,
+        templateManager
     };
 };
 
@@ -28,5 +31,6 @@ export interface RootDependency {
     files: Files;
     webViewReact: WebViewReact;
     directoryRename: DirectoryRename;
+    templateManager: TemplateManager;
     outputChannel: vscode.OutputChannel;
 }

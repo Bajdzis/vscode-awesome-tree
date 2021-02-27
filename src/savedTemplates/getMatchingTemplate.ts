@@ -4,8 +4,7 @@ import * as path from 'path';
 import { DIRECTORY_FOR_TEMPLATES } from '../commands/saveAsTemplate';
 
 export interface TemplateInfo {
-    baseFilePath: string;
-    pathsTemplate: string[];
+    globs: string[];
     templateId: string;
 }
 
@@ -41,9 +40,12 @@ export function getTemplatesDatabase(workspacePath: string): Promise<TemplateInf
 
             resolve(data
                 .map((partialTemplate: Partial<TemplateInfo>): TemplateInfo => ({
-                    baseFilePath: partialTemplate.baseFilePath || '',
-                    pathsTemplate: partialTemplate.pathsTemplate || [],
+                    // baseFilePath: partialTemplate.baseFilePath || '',
+                    // pathsTemplate: partialTemplate.pathsTemplate || [],
+                    // templateId: partialTemplate.templateId || '',
+                    globs: partialTemplate.globs || [],
                     templateId: partialTemplate.templateId || '',
+
                 }))
                 .filter((template: TemplateInfo) => template)
             );

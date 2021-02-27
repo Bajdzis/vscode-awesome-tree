@@ -1,20 +1,21 @@
-import * as vscode from 'vscode';
 import * as path from 'path';
-import { merge, Observable } from 'rxjs';
-import { Action } from 'typescript-fsa';
 import { ofType } from 'redux-observable';
-import { mergeMap, ignoreElements, tap } from 'rxjs/operators';
+import { merge, Observable } from 'rxjs';
+import { ignoreElements, mergeMap, tap } from 'rxjs/operators';
+import { Action } from 'typescript-fsa';
+import { v4 as uuid } from 'uuid';
+import * as vscode from 'vscode';
 import { RootEpic } from '..';
-import { onRegisterWorkspace, OnRegisterWorkspaceParam, registerTemplates, createNewTemplate, CreateNewTemplateParam, CreateNewTemplateResult, RegisterTemplatesParam, registerTemplate } from '../../action/files/files';
-import { getTemplatesDatabase, getTemplateContent } from '../../../savedTemplates/getMatchingTemplate';
+import { DIRECTORY_FOR_TEMPLATES } from '../../../commands/saveAsTemplate';
 import { addExtensionToRecommendations } from '../../../fileSystem/addExtensionToRecommendations';
-import { getTemplateBaseOnFile, DIRECTORY_FOR_TEMPLATES } from '../../../commands/saveAsTemplate';
 import { createDocument } from '../../../fileSystem/createDocument';
+import { getTemplateContent, getTemplatesDatabase } from '../../../savedTemplates/getMatchingTemplate';
+import { createNewTemplate, CreateNewTemplateParam, CreateNewTemplateResult, onRegisterWorkspace, OnRegisterWorkspaceParam, registerTemplate, registerTemplates, RegisterTemplatesParam } from '../../action/files/files';
 
 type InputAction = 
     Action<OnRegisterWorkspaceParam> | Action<CreateNewTemplateParam> | Action<RegisterTemplatesParam> | Action<{params: CreateNewTemplateParam, result: CreateNewTemplateResult}>;
 
-export const templatesEpic: RootEpic<InputAction> = (action$, state$) =>
+export const templatesEpic: RootEpic<InputAction> = (action$, state$, { templateManager }) =>
     merge(
         action$.pipe(
             ofType<InputAction, Action<OnRegisterWorkspaceParam>>(onRegisterWorkspace.type),
@@ -48,25 +49,30 @@ export const templatesEpic: RootEpic<InputAction> = (action$, state$) =>
         ),
         action$.pipe(
             ofType<InputAction, Action<CreateNewTemplateParam>>(createNewTemplate.started.type),
-            mergeMap(({payload}: Action<CreateNewTemplateParam>) => {
+            mergeMap(async ({payload}: Action<CreateNewTemplateParam>) => {
            
-                const newTemplate = getTemplateBaseOnFile(payload.uri.fsPath);
-                const templatePath = path.join(payload.workspacePath, DIRECTORY_FOR_TEMPLATES, 'templates', `template-${newTemplate.templateId}.json` );
+                // const newTemplate = getTemplateBaseOnFile(payload.uri.fsPath);
+    
+                const { templateContentLines, globs } = await templateManager.showWebView(payload.uri);
+                const templateId = uuid();
+                const templatePath = path.join(payload.workspacePath, DIRECTORY_FOR_TEMPLATES, 'templates', `template-${templateId}.json` );
                 const templateDatabasePath = path.join(payload.workspacePath, DIRECTORY_FOR_TEMPLATES, 'database-awesome.json' );
 
                 const currentSavedTemplates = [...(state$.value.templates.workspaces[payload.workspacePath] || [])];
                 currentSavedTemplates.push({
-                    baseFilePath: newTemplate.baseFilePath,
-                    pathsTemplate: newTemplate.pathsTemplate,
-                    templateId: newTemplate.templateId
+                    globs, templateId
                 });
 
-                return Promise.all([
-                    createDocument(templatePath, JSON.stringify(newTemplate.templateLines, null, 4)),
+                return await Promise.all([
+                    createDocument(templatePath, JSON.stringify(templateContentLines, null, 4)),
                     createDocument(templateDatabasePath, JSON.stringify(currentSavedTemplates, null, 4))
                 ]).then(() => createNewTemplate.done({
                     params: payload,
-                    result: newTemplate
+                    result: {
+                        globs,
+                        templateId,
+                        templateLines :templateContentLines,
+                    }
                 })).catch((error) => createNewTemplate.failed({
                     params: payload,
                     error, 
