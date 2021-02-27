@@ -5,7 +5,6 @@ import { findWorkspacePath } from './commands/saveAsTemplate';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { createStore } from './store';
 import { createNewTemplate, onDidChange, onDidCreate, onDidDelete, onRegisterWorkspace, renameDirectory, WatchFileSystemParam } from './store/action/files/files';
-import { getFileSymbols } from './symbolInformation/getFileSymbols';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -68,13 +67,6 @@ export function activate(context: vscode.ExtensionContext) {
             uri,
             workspacePath
         }));
-    }));
-
-
-    context.subscriptions.push(vscode.commands.registerCommand('extension.renameFile', async (uri: vscode.Uri) => {
-        const symbols = await getFileSymbols(uri);
-        console.log({symbols});
-        console.log("TAK")
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {

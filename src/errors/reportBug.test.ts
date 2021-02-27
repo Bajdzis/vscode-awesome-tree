@@ -10,6 +10,8 @@ describe('reportBug', () => {
         vscode.window.showErrorMessage.mockClear();
         // @ts-ignore
         vscode.commands.executeCommand.mockClear();
+        // @ts-ignore
+        vscode.Uri.parse.mockImplementation(string => string);
     });
 
     it('should show Error message in alert', () => {

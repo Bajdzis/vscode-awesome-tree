@@ -52,26 +52,12 @@
 					"dark": "icons/awesome-template.svg",
 					"light": "icons/awesome-template-light.svg"
 				}
-			},
-			{
-				"command": "extension.renameFile",
-				"title": "Rename file [Awesome tree]",
-				"category": "FILE",
-				"icon": {
-					"dark": "icons/awesome-template.svg",
-					"light": "icons/awesome-template-light.svg"
-				}
 			}
 		],
 		"menus": {
 			"editor/title": [
 				{
 					"command": "extension.saveAsTemplate",
-					"group": "navigation@1",
-					"when": "resourceScheme == file"
-				},
-				{
-					"command": "extension.renameFile",
 					"group": "navigation@1",
 					"when": "resourceScheme == file"
 				}

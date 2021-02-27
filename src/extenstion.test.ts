@@ -1,9 +1,11 @@
 jest.mock('fs');
 jest.mock('path');
 jest.mock('vscode');
+jest.mock('./symbolInformation/getFileSymbols');
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { activate } from './extension';
+import * as mockedGetFileSymbols from './symbolInformation/getFileSymbols';
 
 describe('extenstion', () => {
     
@@ -28,6 +30,16 @@ describe('extenstion', () => {
         const createSystemWatcher = vscode.workspace.createFileSystemWatcher as jest.Mock;
         fsWriteFile.mockClear();
         createSystemWatcher.mockReturnValueOnce(mockWatcher);
+        (mockedGetFileSymbols.getFileSymbols as jest.Mock<Promise<mockedGetFileSymbols.FileSymbol>>).mockImplementation(async (uri: vscode.Uri) =>{ 
+            // @ts-expect-error
+            const text: string = fs.mockFiles[uri.fsPath] || '';
+            return {
+                children:[],
+                kind: 0,
+                text: text,
+                value: text
+            };
+        });
     });
 
     it('should start listen for create file', () => {

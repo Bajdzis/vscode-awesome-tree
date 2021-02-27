@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-const mockFiles: { [key:string]: string } = {
+export const mockFiles: { [key:string]: string } = {
     'C:/site/components/nav/nav.js': 'function NavComponent () {',
     'C:/site/components/nav/nav.css': '.nav { margin:5px; }',
     'C:/site/components/btn/btn.js': 'function BtnComponent () {',

@@ -17,10 +17,15 @@ function haveSameKind (elem1:FileSymbol, elem2:FileSymbol) {
 
 function haveSameValue (elem1:FileSymbol, elem2:FileSymbol) {
 
-    if(elem1.children.length > 0 &&  elem2.children.length > 0) {
+    if (elem1.children.length > 0 && elem2.children.length > 0) {
         return true;
     }
-    return  elem1.value === elem2.value || compareVariableTemplate(elem1.text, elem2.text);
+
+    if (elem1.children.length === 0 && elem2.children.length === 0) {
+        return elem1.value === elem2.value || compareVariableTemplate(elem1.text, elem2.text);
+    }
+
+    return false;
 }
 
 // function haveSameFirstChildren (elem1:FileSymbol, elem2:FileSymbol) {

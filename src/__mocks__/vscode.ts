@@ -37,8 +37,26 @@ export const commands = {
 } as {[key in keyof typeof vscode.commands]: jest.Mock};
 
 export const Uri = {
-    file: jest.fn(() => ({
+    file: jest.fn((data: string) => ({
+        authority:'',
+        fragment: '',
+        fsPath: data,
+        path: data,
+        query: '',
+        scheme: '',
+        toJSON: jest.fn(),
+        toString: jest.fn(),
         with: jest.fn(() => '')
     })),
-    parse: jest.fn(data => data)
+    parse: jest.fn((data: string): vscode.Uri => ({
+        authority:'',
+        fragment: '',
+        fsPath: data,
+        path: data,
+        query: '',
+        scheme: '',
+        toJSON: jest.fn(),
+        toString: jest.fn(),
+        with: jest.fn()
+    }))
 };
