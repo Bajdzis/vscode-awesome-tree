@@ -25,10 +25,19 @@ export const workspace = {
     ]
 } as {[key in keyof typeof vscode.workspace]: jest.Mock | vscode.WorkspaceFolder[]};
 
+export function DocumentSymbol() {}
+
+export function SymbolInformation() {}
+
+export const ProgressLocation = {
+    Notification: 15
+};
+
 export const window = {
     createOutputChannel: jest.fn(() => outputChanelMock),
     showInformationMessage: jest.fn(),
     showErrorMessage: jest.fn(),
+    withProgress: jest.fn(),
 } as {[key in keyof typeof vscode.window]: jest.Mock};
 
 export const commands = {

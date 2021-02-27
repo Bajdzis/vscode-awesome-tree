@@ -16,7 +16,7 @@ export interface FileSymbol {
 function mapToMoreSpecificSymbol (symbols : (vscode.SymbolInformation | vscode.DocumentSymbol)[], document: vscode.TextDocument): FileSymbol[] {
 
     return symbols.reduce((old,item): FileSymbol[] => {
-        if(item instanceof vscode.DocumentSymbol) {
+        if (item instanceof vscode.DocumentSymbol) {
             let additional: FileSymbol[] = mapToMoreSpecificSymbol(item.children, document);
                     
             return [
@@ -48,22 +48,23 @@ function mapToMoreSpecificSymbol (symbols : (vscode.SymbolInformation | vscode.D
 }
 
 export async function getFileSymbols(uri: vscode.Uri) : Promise<FileSymbol> {
-
-    let success = await vscode.commands.executeCommand<Promise<(vscode.SymbolInformation | vscode.DocumentSymbol)[]>>('vscode.executeDocumentSymbolProvider', uri);
+    try {
+        let symbols = await vscode.commands.executeCommand<Promise<(vscode.SymbolInformation | vscode.DocumentSymbol)[]>>('vscode.executeDocumentSymbolProvider', uri);
     
-    let document = await vscode.workspace.openTextDocument(uri);
+        let document = await vscode.workspace.openTextDocument(uri);
 
-    if ( success ) {
-        const main = {
-            value: '',
-            kind: SpecialSymbol.DOCUMENT,
-            children:mapToMoreSpecificSymbol(success, document),
-            text: document.getText()
-        };
-        console.log({main});
-        return addTextToSymbol(main);
+        if ( symbols ) {
+            const main = {
+                value: '',
+                kind: SpecialSymbol.DOCUMENT,
+                children:mapToMoreSpecificSymbol(symbols, document),
+                text: document.getText()
+            };
+            return addTextToSymbol(main);
+        }
+    } catch (error) {
+        console.log(error);
     }
-
     return {
         value: '',
         kind: SpecialSymbol.DOCUMENT,
