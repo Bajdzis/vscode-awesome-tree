@@ -35,10 +35,20 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
         ),
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentBySibling.type),
-            map(({ payload }: Action<vscode.Uri>) => ({
-                createPath: payload,
-                content: files.getContentBySibling(payload)
-            })),
+            mergeMap(async ({ payload }: Action<vscode.Uri>) => {
+                const contentPromise = files.getContentBySibling(payload);
+
+                vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
+                    cancellable: false
+                }, () => contentPromise);
+
+                return ({
+                    createPath: payload,
+                    content: await contentPromise
+                });
+            }),
             filter(({ content }) => !!content.length),
             mergeMap(async ({ createPath, content }) => {
 

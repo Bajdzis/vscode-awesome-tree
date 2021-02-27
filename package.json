@@ -9,7 +9,7 @@
 		"url": "https://budzis.pl"
 	},
 	"engines": {
-		"vscode": "^1.37.0"
+		"vscode": "^1.53.0"
 	},
 	"categories": [
 		"Other"
