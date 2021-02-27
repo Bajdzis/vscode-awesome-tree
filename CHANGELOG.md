@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.6.0...v1.7.0) (2021-02-27)
+
+
+### Features
+
+* Splitting script files using VS Code symbols ([ad8bd6b](https://github.com/Bajdzis/vscode-awesome-tree/commit/ad8bd6b6900a5023cfb8b758c1af3aa58316e12a))
+
 ## [1.6.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.5.0...v1.6.0) (2021-02-20)
 
 
