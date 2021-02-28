@@ -1,0 +1,33 @@
+.select {
+    padding: 1em 0;
+}
+
+.select--checkbox {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+    align-items: center;
+}
+
+.select__label {
+    display: block;
+    margin: 2px 0;
+    cursor: pointer;
+}
+
+.select--checkbox .select__label {
+    margin: 2px 4px;
+}
+
+.select__select {
+    background: var(--vscode-select-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    color: var(--vscode-select-foreground);
+    padding: 4px;
+    margin: 2px 0;
+}
+
+.select__select:focus {
+    border-color: var(--vscode-focusBorder);
+    outline: 0;
+}
