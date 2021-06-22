@@ -12,8 +12,11 @@ const path = require('path');
 /**@type {import('webpack').Configuration}*/
 const config = {
     target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-
-    entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+    // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+    entry: {
+        extension: './src/extension.ts',
+        createContentForFileWorker: './src/workers/createContentForFile/worker.ts',
+    },
     output: { // the bundle is stored in the 'out' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
         path: path.resolve(__dirname, 'out'),
         filename: 'extension.js',
@@ -37,7 +40,7 @@ const config = {
         }]
     },
     optimization: {
-        minimize: true, 
+        minimize: true,
     }
 };
 
@@ -51,7 +54,7 @@ const configReactView = {
         reactAppChooseFiles:'./src/reactViews/apps/chooseFiles/index.tsx',
         // shared: ['react', 'react-dom'], //, 'redux', 'react-redux'],
     },
-    output: { 
+    output: {
         path: path.resolve(__dirname, 'out'),
         filename: '[name].js',
     },
@@ -75,7 +78,7 @@ const configReactView = {
         }]
     },
     optimization: {
-        minimize: true, 
+        minimize: true,
     }
 };
 
