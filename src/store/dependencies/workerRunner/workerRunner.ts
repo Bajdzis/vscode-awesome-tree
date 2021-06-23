@@ -1,4 +1,4 @@
-import { Worker } from 'node:worker_threads';
+import { Worker } from 'worker_threads';
 import * as path from 'path';
 import { Action } from 'typescript-fsa';
 import * as vscode from 'vscode';
@@ -11,7 +11,7 @@ export class WorkerRunner {
         this.context = context;
     }
 
-    run(title: string, workerFileName: string, action : Action<any>): Promise<any> {
+    run(title: string, workerFileName: string, action : Action<any>): Promise<Action<any>> {
 
         return new Promise((resolveMain) => {
             vscode.window.withProgress({
