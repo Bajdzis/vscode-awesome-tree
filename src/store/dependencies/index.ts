@@ -3,6 +3,7 @@ import { Config } from './config/config';
 import { DirectoryRename } from './directoryRename/directoryRename';
 import { Files } from './files/files';
 import { WebViewReact } from './webView/webViewReact';
+import { WorkerRunner } from './workerRunner/workerRunner';
 
 export const createDependency = (context: vscode.ExtensionContext): RootDependency => {
     const outputChannel = vscode.window.createOutputChannel('Awesome tree');
@@ -12,6 +13,7 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
     const webViewReact = new WebViewReact(context);
     const files = new Files(webViewReact);
     const directoryRename = new DirectoryRename(webViewReact);
+    const workerRunner = new WorkerRunner(context);
 
 
     return {
@@ -19,7 +21,8 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
         files,
         webViewReact,
         directoryRename,
-        outputChannel
+        outputChannel,
+        workerRunner
     };
 };
 
@@ -29,4 +32,5 @@ export interface RootDependency {
     webViewReact: WebViewReact;
     directoryRename: DirectoryRename;
     outputChannel: vscode.OutputChannel;
+    workerRunner: WorkerRunner;
 }

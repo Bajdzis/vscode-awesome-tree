@@ -12,6 +12,7 @@ import { createDocument } from '../../../fileSystem/createDocument';
 import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
+import { createContentInputAction } from '../../../workers/createContentForFile/action';
 import { createFileContentCancel, createFileContentStarted, CreateFileContentStartedParam, createFilesInNewDirectory, fillFileContentBySibling, fillFileContentStarted, OnRegisterWorkspaceParam, WatchFileSystemParam } from '../../action/files/files';
 import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
 import { getSimilarDirectoryInfo } from '../../selectors/files/files';
@@ -20,7 +21,7 @@ import { getMatchingTemplate } from '../../selectors/templates/templates';
 type InputAction =
     Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam> | Action<OnRegisterWorkspaceParam>;
 
-export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files }) =>
+export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files, workerRunner }) =>
     merge(
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentStarted.type),
@@ -36,17 +37,17 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentBySibling.type),
             mergeMap(async ({ payload }: Action<vscode.Uri>) => {
-                const contentPromise = files.getContentBySibling(payload);
 
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
-                    cancellable: false
-                }, () => contentPromise);
 
                 return ({
                     createPath: payload,
-                    content: await contentPromise
+                    content: await workerRunner.run(
+                        `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
+                        'createContentForFileWorker.js',
+                        createContentInputAction({
+                            filePath: payload.fsPath
+                        })
+                    )
                 });
             }),
             filter(({ content }) => !!content.length),
@@ -160,5 +161,5 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
             }),
             ignoreElements()
         ),
-      
+
     );
