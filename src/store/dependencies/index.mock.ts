@@ -26,7 +26,7 @@ export const createMockDependency = (): RootDependencyMocked => {
             includesThisTemplate: jest.fn(),
             isDirectory: jest.fn(),
             isEmptyDirectory: jest.fn(),
-            isEmptyFile: jest.fn(), 
+            isEmptyFile: jest.fn(),
             isFile: jest.fn(),
             showWebView: jest.fn(),
         },
@@ -45,6 +45,9 @@ export const createMockDependency = (): RootDependencyMocked => {
             hide: jest.fn(),
             name: jest.fn(),
             show: jest.fn(),
+        },
+        workerRunner: {
+            run: jest.fn()
         }
     };
     return dependency;

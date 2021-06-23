@@ -37,17 +37,17 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
         action$.pipe(
             ofType<InputAction, Action<vscode.Uri>>(fillFileContentBySibling.type),
             mergeMap(async ({ payload }: Action<vscode.Uri>) => {
-
+                const result = await workerRunner.run(
+                    `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
+                    'createContentForFileWorker.js',
+                    createContentInputAction({
+                        filePath: payload.fsPath
+                    })
+                );
 
                 return ({
                     createPath: payload,
-                    content: await workerRunner.run(
-                        `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
-                        'createContentForFileWorker.js',
-                        createContentInputAction({
-                            filePath: payload.fsPath
-                        })
-                    )
+                    content: result.payload.content || ''
                 });
             }),
             filter(({ content }) => !!content.length),

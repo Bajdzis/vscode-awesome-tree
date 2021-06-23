@@ -7,6 +7,8 @@ export interface CreateContentInputParams {
 }
 export const createContentInputAction = createContentForFileActionCreator<CreateContentInputParams>('INPUT');
 
-export const createContentResultAction = createContentForFileActionCreator<{
+export interface CreateContentResultParams {
     content: string | null
-}>('RESULT');
+}
+
+export const createContentResultAction = createContentForFileActionCreator<CreateContentResultParams>('RESULT');

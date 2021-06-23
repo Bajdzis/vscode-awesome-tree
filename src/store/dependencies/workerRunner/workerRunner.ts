@@ -2,6 +2,7 @@ import { Worker } from 'worker_threads';
 import * as path from 'path';
 import { Action } from 'typescript-fsa';
 import * as vscode from 'vscode';
+import { WorkerNameToAction } from '../../../workers/domain';
 
 
 export class WorkerRunner {
@@ -11,9 +12,9 @@ export class WorkerRunner {
         this.context = context;
     }
 
-    run(title: string, workerFileName: string, action : Action<any>): Promise<Action<any>> {
+    run<T extends keyof WorkerNameToAction>(title: string, workerFileName: T, action : Action<WorkerNameToAction[T]['input']>): Promise<Action<WorkerNameToAction[T]['result']>> {
 
-        return new Promise((resolveMain) => {
+        return new Promise((resolveMain, rejectMain) => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title,
@@ -27,12 +28,19 @@ export class WorkerRunner {
                 });
 
                 worker.postMessage(action);
-                return new Promise((resolve) => {
+                return new Promise((resolve, reject) => {
 
                     worker.on('message', (data) => {
+                        console.log('DATA', data);
                         resolve(data);
                         resolveMain(data);
                     });
+
+                    worker.on('error', () => {
+                        reject();
+                        rejectMain();
+                    });
+
                 });
 
             });
