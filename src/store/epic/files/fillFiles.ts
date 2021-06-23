@@ -41,7 +41,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                     `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
                     'createContentForFileWorker.js',
                     createContentInputAction({
-                        filePath: payload.fsPath
+                        filePath: payload
                     })
                 );
 

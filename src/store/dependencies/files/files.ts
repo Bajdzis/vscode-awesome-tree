@@ -30,8 +30,8 @@ export class Files {
     }
 
     async showWebView(
-        createdItemUri: vscode.Uri, 
-        filesWithContent:WebViewInfoAboutFiles[], 
+        createdItemUri: vscode.Uri,
+        filesWithContent:WebViewInfoAboutFiles[],
         infoAboutSiblingDirectories: DirectoriesInfo,
         siblingTemplatePathFiles: string[],
         onHandleEvent: ((filePath: string, content: string) => void)
@@ -74,14 +74,14 @@ export class Files {
     generateFileContentByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]): string{
         const relativePath = getRelativePath(createdItemUri.fsPath);
         const infoAboutNewFile = getInfoAboutPath(relativePath);
-        const content = savedTemplate.map(line => 
+        const content = savedTemplate.map(line =>
             renderVariableTemplate(line, [infoAboutNewFile])
         ).join('\n');
 
         return content;
     }
 
-    async getContentBySibling(createdItemUri: vscode.Uri): Promise<string> {
+    static async getContentBySibling(createdItemUri: vscode.Uri): Promise<string> {
         const relativePath = getRelativePath(createdItemUri.fsPath);
         const infoAboutNewFile = getInfoAboutPath(relativePath);
         const parentDir = path.dirname(createdItemUri.fsPath);
@@ -98,7 +98,7 @@ export class Files {
             const filePath = path.join(parentDir, siblingFile);
             const fileUri = vscode.Uri.file(filePath);
             const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
-            
+
             return getFileSymbols(fileUri).then(data => createTemplateInTree([data], [infoAboutFilePath])[0]);
         });
 
@@ -116,7 +116,7 @@ export class Files {
         if (contents.length === 0) {
             return '';
         }
-		
+
         const [baseFile, ...otherFiles] = contents;
         const lineToGenerate: string[] = [];
 

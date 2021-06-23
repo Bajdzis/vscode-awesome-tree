@@ -43,21 +43,17 @@ const config = {
 
 /**@type {import('webpack').Configuration}*/
 const configWorkers = {
-    target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-    // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+    target: 'node',
     entry: {
         createContentForFileWorker: './src/workers/createContentForFile/worker.ts',
     },
-    output: { // the bundle is stored in the 'out' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
+    output: {
         path: path.resolve(__dirname, 'out'),
         filename: '[name].js',
         libraryTarget: 'commonjs2'
     },
     devtool: 'source-map',
-    externals: {
-        vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    },
-    resolve: { // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+    resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
     plugins: [
