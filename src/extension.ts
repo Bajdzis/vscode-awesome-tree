@@ -1,5 +1,5 @@
 import { PathInfo } from 'awesome-tree-engine';
-// import * as fs from 'fs';
+import * as fs from 'fs';
 import { ActionCreator } from 'typescript-fsa';
 import * as vscode from 'vscode';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';

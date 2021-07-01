@@ -1,10 +1,12 @@
 import { ignoreElements, tap } from 'rxjs/operators';
+import { WebviewPanel } from 'vscode';
 import { RootEpic } from '..';
+import { dispatchAction } from '../../../reactViews/apps/debugger/actions/actions';
 
 export const loggerEpic: RootEpic = (action$, state$, { outputChannel, webViewReact }) =>{
-
+    let panel: Promise<WebviewPanel> = new Promise(() => {});
     if (process.env.ENV_MODE !== 'production') {
-        webViewReact.showWebView('Debugger', 'reactViewsDebugger.js');
+        panel = webViewReact.showWebView('Debugger', 'reactViewsDebugger.js');
     }
 
     return action$.pipe(
@@ -15,6 +17,15 @@ export const loggerEpic: RootEpic = (action$, state$, { outputChannel, webViewRe
             outputChannel.appendLine('-----------------------');
             outputChannel.appendLine(`STATE: ${JSON.stringify(state$.value)}`);
             outputChannel.appendLine('=======================');
+            panel.then(panel => {
+                panel.webview.postMessage(
+
+                    dispatchAction({
+                        action,
+                        state: state$.value
+                    })
+                );
+            });
         }),
         ignoreElements()
     );
