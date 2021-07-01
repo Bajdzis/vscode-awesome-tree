@@ -1,20 +1,20 @@
-import * as fs from 'fs';
+import { PathInfo } from 'awesome-tree-engine';
+// import * as fs from 'fs';
 import { ActionCreator } from 'typescript-fsa';
 import * as vscode from 'vscode';
-import { findWorkspacePath } from './commands/saveAsTemplate';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { createStore } from './store';
-import { createNewTemplate, onDidChange, onDidCreate, onDidDelete, onRegisterWorkspace, renameDirectory, WatchFileSystemParam } from './store/action/files/files';
+import { onDidChange, onDidCreate, onDidDelete, onRegisterWorkspace, renameDirectory } from './store/action/files/files';
 
 export function activate(context: vscode.ExtensionContext) {
 
     const { store, dependencies } = createStore(context);
     const { outputChannel, config } = dependencies;
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*');
-    
+
     outputChannel.appendLine('Listening for file changes started!');
-    
-    const dispatchFileSystemAction = (action: ActionCreator<WatchFileSystemParam> ) => {
+
+    const dispatchFileSystemAction = (action: ActionCreator<PathInfo> ) => {
         return (uri: vscode.Uri) => {
             if (!config.canUseThisFile(uri)) {
                 return;
@@ -25,17 +25,14 @@ export function activate(context: vscode.ExtensionContext) {
                     return;
                 }
                 const type = stats.isFile() ? 'file' : 'directory';
-                store.dispatch(action({
-                    type,
-                    uri,
-                }));
+                store.dispatch(action(new PathInfo(type === 'file' ? uri.fsPath : `${uri.fsPath}/`)));
             });
         };
     };
 
     fileSystemWatcher.onDidCreate(dispatchFileSystemAction(onDidCreate));
     fileSystemWatcher.onDidChange(dispatchFileSystemAction(onDidChange));
-    fileSystemWatcher.onDidDelete((uri) => store.dispatch(onDidDelete(uri)));
+    fileSystemWatcher.onDidDelete((uri) => store.dispatch(onDidDelete(new PathInfo(uri.fsPath))));
 
     const sendFilesPathsToStore = () => {
         const { workspaceFolders } = vscode.workspace;
@@ -47,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
                 filePaths,
                 workspacePath
             }));
-            
+
         });
     };
 
@@ -55,19 +52,19 @@ export function activate(context: vscode.ExtensionContext) {
 
     sendFilesPathsToStore();
 
-    context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', (uri: vscode.Uri) => {
-        const workspacePath = findWorkspacePath(uri.fsPath);
+    // context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', (uri: vscode.Uri) => {
+    //     const workspacePath = findWorkspacePath(uri.fsPath);
 
-        if (workspacePath === undefined) {
-            vscode.window.showWarningMessage(`Can't find workspace directory for file: '${uri.fsPath}'`);
-            return;
-        }
+    //     if (workspacePath === undefined) {
+    //         vscode.window.showWarningMessage(`Can't find workspace directory for file: '${uri.fsPath}'`);
+    //         return;
+    //     }
 
-        store.dispatch(createNewTemplate.started({
-            uri,
-            workspacePath
-        }));
-    }));
+    //     store.dispatch(createNewTemplate.started({
+    //         uri,
+    //         workspacePath
+    //     }));
+    // }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {
         store.dispatch(renameDirectory.started(uri));

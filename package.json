@@ -146,6 +146,7 @@
 		"@types/parse-gitignore": "^1.0.0",
 		"@types/react": "^17.0.2",
 		"@types/react-dom": "^17.0.1",
+		"awesome-tree-engine": "^1.0.1",
 		"lodash": "^4.17.20",
 		"minimatch": "^3.0.4",
 		"parse-gitignore": "^1.0.1",

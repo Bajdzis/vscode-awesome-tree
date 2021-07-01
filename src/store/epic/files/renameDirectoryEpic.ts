@@ -7,13 +7,12 @@ import * as vscode from 'vscode';
 import { RootEpic } from '..';
 import { createDocument } from '../../../fileSystem/createDocument';
 import { deleteDocument } from '../../../fileSystem/deleteDocument';
-import { CreateFileContentStartedParam, OnRegisterWorkspaceParam, renameCopyDirectory, renameDirectory, WatchFileSystemParam } from '../../action/files/files';
+import { OnRegisterWorkspaceParam, renameCopyDirectory, renameDirectory } from '../../action/files/files';
 import { generateFinish, generateStarted } from '../../action/lock/lock';
 import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
 import { getFilesInDirectory, getFirstDirectoryWithSameFiles } from '../../selectors/files/files';
 
-type InputAction =
-    Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam> | Action<OnRegisterWorkspaceParam>;
+type InputAction = Action<vscode.Uri> | Action<OnRegisterWorkspaceParam>;
 
 export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { directoryRename }) =>
     merge(
@@ -70,7 +69,7 @@ export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { di
                         await createDocument(file.filePath, file.content).then(() => deleteDocument(file.filePathFrom));
                     }
                 };
-  
+
                 filesOperation().catch((err)=> {
                     observer.error(err);
                 }).finally(() => {

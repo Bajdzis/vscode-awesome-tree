@@ -1,14 +1,11 @@
+import { CompareFiles, FileContent, FileContentCreator, PathInfo } from 'awesome-tree-engine';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
+import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
-import { getFilesContentAsTemplate } from '../../../fileSystem/getFilesContentAsTemplate';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { generateFileAction, setDataAction } from '../../../reactViews/apps/chooseFiles/actions/action';
-import { compareTree, createTemplateInTree, filterTree } from '../../../symbolInformation/compareTree';
-import { getFileSymbols } from '../../../symbolInformation/getFileSymbols';
-import { joinSymbolToString, treeSymbolToFlattArray } from '../../../symbolInformation/joinSymbolToString';
 import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewReact } from '../webView/webViewReact';
@@ -30,8 +27,8 @@ export class Files {
     }
 
     async showWebView(
-        createdItemUri: vscode.Uri, 
-        filesWithContent:WebViewInfoAboutFiles[], 
+        createdItemUri: vscode.Uri,
+        filesWithContent:WebViewInfoAboutFiles[],
         infoAboutSiblingDirectories: DirectoriesInfo,
         siblingTemplatePathFiles: string[],
         onHandleEvent: ((filePath: string, content: string) => void)
@@ -74,59 +71,52 @@ export class Files {
     generateFileContentByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]): string{
         const relativePath = getRelativePath(createdItemUri.fsPath);
         const infoAboutNewFile = getInfoAboutPath(relativePath);
-        const content = savedTemplate.map(line => 
+        const content = savedTemplate.map(line =>
             renderVariableTemplate(line, [infoAboutNewFile])
         ).join('\n');
 
         return content;
     }
 
-    async getContentBySibling(createdItemUri: vscode.Uri): Promise<string> {
-        const relativePath = getRelativePath(createdItemUri.fsPath);
-        const infoAboutNewFile = getInfoAboutPath(relativePath);
-        const parentDir = path.dirname(createdItemUri.fsPath);
+    async getContentBySibling(generateFile: PathInfo, workspacePaths: PathInfo[]): Promise<string> {
 
-        const fileToSkip = path.basename(createdItemUri.fsPath);
-        const contents = fs.readdirSync(parentDir)
-            .filter(siblingFile => fs.lstatSync(path.join(parentDir, siblingFile)).isFile() && siblingFile !== fileToSkip);
 
-        if (contents.length < 2) {
-            return '';
-        }
-
-        const files = contents.map(siblingFile => {
-            const filePath = path.join(parentDir, siblingFile);
-            const fileUri = vscode.Uri.file(filePath);
-            const infoAboutFilePath = getInfoAboutPath(getRelativePath(filePath));
-            
-            return getFileSymbols(fileUri).then(data => createTemplateInTree([data], [infoAboutFilePath])[0]);
+        const similarFiles: FileContent[] = workspacePaths.filter(path => generateFile.isSimilar(path)).map(path => {
+            const content = fs.readFileSync(path.getPath()).toString();
+            return new FileContent(path, content);
         });
 
-        const filesContent = await Promise.all(files)
-            .then(data => compareTree(data))
-            .then(data => filterTree(data, 0.75))
-            .then(data => treeSymbolToFlattArray(data));
+        expect(similarFiles).toHaveLength(2);
 
-        return joinSymbolToString(filesContent, [infoAboutNewFile]);
+        const comparer = new CompareFiles();
+
+        similarFiles.forEach(file => {
+            const contentCreator = new FileContentCreator(generateFile, file);
+            const newFileContent = new FileContent(generateFile, contentCreator.createContent());
+
+            comparer.addFile(newFileContent.getFileGraph());
+        });
+
+        return comparer.compare(0.75).getContent();
     }
 
-    createFileContent(templateStringPath:string, directories: DirectoriesInfo, variables: PathInfo[]): string {
-        const contents: Array<string[]> = getFilesContentAsTemplate(directories, templateStringPath);
+    createFileContent(): string {
+        // const contents: Array<string[]> = getFilesContentAsTemplate(directories, templateStringPath);
 
-        if (contents.length === 0) {
-            return '';
-        }
-		
-        const [baseFile, ...otherFiles] = contents;
-        const lineToGenerate: string[] = [];
+        // if (contents.length === 0) {
+        return '';
+        // }
 
-        baseFile.forEach(line => {
-            if(this.allFilesIncludeThisLine(otherFiles, line)){
-                lineToGenerate.push(renderVariableTemplate(line, variables));
-            }
-        });
+        // const [baseFile, ...otherFiles] = contents;
+        // const lineToGenerate: string[] = [];
 
-        return lineToGenerate.join('');
+        // baseFile.forEach(line => {
+        //     if(this.allFilesIncludeThisLine(otherFiles, line)){
+        //         lineToGenerate.push(renderVariableTemplate(line, variables));
+        //     }
+        // });
+
+        // return lineToGenerate.join('');
     }
 
     allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean {

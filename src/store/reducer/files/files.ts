@@ -1,7 +1,8 @@
 import { reducerWithInitialState } from 'typescript-fsa-reducers';
 import { onRegisterWorkspace, onDidDelete, onDidCreate, updateGitIgnoreFile } from '../../action/files/files';
-import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
+import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
+import { PathInfo } from 'awesome-tree-engine';
 
 export interface FilesState {
     pathToInfo: { [key: string]: PathInfo }
@@ -28,25 +29,22 @@ export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
     .case(onDidDelete, (state: FilesState, payload): FilesState => ({
         ...state,
         pathToInfo: Object.entries(state.pathToInfo).reduce((pathToInfo, [key, value]) => {
-            if(key.indexOf(payload.fsPath) !== 0) {
+            if(key.indexOf(payload.getPath()) !== 0) {
                 pathToInfo[key] = value;
             }
             return pathToInfo;
         }, {} as { [key: string]: PathInfo })
     }))
     .case(onDidCreate, (state: FilesState, payload): FilesState => {
-        if (payload.type !== 'file') {
+        if (payload.isFile()) {
             return state;
         }
-
-        const relativePath = getRelativePath(payload.uri.fsPath);
-        const info = getInfoAboutPath(relativePath);
 
         return {
             ...state,
             pathToInfo: {
                 ...state.pathToInfo,
-                [payload.uri.fsPath]: info
+                [payload.getPath()]: payload
             }
         };
     })

@@ -17,10 +17,6 @@ const MOCK_STATE: { value : RootState} = {
         },
         lock: {
             locked: false
-        },
-        templates: {
-            contents:{},
-            workspaces:{}
         }
     }
 };
@@ -49,7 +45,7 @@ describe('epic / renameDirectoryEpic', () => {
             filePathRelative: 'filePathRelative'
         }] as WebViewInfoAboutRenameFiles[]);
         const epic$ = renameDirectoryEpic(actions as any, MOCK_STATE as any, dependency as any);
- 
+
         epic$.subscribe((action) => {
             expect(action).toEqual(generateStarted());
             done();

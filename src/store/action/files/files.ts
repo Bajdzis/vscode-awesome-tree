@@ -1,17 +1,12 @@
 import * as vscode from 'vscode';
 import actionCreatorFactory from 'typescript-fsa';
-import { TemplateInfo } from '../../../savedTemplates/getMatchingTemplate';
- 
+import { PathInfo, FileContent } from 'awesome-tree-engine';
+
 const filesActionCreator = actionCreatorFactory('FILES');
 
-export interface WatchFileSystemParam {
-    uri: vscode.Uri,
-    type: 'file' | 'directory'
-}
-
-export const onDidCreate = filesActionCreator<WatchFileSystemParam>('ON_DID_CREATE');
-export const onDidChange = filesActionCreator<WatchFileSystemParam>('ON_DID_CHANGE');
-export const onDidDelete = filesActionCreator<vscode.Uri>('ON_DID_DELETE');
+export const onDidCreate = filesActionCreator<PathInfo>('ON_DID_CREATE');
+export const onDidChange = filesActionCreator<PathInfo>('ON_DID_CHANGE');
+export const onDidDelete = filesActionCreator<PathInfo>('ON_DID_DELETE');
 
 export interface OnRegisterWorkspaceParam {
     filePaths: string[];
@@ -20,27 +15,23 @@ export interface OnRegisterWorkspaceParam {
 
 export const onRegisterWorkspace = filesActionCreator<OnRegisterWorkspaceParam>('ON_REGISTER_WORKSPACE');
 
-export interface RegisterTemplatesParam {
-    templates: TemplateInfo[];
-    workspacePath: string;
-}
-export const registerTemplates = filesActionCreator<RegisterTemplatesParam>('REGISTER_TEMPLATES');
+// export interface RegisterTemplatesParam {
+//     templates: TemplateInfo[];
+//     workspacePath: string;
+// }
+// export const registerTemplates = filesActionCreator<RegisterTemplatesParam>('REGISTER_TEMPLATES');
 
-export interface RegisterTemplateParam {
-    templateId: string;
-    content: string[];
-}
-export const registerTemplate = filesActionCreator<RegisterTemplateParam>('REGISTER_TEMPLATE');
+// export interface RegisterTemplateParam {
+//     templateId: string;
+//     content: string[];
+// }
+// export const registerTemplate = filesActionCreator<RegisterTemplateParam>('REGISTER_TEMPLATE');
 
-export const fillFileContentStarted = filesActionCreator<vscode.Uri>('FILL_FILE_CONTENT_STARTED');
-export const fillFileContentBySibling = filesActionCreator<vscode.Uri>('FILL_FILE_CONTENT_BY_SIBLING');
+export const fillFileContentStarted = filesActionCreator<PathInfo>('FILL_FILE_CONTENT_STARTED');
+// export const fillFileContentBySibling = filesActionCreator<vscode.Uri>('FILL_FILE_CONTENT_BY_SIBLING');
 
-export interface CreateFileContentStartedParam {
-    uri: vscode.Uri;
-    content: string;
-}
-export const createFileContentStarted = filesActionCreator<CreateFileContentStartedParam>('CREATE_FILE_CONTENT_STARTED');
-export const createFileContentCancel = filesActionCreator<vscode.Uri>('CREATE_FILE_CONTENT_CANCEL');
+export const createFileContentStarted = filesActionCreator<FileContent>('CREATE_FILE_CONTENT_STARTED');
+export const createFileContentCancel = filesActionCreator<PathInfo>('CREATE_FILE_CONTENT_CANCEL');
 export const createFilesInNewDirectory = filesActionCreator<vscode.Uri>('CREATE_FILES_IN_NEW_DIRECTORY');
 export const renameCopyDirectory = filesActionCreator<vscode.Uri>('RENAME_COPY_DIRECTORY');
 
@@ -49,11 +40,11 @@ export interface CreateNewTemplateParam {
     workspacePath: string;
 }
 
-export interface CreateNewTemplateResult extends TemplateInfo {
-    templateLines: string[];
-}
+// export interface CreateNewTemplateResult extends TemplateInfo {
+//     templateLines: string[];
+// }
 
-export const createNewTemplate = filesActionCreator.async<CreateNewTemplateParam, CreateNewTemplateResult, Error>('CREATE_FILE_CONTENT_BY_SIBLING');
+// export const createNewTemplate = filesActionCreator.async<CreateNewTemplateParam, CreateNewTemplateResult, Error>('CREATE_FILE_CONTENT_BY_SIBLING');
 
 export const renameDirectory = filesActionCreator.async<vscode.Uri, void, Error>('RENAME_DIRECTORY');
 
