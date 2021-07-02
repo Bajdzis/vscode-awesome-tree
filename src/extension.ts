@@ -25,7 +25,8 @@ export function activate(context: vscode.ExtensionContext) {
                     return;
                 }
                 const type = stats.isFile() ? 'file' : 'directory';
-                store.dispatch(action(new PathInfo(type === 'file' ? uri.fsPath : `${uri.fsPath}/`)));
+                const path = new PathInfo(type === 'file' ? uri.fsPath : `${uri.fsPath}/`);
+                store.dispatch(action(path ));
             });
         };
     };
@@ -38,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
         const { workspaceFolders } = vscode.workspace;
         workspaceFolders && workspaceFolders.forEach(({ uri }) => {
             const workspacePath = uri.fsPath;
-            const filePaths = getAllFilesPath(workspacePath, config.getIgnorePathsGlob());
+            const filePaths = getAllFilesPath(workspacePath, config.getIgnorePathsGlob()).map(path => new PathInfo(path));
 
             store.dispatch(onRegisterWorkspace({
                 filePaths,

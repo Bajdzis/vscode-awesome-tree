@@ -1,7 +1,5 @@
 import { reducerWithInitialState } from 'typescript-fsa-reducers';
 import { onRegisterWorkspace, onDidDelete, onDidCreate, updateGitIgnoreFile } from '../../action/files/files';
-import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
-import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { PathInfo } from 'awesome-tree-engine';
 
 export interface FilesState {
@@ -20,9 +18,7 @@ export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
         pathToInfo: {
             ...state.pathToInfo,
             ...payload.filePaths.reduce((state, fsPath) => {
-                const relativePath = getRelativePath(fsPath);
-                const info = getInfoAboutPath(relativePath);
-                return {...state,[fsPath]:info };
+                return {...state,[fsPath.getPath()]:fsPath };
             }, {})
         }
     }))

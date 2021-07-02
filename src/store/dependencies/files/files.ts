@@ -86,8 +86,6 @@ export class Files {
             return new FileContent(path, content);
         });
 
-        expect(similarFiles).toHaveLength(2);
-
         const comparer = new CompareFiles();
 
         similarFiles.forEach(file => {

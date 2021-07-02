@@ -9,7 +9,7 @@ export const onDidChange = filesActionCreator<PathInfo>('ON_DID_CHANGE');
 export const onDidDelete = filesActionCreator<PathInfo>('ON_DID_DELETE');
 
 export interface OnRegisterWorkspaceParam {
-    filePaths: string[];
+    filePaths: PathInfo[];
     workspacePath: string;
 }
 
