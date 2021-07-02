@@ -1,3 +1,4 @@
+import { PathInfo } from 'awesome-tree-engine';
 import * as path from 'path';
 import { ofType } from 'redux-observable';
 import { merge, Observable } from 'rxjs';
@@ -9,28 +10,26 @@ import { createDocument } from '../../../fileSystem/createDocument';
 import { deleteDocument } from '../../../fileSystem/deleteDocument';
 import { OnRegisterWorkspaceParam, renameCopyDirectory, renameDirectory } from '../../action/files/files';
 import { generateFinish, generateStarted } from '../../action/lock/lock';
-import { WebViewInfoAboutRenameFiles } from '../../dependencies/directoryRename/directoryRename';
-import { getFilesInDirectory, getFirstDirectoryWithSameFiles } from '../../selectors/files/files';
 
-type InputAction = Action<vscode.Uri> | Action<OnRegisterWorkspaceParam>;
+type InputAction = Action<vscode.Uri> | Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
 
 export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { directoryRename }) =>
     merge(
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(renameCopyDirectory.type),
+            ofType<InputAction, Action<PathInfo>>(renameCopyDirectory.type),
             bufferTime(300),
             filter(events => !!events.length),
             map((actions) => actions.reduce((acc, next) => {
-                if(acc.payload.fsPath.length > next.payload.fsPath.length) {
+                if(acc.payload.getPath().length > next.payload.getPath().length) {
                     return next;
                 }
                 return acc;
             }, actions[0])),
-            filter(({ payload }) => !!getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)),
+            // filter(({ payload }) => !!getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)),
             mergeMap(async ({ payload }) => {
 
-                const parentDir = path.dirname(payload.fsPath);
-                const fileName = path.basename(payload.fsPath);
+                const parentDir = payload.getParent().getPath();
+                const fileName = path.basename(payload.getPath());
 
                 const answersQuestion = [
                     'Yes, rename directory',
@@ -54,19 +53,35 @@ export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { di
             })
         ),
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(renameDirectory.started.type),
+            ofType<InputAction, Action<PathInfo>>(renameDirectory.started.type),
             mergeMap(async ({payload}) => {
-                const dirFiles = getFilesInDirectory(payload.fsPath)(state$.value);
-                renameDirectory.started(payload);
-                return await directoryRename.showWebView(payload, dirFiles);
+
+                console.log({pathToInfo : state$.value.files.pathToInfo });
+
+                const similarFiles = Object.keys(state$.value.files.pathToInfo).filter(file => {
+                    return file.includes(payload.getPath());
+                }).map((file) => {
+                    return state$.value.files.pathToInfo[file];
+                });
+
+
+                console.log({ similarFiles });
+                // const destinationPath = new PathInfo(`${payload.getParent().getPath()}newValues/`);
+                // const files = similarFiles.map(file => {
+                //     const newContent = new FileContentCreator(destinationPath, file);
+
+                //     return newContent.createFile();
+                // });
+
+                return await directoryRename.showWebView(payload, similarFiles);
             }),
-            mergeMap((files: WebViewInfoAboutRenameFiles[]) => new Observable<Action<any>>((observer) => {
+            mergeMap(({files}) => new Observable<Action<any>>((observer) => {
                 observer.next(generateStarted());
 
                 const filesOperation = async () => {
                     for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        await createDocument(file.filePath, file.content).then(() => deleteDocument(file.filePathFrom));
+                        const {currentFile, newFile} = files[i];
+                        await createDocument(newFile.filePath, newFile.content).then(() => deleteDocument(currentFile.filePath));
                     }
                 };
 

@@ -1,9 +1,16 @@
 import actionCreatorFactory from 'typescript-fsa';
 import { WebViewInfoAboutRenameFiles } from '../../../../store/dependencies/directoryRename/directoryRename';
- 
+
 const renameFilesActionCreator = actionCreatorFactory('RENAME_FILES_WEBVIEW');
 
-export const generateAllAction = renameFilesActionCreator<void>('GENERATE_ALL');
+export interface GenerateAllParams {
+    files: {
+        newFile: WebViewInfoAboutRenameFiles;
+        currentFile: WebViewInfoAboutRenameFiles;
+    }[]
+}
+
+export const generateAllAction = renameFilesActionCreator<GenerateAllParams>('GENERATE_ALL');
 export const setDataAction = renameFilesActionCreator<{
     createdFolderName: string,
     allSiblingHave: WebViewInfoAboutRenameFiles[]

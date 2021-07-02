@@ -4,7 +4,7 @@ import { mergeMap } from 'rxjs/operators';
 import { Action } from 'typescript-fsa';
 import * as vscode from 'vscode';
 import { RootEpic } from '..';
-import { fillFileContentStarted, onDidCreate, OnRegisterWorkspaceParam } from '../../action/files/files';
+import { createFilesInNewDirectory, fillFileContentStarted, onDidCreate, OnRegisterWorkspaceParam, renameCopyDirectory } from '../../action/files/files';
 
 type InputAction =  Action<vscode.Uri>  |  Action<PathInfo>  |  Action<OnRegisterWorkspaceParam>;
 
@@ -34,18 +34,18 @@ export const onDidCreateFilesEpic: RootEpic<InputAction> = (action$) =>
         // delay(10),
         mergeMap(({ payload }: Action<PathInfo>) => {
             // when directory or file is not empty probably change name parent directory
-            // if (files.isEmptyDirectory(payload.getPath(), outputChannel)) {
-            //     return [createFilesInNewDirectory(payload.uri)];
-            // }
+            if (payload.isDirectory()) {
+                if(payload.getPath().match(/ copy[^\//]*$/)) {
+                    return [renameCopyDirectory(payload)];
+                // } else {
+                //     return [createFilesInNewDirectory(payload)];
+                }
+            }
 
             // if (files.isEmptyFile(payload.uri, outputChannel)) {
             if (payload.isFile()) {
                 return [fillFileContentStarted(payload)];
             }
-
-            // if (files.isDirectory(payload.uri, outputChannel)) {
-            //     return [renameCopyDirectory(payload.uri)];
-            // }
 
             console.log(payload);
 

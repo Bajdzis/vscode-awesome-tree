@@ -1,9 +1,9 @@
+import { FileContent, PathInfo } from 'awesome-tree-engine';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getInfoAboutPath, PathInfo } from '../../../fileInfo/getInfoAboutPath';
-import { getRelativePath } from '../../../fileSystem/getRelativePath';
-import { changeNameAction, generateAllAction, setDataAction } from '../../../reactViews/apps/renameFiles/actions/action';
+import { getInfoAboutPath, PathInfo as PathInfoOld } from '../../../fileInfo/getInfoAboutPath';
+import {  generateAllAction, GenerateAllParams, setDataAction } from '../../../reactViews/apps/renameFiles/actions/action';
 import { createVariableTemplate } from '../../../variableTemplate/createVariableTemplate';
 import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewReact } from '../webView/webViewReact';
@@ -12,14 +12,11 @@ import { WebViewReact } from '../webView/webViewReact';
 export type WebViewInfoAboutRenameFiles = {
     content: string;
     filePath: string;
-    filePathFrom: string;
-    filePathRelative: string;
-    filePathFromRelative: string;
 };
 
 export class DirectoryRename {
     private webView: WebViewReact;
-    
+
     constructor(webView: WebViewReact){
         this.webView = webView;
     }
@@ -27,7 +24,7 @@ export class DirectoryRename {
     getFilesToRender(
         createdDirectoryUri: vscode.Uri,
         newName: string,
-        infoAboutNameBaseDirectory: PathInfo,
+        infoAboutNameBaseDirectory: PathInfoOld,
     ) {
         return (filePathFromFull: string): WebViewInfoAboutRenameFiles => {
 
@@ -41,46 +38,50 @@ export class DirectoryRename {
             return ({
                 content: renderVariableTemplate(templateLines, [infoAboutNewName]),
                 filePath,
-                filePathRelative: getRelativePath(filePath),
-                filePathFrom,
-                filePathFromRelative: getRelativePath(filePathFrom),
+                // filePathRelative: getRelativePath(filePath),
+                // filePathFrom,
+                // filePathFromRelative: getRelativePath(filePathFrom),
             });
 
         };
     }
 
     async showWebView(
-        directoryToRenameUri: vscode.Uri,
-        dirFiles: string[],
-    ): Promise<WebViewInfoAboutRenameFiles[]> {
+        directoryToRenameUri: PathInfo,
+        dirFiles: PathInfo[],
+    ): Promise<GenerateAllParams> {
 
         let chooseFilesPanel = await this.webView.showWebView('Rename directory', 'reactAppRenameFiles.js');
 
-        const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(directoryToRenameUri.fsPath));
-        const createdFolderName = path.basename(directoryToRenameUri.fsPath);
-        let allSiblingHave: WebViewInfoAboutRenameFiles[] = dirFiles.map(this.getFilesToRender(directoryToRenameUri, createdFolderName, infoAboutNameBaseDirectory));
+        const files = dirFiles.map(path => new FileContent(path, fs.readFileSync(path.getPath()).toString()));
+
+        // const infoAboutNameBaseDirectory = getInfoAboutPath(path.basename(directoryToRenameUri.fsPath));
+        // const createdFolderName = path.basename(directoryToRenameUri.fsPath);
+        // let allSiblingHave: WebViewInfoAboutRenameFiles[] = dirFiles.map(this.getFilesToRender(directoryToRenameUri, createdFolderName, infoAboutNameBaseDirectory));
 
         chooseFilesPanel.webview.postMessage(setDataAction({
-            createdFolderName,
-            allSiblingHave
+            createdFolderName: directoryToRenameUri.getPath(),
+            allSiblingHave : files.map(file => ({
+                content: file.getContent(),
+                filePath: file.getPath().getPath()
+            }))
         }));
 
         return new Promise((resolve) => {
             chooseFilesPanel.webview.onDidReceiveMessage((action) => {
                 if (action.type === generateAllAction.type) {
-                    resolve(
-                        allSiblingHave
-                    );
-                } else if (action.type === changeNameAction.type) {
-                    const { value } = action.payload;
-    
-                    allSiblingHave = dirFiles.map(this.getFilesToRender(directoryToRenameUri, value, infoAboutNameBaseDirectory));
-                    
-                    chooseFilesPanel.webview.postMessage(setDataAction({
-                        createdFolderName,
-                        allSiblingHave
-                    }));
+                    resolve( action.payload);
                 }
+                // else if (action.type === changeNameAction.type) {
+                //     const { value } = action.payload;
+
+                //     allSiblingHave = dirFiles.map(this.getFilesToRender(directoryToRenameUri, value, infoAboutNameBaseDirectory));
+
+                //     chooseFilesPanel.webview.postMessage(setDataAction({
+                //         createdFolderName,
+                //         allSiblingHave
+                //     }));
+                // }
             });
         });
     }

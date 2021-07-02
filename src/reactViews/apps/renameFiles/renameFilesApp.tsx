@@ -1,10 +1,12 @@
+import { FileContent, FileContentCreator, PathInfo } from 'awesome-tree-engine';
 import * as React from 'react';
 import { WebViewInfoAboutRenameFiles } from '../../../store/dependencies/directoryRename/directoryRename';
 import { Button } from '../../components/Button/Button';
 import { Container } from '../../components/Container/Container';
-import { FilesWithCode } from '../../components/FilesWithCode/FilesWithCode';
+import { FileWithCode } from '../../components/FilesWithCode/FileWithCode';
+// import { FilesWithCode } from '../../components/FilesWithCode/FilesWithCode';
 import { Footer } from '../../components/Footer/Footer';
-import { GeneratedFiles } from '../../components/GeneratedFiles/GeneratedFiles';
+// import { GeneratedFiles } from '../../components/GeneratedFiles/GeneratedFiles';
 import { HeaderWithButton } from '../../components/HeaderWithButton/HeaderWithButton';
 import { Input } from '../../components/Input/Input';
 import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';
@@ -27,11 +29,11 @@ const initialState: RenameFilesState = {
 
 export const RenameFilesApp = () => {
     const {state, setState} = useVscodeState<RenameFilesState>(initialState);
-    
+
     const vscode = useAcquireVsCodeApi<RenameFilesState>();
-    
+
     React.useEffect(() => {
-        const handler = ({data}: MessageEvent<any>) => { 
+        const handler = ({data}: MessageEvent<any>) => {
             if (data.type === setDataAction.type && state.generated === false) {
                 const { allSiblingHave, createdFolderName } = data.payload;
                 setState({ allSiblingHave, createdFolderName });
@@ -41,10 +43,26 @@ export const RenameFilesApp = () => {
         return () => window.removeEventListener('message',handler);
     },[]);
 
+    const generateData = React.useMemo(() => {
+
+
+        const baseDirectory = new PathInfo(state.createdFolderName);
+        const destinationPath = new PathInfo(`${baseDirectory.getParent().getPath()}${state.newFolderName}/`);
+
+        const similarFiles = state.allSiblingHave.map(({content, filePath}) => new FileContent(new PathInfo(filePath), content));
+
+        return similarFiles.map(currentFile => {
+            const newFile = new FileContentCreator(destinationPath, currentFile);
+
+            return {currentFile, newFile: newFile.createFile()};
+        });
+    }, [state.allSiblingHave, state.createdFolderName, state.newFolderName]);
+
+
     return <Container>
         <h1>Type new directory name</h1>
-        
-        {!state.generated && <Input 
+
+        {!state.generated && <Input
             id="createdFolderName"
             label="Directory name"
             onChange={(e) => {
@@ -55,23 +73,53 @@ export const RenameFilesApp = () => {
                 vscode.postMessage(changeNameAction({
                     value: newFolderName
                 }));
-            }} 
+            }}
             defaultValue={state.newFolderName || state.createdFolderName}
         />}
 
+
         <HeaderWithButton title={'Preview'} count={state?.allSiblingHave?.length || 0}>
             {!state.generated && <Button onClick={() => {
-                vscode.postMessage(generateAllAction());
+                vscode.postMessage(generateAllAction({
+                    files: generateData.map(({currentFile, newFile}) => ({
+                        currentFile: {
+                            content: currentFile.getContent(),
+                            filePath: currentFile.getPath().getPath(),
+                        },
+                        newFile: {
+                            content: newFile.getContent(),
+                            filePath: newFile.getPath().getPath(),
+                        }
+                    }))
+                }));
                 setState({
                     generated: true
                 });
             }}>Rename all</Button>}
         </HeaderWithButton>
+        {/* {!state.generated && <div>
 
+            {generateData.map(({currentFile, newFile}) => (<div key={newFile.getPath().getPath()}>
+                <div>{currentFile.getPath().getPath()} - {newFile.getPath().getPath()}</div>
+                <div>
+                    <pre>
+                        {currentFile.getContent()}
+                    </pre>
+                    <pre>
+                        {newFile.getContent()}
+                    </pre>
+                </div>
+            </div>))}
+        </div>} */}
+
+
+        {generateData.map(({currentFile, newFile}, index) =>  <FileWithCode key={index} file={newFile} oldFile={currentFile} />)}
+
+        {/*}
         {state.generated && <GeneratedFiles files={state.allSiblingHave}/>}
 
-        {!state.generated && <FilesWithCode files={state.allSiblingHave}/>}
-        
+        {!state.generated && <FilesWithCode files={state.allSiblingHave}/>} */}
+
         <Footer/>
     </Container>;
 };

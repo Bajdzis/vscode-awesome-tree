@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { WebViewInfoAboutRenameFiles } from '../../../store/dependencies/directoryRename/directoryRename';
-import { FileWithCode } from './FileWithCode';
+// import { FileWithCode } from './FileWithCode';
 
 interface FilesWithCodeProps {
     files: WebViewInfoAboutRenameFiles[];
 }
 
-export const FilesWithCode: React.FC<FilesWithCodeProps> = ({files}) => {
+export const FilesWithCode: React.FC<FilesWithCodeProps> = () => {
 
     return <div>
-        {files.map(({ filePathRelative, filePathFromRelative, content }, index) => {
+        TODO
+        {/* {files.map(({ filePathRelative, filePathFromRelative, content }, index) => {
             return <FileWithCode key={index} code={content} title={`${filePathFromRelative} => ${filePathRelative}`} />;
-        })}
+        })} */}
     </div>;
 };

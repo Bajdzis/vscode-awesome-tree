@@ -1,0 +1,14 @@
+.diffLine__new {
+    background: rgba(0, 128, 0, 0.2);
+    display:inline-block;
+    border-radius: 3px;
+    border:1px solid rgba(0, 128, 0, 0.5);
+}
+
+.diffLine__old {
+    text-decoration: line-through;
+    background: rgba(128, 0, 0, 0.2);
+    display:inline-block;
+    border-radius: 3px;
+    border:1px solid rgba(128, 0, 0, 0.5);
+}
