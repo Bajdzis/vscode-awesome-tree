@@ -84,7 +84,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                     }
                     arr.push([path]);
                     return arr;
-                }, []);
+                }, []).filter(group => group.length > 1);
 
                 if (similarPathGrouped.length > 8) {
                     outputChannel.appendLine(`[FilesEpic] Too many similar files! (${similarPaths.length}) `);
@@ -98,7 +98,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                     );
 
                 const createFiles = groupedFiles.map((files) => {
-                    const newContent = new FileContentCreator(generateDirectory, files[1]);
+                    const newContent = new FileContentCreator(generateDirectory, files[0]);
 
                     const generateFilePath = newContent.createPath();
 
