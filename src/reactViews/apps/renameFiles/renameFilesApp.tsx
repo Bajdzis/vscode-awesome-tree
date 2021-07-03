@@ -4,9 +4,7 @@ import { WebViewInfoAboutRenameFiles } from '../../../store/dependencies/directo
 import { Button } from '../../components/Button/Button';
 import { Container } from '../../components/Container/Container';
 import { FileWithCode } from '../../components/FilesWithCode/FileWithCode';
-// import { FilesWithCode } from '../../components/FilesWithCode/FilesWithCode';
 import { Footer } from '../../components/Footer/Footer';
-// import { GeneratedFiles } from '../../components/GeneratedFiles/GeneratedFiles';
 import { HeaderWithButton } from '../../components/HeaderWithButton/HeaderWithButton';
 import { Input } from '../../components/Input/Input';
 import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';

@@ -25,7 +25,6 @@ export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { di
                 }
                 return acc;
             }, actions[0])),
-            // filter(({ payload }) => !!getFirstDirectoryWithSameFiles(payload.fsPath)(state$.value)),
             mergeMap(async ({ payload }) => {
 
                 const parentDir = payload.getParent().getPath();
