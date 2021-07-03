@@ -1,46 +1,29 @@
-import * as path from 'path';
+import { CompareFiles, FileContent, FileContentCreator, PathInfo } from 'awesome-tree-engine';
 import { ofType } from 'redux-observable';
 import { merge } from 'rxjs';
-import { filter, ignoreElements, map, mergeMap, tap } from 'rxjs/operators';
+import { filter, ignoreElements, mergeMap, tap } from 'rxjs/operators';
 import { Action } from 'typescript-fsa';
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { RootEpic } from '..';
 import { reportBug } from '../../../errors/reportBug';
-import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
-import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
 import { createDocument } from '../../../fileSystem/createDocument';
-import { getPathTemplates } from '../../../fileSystem/getPathTemplates';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
-import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
-import { createFileContentCancel, createFileContentStarted, CreateFileContentStartedParam, createFilesInNewDirectory, fillFileContentBySibling, fillFileContentStarted, OnRegisterWorkspaceParam, WatchFileSystemParam } from '../../action/files/files';
-import { WebViewInfoAboutFiles } from '../../dependencies/files/files';
-import { getSimilarDirectoryInfo } from '../../selectors/files/files';
-import { getMatchingTemplate } from '../../selectors/templates/templates';
+import { createFileContentCancel, createFileContentStarted, createFilesInNewDirectory, fillFileContentStarted, OnRegisterWorkspaceParam } from '../../action/files/files';
 
 type InputAction =
-    Action<WatchFileSystemParam> | Action<vscode.Uri> | Action<CreateFileContentStartedParam> | Action<OnRegisterWorkspaceParam>;
+    Action<FileContent> | Action<vscode.Uri> | Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
 
 export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files }) =>
     merge(
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(fillFileContentStarted.type),
-            map(({ payload }: Action<vscode.Uri>) => {
-                const baseTemplate = getMatchingTemplate(payload.fsPath)(state$.value);
-                if (baseTemplate !== null) {
-                    const content = files.generateFileContentByTemplate(payload, baseTemplate);
-                    return createFileContentStarted({ uri: payload, content });
-                }
-                return fillFileContentBySibling(payload);
-            }),
-        ),
-        action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(fillFileContentBySibling.type),
-            mergeMap(async ({ payload }: Action<vscode.Uri>) => {
-                const contentPromise = files.getContentBySibling(payload);
-
+            ofType<InputAction, Action<PathInfo>>(fillFileContentStarted.type),
+            mergeMap(async ({ payload }: Action<PathInfo>) => {
+                const paths = Object.values(state$.value.files.pathToInfo);
+                const contentPromise = files.getContentBySibling(payload, paths);
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
-                    title: `Analyzing the sibling files of '${getRelativePath(payload.fsPath)}'`,
+                    title: `Analyzing the sibling files of '${getRelativePath(payload.getPath())}'`,
                     cancellable: false
                 }, () => contentPromise);
 
@@ -51,9 +34,8 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
             }),
             filter(({ content }) => !!content.length),
             mergeMap(async ({ createPath, content }) => {
-
-                const parentDir = path.dirname(createPath.fsPath);
-                const fileName = path.basename(createPath.fsPath);
+                const fileName = createPath.getName();
+                const parentDir = createPath.getParent().getPath();
 
                 const answersQuestion = [
                     'Yes, create content',
@@ -66,7 +48,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                 );
 
                 if (resultQuestion === answersQuestion[0]) {
-                    return createFileContentStarted({ uri: createPath, content });
+                    return createFileContentStarted(new FileContent(createPath, content));
                 }
 
                 return createFileContentCancel(createPath);
@@ -74,29 +56,62 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
             }),
         ),
         action$.pipe(
-            ofType<InputAction, Action<CreateFileContentStartedParam>>(createFileContentStarted.type),
-            tap(({ payload }: Action<CreateFileContentStartedParam>) => {
-                createDocument(payload.uri.fsPath, payload.content).catch(reportBug);
+            ofType<InputAction, Action<FileContent>>(createFileContentStarted.type),
+            tap(({ payload }: Action<FileContent>) => {
+                createDocument(payload.getPathInfo().getPath(), payload.getContent()).catch(reportBug);
             }),
             ignoreElements()
         ),
         action$.pipe(
-            ofType<InputAction, Action<vscode.Uri>>(createFilesInNewDirectory.type),
+            ofType<InputAction, Action<PathInfo>>(createFilesInNewDirectory.type),
             tap(async (
-                { payload }: Action<vscode.Uri>
+                { payload }: Action<PathInfo>
             ) => {
 
-                const relativePath = getRelativePath(payload.fsPath);
-                const infoAboutNewDirectory = getInfoAboutPath(relativePath);
-                const similarDirectoriesInfo: DirectoriesInfo = getSimilarDirectoryInfo(payload.fsPath)(state$.value);
-                const siblingTemplatePathFiles = getPathTemplates(similarDirectoriesInfo);
+                const generateDirectory = payload;
+                const parentGenerateDirectory = generateDirectory.getParent();
 
-                if (siblingTemplatePathFiles.length === 0) {
-                    outputChannel.appendLine('[FilesEpic] not found sibling template');
+                const similarPaths = Object.values(state$.value.files.pathToInfo)
+                    .filter(file => file.includes(parentGenerateDirectory));
+
+                if (similarPaths.length > 8) {
+                    outputChannel.appendLine(`[FilesEpic] Too many similar files! (${similarPaths.length}) `);
                     return [];
                 }
 
-                const uniquePathFiles = files.deleteSameTemplates(siblingTemplatePathFiles);
+                const similarFiles = similarPaths.map(path => new FileContent(path, fs.readFileSync(path.getPath()).toString()));
+
+                const groupedFiles: FileContent[][] = similarFiles.reduce<FileContent[][]>((arr,file) => {
+
+                    for (let i = 0; i < arr.length; i++) {
+                        const [element] = arr[i];
+                        if(element.getPathInfo().isSimilar(file.getPathInfo())){
+                            arr[i].push(file);
+                            return arr;
+                        }
+                    }
+                    arr.push([file]);
+                    return arr;
+                }, []);
+
+
+                const createFiles = groupedFiles.map((files) => {
+                    const newContent = new FileContentCreator(generateDirectory, files[1]);
+
+                    const generateFilePath = newContent.createPath();
+
+                    const comparer = new CompareFiles();
+
+                    files.forEach(file => {
+                        const contentCreator = new FileContentCreator(generateFilePath, file);
+                        const newFileContent = new FileContent(generateFilePath, contentCreator.createContent());
+
+                        comparer.addFile(newFileContent.getFileGraph());
+                    });
+
+                    return new FileContent(generateFilePath, comparer.compare(1).getContent());
+                });
+
 
                 const answersQuestion = [
                     'Yes, generate files',
@@ -105,7 +120,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                 ];
 
                 const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to create ${uniquePathFiles.length} file(s) in new "${path.basename(payload.fsPath)}" folder?`,
+                    `Do you want to create ${createFiles.length} file(s) in new "${payload.getName()}" folder?`,
                     ...answersQuestion
                 );
 
@@ -114,51 +129,22 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                     return [];
                 }
 
-                const filesWithContent: WebViewInfoAboutFiles[] = uniquePathFiles.map((filePathTemplate) => {
-                    const relativePathFile = renderVariableTemplate(filePathTemplate, [infoAboutNewDirectory]);
-                    const filePath: string = path.join(payload.fsPath, relativePathFile);
-                    const savedTemplate = getMatchingTemplate(filePath)(state$.value);
-
-                    let content: string;
-                    let fromTemplate: boolean = false;
-                    if (savedTemplate === null) {
-                        content = files.createFileContent(filePathTemplate, similarDirectoriesInfo, [infoAboutNewDirectory]);
-                    } else {
-                        fromTemplate = true;
-                        content = savedTemplate.map(line =>
-                            renderVariableTemplate(line, [infoAboutNewDirectory])
-                        ).join('\n');
-                    }
-
-                    return {
-                        filePath,
-                        filePathTemplate,
-                        content,
-                        fromTemplate,
-                        relativePath: path.join(relativePath, relativePathFile),
-                        generated: false
-                    };
-
-                });
-
                 if (resultQuestion === answersQuestion[0]) {
-                    filesWithContent.forEach(async ({ filePath, content }) => {
-                        const textDocument = await createDocument(filePath, content);
+                    createFiles.forEach(async (file) => {
+                        const textDocument = await createDocument(file.getPathInfo().getPath(), file.getContent());
                         vscode.window.showTextDocument(textDocument);
                     });
                 } else {
                     files.showWebView(
-                        payload,
-                        filesWithContent,
-                        similarDirectoriesInfo,
-                        siblingTemplatePathFiles,
-                        (filePath: string, content: string) => {
-                            createDocument(filePath, content);
+                        createFiles,
+                        generateDirectory,
+                        (file: FileContent) => {
+                            createDocument(file.getPathInfo().getPath(), file.getContent());
                         }
                     );
                 }
             }),
             ignoreElements()
         ),
-      
+
     );

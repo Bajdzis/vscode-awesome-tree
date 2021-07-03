@@ -12,10 +12,10 @@ function dispatchUpdateEvent <T>(state:T) {
     element.dispatchEvent(event);
 }
 
-export function useVscodeState<T> (initialState:T){
+export function useVscodeState<T extends {[key: string]: any}> (initialState:T){
 
     const vscode = useAcquireVsCodeApi<T>();
-    
+
     const [state, setReactState] = useState(() => vscode.getState() || initialState);
 
     useEffect(() => {
@@ -24,7 +24,7 @@ export function useVscodeState<T> (initialState:T){
         };
         // @ts-ignore
         element.addEventListener('vscodeStateUpdate', handler);
-        
+
         // @ts-ignore
         return () => element.removeEventListener('vscodeStateUpdate', handler);
     }, []);

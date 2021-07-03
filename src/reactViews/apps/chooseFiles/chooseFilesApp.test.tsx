@@ -18,9 +18,7 @@ describe('renameFilesApp', () => {
             fireEvent(window, new MessageEvent('message', {
                 data: setDataAction({
                     createdFolderName: 'newDirectoryName',
-                    allSiblingHave:[],
-                    fromTemplate:[],
-                    notAllSiblingHave: []
+                    files:[]
                 }),
             }));
         });

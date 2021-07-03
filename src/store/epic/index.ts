@@ -5,10 +5,9 @@ import { reportBug } from '../../errors/reportBug';
 import { RootDependency } from '../dependencies';
 import { RootState } from '../reducer';
 import { filesEpic } from './files/index';
-import { templatesEpic } from './templates/templates';
 
 export const rootEpic: RootEpic = (action$, store$, dependencies) =>
-    combineEpics(filesEpic, templatesEpic)(action$, store$, dependencies).pipe(
+    combineEpics(filesEpic)(action$, store$, dependencies).pipe(
         catchError((error, source) => {
             console.error(error);
             reportBug(error);

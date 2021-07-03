@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
 import * as path from 'path';
-import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
+import { changeToUnixSlashes } from './changeToUnixSlashes';
 import { getRelativePath } from './getRelativePath';
 
 export function getAllFilesPath(dir: string, ignoreGlobs?: string[]): string[] {
@@ -19,9 +19,9 @@ export function getAllFilesPath(dir: string, ignoreGlobs?: string[]): string[] {
             }
         }
         let stat = fs.statSync(fullFilePath);
-        if (stat && stat.isDirectory()) { 
+        if (stat && stat.isDirectory()) {
             results = results.concat(getAllFilesPath(fullFilePath, ignoreGlobs));
-        } else { 
+        } else {
             results.push(fullFilePath);
         }
     });

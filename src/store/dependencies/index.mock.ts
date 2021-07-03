@@ -17,16 +17,10 @@ export const createMockDependency = (): RootDependencyMocked => {
             shouldExcludeByGitIgnoreFile: jest.fn(),
         },
         files:{
-            allFilesIncludeThisLine: jest.fn(),
-            countSameTemplates: jest.fn(),
-            createFileContent: jest.fn(),
-            deleteSameTemplates: jest.fn(),
-            generateFileContentByTemplate: jest.fn(),
             getContentBySibling: jest.fn(),
-            includesThisTemplate: jest.fn(),
             isDirectory: jest.fn(),
             isEmptyDirectory: jest.fn(),
-            isEmptyFile: jest.fn(), 
+            isEmptyFile: jest.fn(),
             isFile: jest.fn(),
             showWebView: jest.fn(),
         },
@@ -34,7 +28,6 @@ export const createMockDependency = (): RootDependencyMocked => {
             showWebView:jest.fn(),
         },
         directoryRename:{
-            getFilesToRender: jest.fn(),
             showWebView: jest.fn(),
         },
         outputChannel: {
