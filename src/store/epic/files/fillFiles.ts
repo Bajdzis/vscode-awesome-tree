@@ -74,26 +74,28 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                 const similarPaths = Object.values(state$.value.files.pathToInfo)
                     .filter(file => file.includes(parentGenerateDirectory));
 
-                if (similarPaths.length > 8) {
+                const similarPathGrouped = similarPaths.reduce<PathInfo[][]>((arr,path) => {
+                    for (let i = 0; i < arr.length; i++) {
+                        const [element] = arr[i];
+                        if(element.isSimilar(path)){
+                            arr[i].push(path);
+                            return arr;
+                        }
+                    }
+                    arr.push([path]);
+                    return arr;
+                }, []);
+
+                if (similarPathGrouped.length > 8) {
                     outputChannel.appendLine(`[FilesEpic] Too many similar files! (${similarPaths.length}) `);
                     return [];
                 }
 
-                const similarFiles = similarPaths.map(path => new FileContent(path, fs.readFileSync(path.getPath()).toString()));
-
-                const groupedFiles: FileContent[][] = similarFiles.reduce<FileContent[][]>((arr,file) => {
-
-                    for (let i = 0; i < arr.length; i++) {
-                        const [element] = arr[i];
-                        if(element.getPathInfo().isSimilar(file.getPathInfo())){
-                            arr[i].push(file);
-                            return arr;
-                        }
-                    }
-                    arr.push([file]);
-                    return arr;
-                }, []);
-
+                const groupedFiles = similarPathGrouped
+                    .map(paths => paths
+                        .map(path => new FileContent(path, fs.readFileSync(path.getPath()).toString())
+                        )
+                    );
 
                 const createFiles = groupedFiles.map((files) => {
                     const newContent = new FileContentCreator(generateDirectory, files[1]);
