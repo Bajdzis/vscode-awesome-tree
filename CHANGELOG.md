@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.0.0...v2.0.1) (2021-07-03)
+
+
+### Bug Fixes
+
+* hide debugger ([7d163d8](https://github.com/Bajdzis/vscode-awesome-tree/commit/7d163d83dfde5ed8d399d24289fe4918413cd7c7))
+
 ## [2.0.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.7.0...v2.0.0) (2021-07-03)
 
 
