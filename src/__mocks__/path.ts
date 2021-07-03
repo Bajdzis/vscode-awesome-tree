@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { changeToUnixSlashes } from '../strings/changeToUnixSlashes';
+import { changeToUnixSlashes } from '../fileSystem/changeToUnixSlashes';
 
 const pathNode: typeof path = jest.requireActual('path');
 

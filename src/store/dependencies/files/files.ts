@@ -3,17 +3,8 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { generateFileAction, setDataAction } from '../../../reactViews/apps/chooseFiles/actions/action';
 import { checkAction } from '../../../reactViews/hooks/useActionHandler';
-import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
 import { WebViewReact } from '../webView/webViewReact';
 
-export type WebViewInfoAboutFiles = {
-    content: string;
-    filePath: string;
-    filePathTemplate: string;
-    relativePath: string;
-    fromTemplate: boolean;
-    generated: boolean;
-};
 
 export class Files {
     private webView: WebViewReact;
@@ -65,62 +56,6 @@ export class Files {
             comparer.addFile(newFileContent.getFileGraph());
         });
         return comparer.compare(0.75).getContent();
-    }
-
-    createFileContent(): string {
-        // const contents: Array<string[]> = getFilesContentAsTemplate(directories, templateStringPath);
-
-        // if (contents.length === 0) {
-        return '';
-        // }
-
-        // const [baseFile, ...otherFiles] = contents;
-        // const lineToGenerate: string[] = [];
-
-        // baseFile.forEach(line => {
-        //     if(this.allFilesIncludeThisLine(otherFiles, line)){
-        //         lineToGenerate.push(renderVariableTemplate(line, variables));
-        //     }
-        // });
-
-        // return lineToGenerate.join('');
-    }
-
-    allFilesIncludeThisLine(files: Array<string[]>, line: string): boolean {
-        for (let file of files) {
-            if(!this.includesThisTemplate(file, line)){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    includesThisTemplate (templates: string [], templateToFind: string) {
-        for (let fileLine of templates) {
-            if (compareVariableTemplate(fileLine, templateToFind)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    countSameTemplates (templates: string [], templateToFind: string) {
-        let counter = 0;
-        for (let template of templates) {
-            if (compareVariableTemplate(template, templateToFind)) {
-                counter++;
-            }
-        }
-        return counter;
-    }
-
-    deleteSameTemplates(templates: string[]){
-        return templates.reduce((uniqueTemplates, template) => {
-            if(!this.includesThisTemplate(uniqueTemplates, template)){
-                uniqueTemplates.push(template);
-            }
-            return uniqueTemplates;
-        }, [] as string[]);
     }
 
     isDirectory(uri: vscode.Uri, outputChannel?: vscode.OutputChannel): boolean  {

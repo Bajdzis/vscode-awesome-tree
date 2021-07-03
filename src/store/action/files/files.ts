@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import actionCreatorFactory from 'typescript-fsa';
 import { PathInfo, FileContent } from 'awesome-tree-engine';
 
@@ -21,21 +20,9 @@ export const createFileContentStarted = filesActionCreator<FileContent>('CREATE_
 export const createFileContentCancel = filesActionCreator<PathInfo>('CREATE_FILE_CONTENT_CANCEL');
 export const createFilesInNewDirectory = filesActionCreator<PathInfo>('CREATE_FILES_IN_NEW_DIRECTORY');
 export const renameCopyDirectory = filesActionCreator<PathInfo>('RENAME_COPY_DIRECTORY');
-
-export interface CreateNewTemplateParam {
-    uri: vscode.Uri;
-    workspacePath: string;
-}
-
-// export interface CreateNewTemplateResult extends TemplateInfo {
-//     templateLines: string[];
-// }
-
-// export const createNewTemplate = filesActionCreator.async<CreateNewTemplateParam, CreateNewTemplateResult, Error>('CREATE_FILE_CONTENT_BY_SIBLING');
-
 export const renameDirectory = filesActionCreator.async<PathInfo, void, Error>('RENAME_DIRECTORY');
 
-export interface UpdateGitIgnoreFileParam {
+interface UpdateGitIgnoreFileParam {
     path: PathInfo;
     content: string;
 }

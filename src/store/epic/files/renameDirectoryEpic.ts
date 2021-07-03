@@ -63,15 +63,6 @@ export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { di
                     return state$.value.files.pathToInfo[file];
                 });
 
-
-                console.log({ similarFiles });
-                // const destinationPath = new PathInfo(`${payload.getParent().getPath()}newValues/`);
-                // const files = similarFiles.map(file => {
-                //     const newContent = new FileContentCreator(destinationPath, file);
-
-                //     return newContent.createFile();
-                // });
-
                 return await directoryRename.showWebView(payload, similarFiles);
             }),
             mergeMap(({files}) => new Observable<Action<any>>((observer) => {
