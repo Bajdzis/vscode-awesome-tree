@@ -48,23 +48,13 @@ export class Files {
         return chooseFilesPanel;
     }
 
-    // generateFileContentByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]): string{
-    //     const relativePath = getRelativePath(createdItemUri.fsPath);
-    //     const infoAboutNewFile = getInfoAboutPath(relativePath);
-    //     const content = savedTemplate.map(line =>
-    //         renderVariableTemplate(line, [infoAboutNewFile])
-    //     ).join('\n');
-
-    //     return content;
-    // }
-
     async getContentBySibling(generateFile: PathInfo, workspacePaths: PathInfo[]): Promise<string> {
-
-
-        const similarFiles: FileContent[] = workspacePaths.filter(path => generateFile.isSimilar(path)).map(path => {
-            const content = fs.readFileSync(path.getPath()).toString();
-            return new FileContent(path, content);
-        });
+        const similarFiles: FileContent[] = workspacePaths
+            .filter(path => generateFile.isSimilar(path) && generateFile.getPath() !== path.getPath() )
+            .map(path => {
+                const content = fs.readFileSync(path.getPath()).toString();
+                return new FileContent(path, content);
+            });
 
         const comparer = new CompareFiles();
 
@@ -74,7 +64,6 @@ export class Files {
 
             comparer.addFile(newFileContent.getFileGraph());
         });
-
         return comparer.compare(0.75).getContent();
     }
 

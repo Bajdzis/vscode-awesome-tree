@@ -59,7 +59,7 @@ const DebuggerComponent = () => {
                     const isActive = activeActionIndex === index;
                     return <div style={{fontSize: isActive ?'700': '400', padding: '4px 0', borderTop: '1px solid #ccc'}} key={index}>
                         <div onClick={() => setActiveAction(index)} >{action.type}</div>
-                        {isActive && <ReactJson style={{ padding: '8px' }} src={action} theme="railscasts" collapsed={1}  enableClipboard={false} />}
+                        {isActive && <ReactJson style={{ padding: '8px' }} src={action} theme="railscasts" collapsed={2}  enableClipboard={false} />}
                     </div>;
                 })}
             </div>

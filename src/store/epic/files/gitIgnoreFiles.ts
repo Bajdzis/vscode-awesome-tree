@@ -1,53 +1,52 @@
-// import * as fs from 'fs';
-// import * as parseGitignore from 'parse-gitignore';
-// import { ofType } from 'redux-observable';
-// import { from, merge } from 'rxjs';
-import { merge } from 'rxjs';
-// import { filter, mergeMap } from 'rxjs/operators';
+import * as fs from 'fs';
+import { ofType } from 'redux-observable';
+import { from, merge } from 'rxjs';
+import { PathInfo } from 'awesome-tree-engine';
+import { filter, mergeMap } from 'rxjs/operators';
 import { Action } from 'typescript-fsa';
-import * as vscode from 'vscode';
 import { RootEpic } from '..';
-import { OnRegisterWorkspaceParam } from '../../action/files/files';
+import { onDidChange, onRegisterWorkspace, OnRegisterWorkspaceParam, updateGitIgnoreFile } from '../../action/files/files';
 
-type InputAction = Action<vscode.Uri> | Action<OnRegisterWorkspaceParam>;
+type InputAction = Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
 
-export const gitIgnoreFilesEpic: RootEpic<InputAction> = () =>
+export const gitIgnoreFilesEpic: RootEpic<InputAction> = (action$, state$, {config}) =>
     merge(
-        // action$.pipe(
-        //     ofType<InputAction, Action<WatchFileSystemParam>>(onDidChange.type),
-        //     filter(() => config.shouldExcludeByGitIgnoreFile()),
-        //     filter(({payload}: Action<WatchFileSystemParam>) => payload.type === 'file' && !!payload.uri.path.match(/\.gitignore$/)),
-        //     mergeMap(({payload}: Action<WatchFileSystemParam>) => {
-        //         const path = `${payload.uri.fsPath}`;
-        //         return new Promise<string[]>((resolve, reject) => {
-        //             fs.readFile(path, (err, buffer) => {
-        //                 if(err) {
-        //                     return reject(err);
-        //                 }
-        //                 resolve(parseGitignore(buffer.toString()));
-        //             });
-        //         }).then(lines => updateGitIgnoreFile({
-        //             lines,
-        //             path
-        //         }));
-        //     }),
-        // ),
-        // action$.pipe(
-        //     ofType<InputAction, Action<OnRegisterWorkspaceParam>>(onRegisterWorkspace.type),
-        //     filter(() => config.shouldExcludeByGitIgnoreFile()),
-        //     mergeMap(({payload}: Action<OnRegisterWorkspaceParam>) => {
-        //         return payload.filePaths.filter(path => !!path.match(/\.gitignore$/)).map(path => from(new Promise<string[]>((resolve, reject) => {
-        //             fs.readFile(path, (err, buffer) => {
-        //                 if(err) {
-        //                     return reject(err);
-        //                 }
-        //                 resolve(parseGitignore(buffer.toString()));
-        //             });
-        //         }).then(lines => updateGitIgnoreFile({
-        //             lines,
-        //             path
-        //         }))));
-        //     }),
-        //     mergeMap(result => result),
-        // ),
+        action$.pipe(
+            ofType<InputAction, Action<PathInfo>>(onDidChange.type),
+            filter(() => config.shouldExcludeByGitIgnoreFile()),
+            filter(({payload}: Action<PathInfo>) => payload.isFile() && payload.getName() === '.gitignore'),
+            mergeMap(({payload}: Action<PathInfo>) => {
+                return new Promise<string>((resolve, reject) => {
+                    fs.readFile(payload.getPath(), (err, buffer) => {
+                        if(err) {
+                            return reject(err);
+                        }
+                        resolve(buffer.toString());
+                    });
+                }).then(content => updateGitIgnoreFile({
+                    content,
+                    path: payload
+                }));
+            }),
+        ),
+        action$.pipe(
+            ofType<InputAction, Action<OnRegisterWorkspaceParam>>(onRegisterWorkspace.type),
+            filter(() => config.shouldExcludeByGitIgnoreFile()),
+            mergeMap(({payload}: Action<OnRegisterWorkspaceParam>) => {
+                return payload.filePaths
+                    .filter(path => path.isFile() && path.getName() === '.gitignore')
+                    .map(path => from(new Promise<string>((resolve, reject) => {
+                        fs.readFile(path.getPath(), (err, buffer) => {
+                            if(err) {
+                                return reject(err);
+                            }
+                            resolve((buffer.toString()));
+                        });
+                    }).then(content => updateGitIgnoreFile({
+                        content,
+                        path
+                    }))));
+            }),
+            mergeMap(result => result),
+        ),
     );

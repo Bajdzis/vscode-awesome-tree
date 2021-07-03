@@ -15,20 +15,7 @@ export interface OnRegisterWorkspaceParam {
 
 export const onRegisterWorkspace = filesActionCreator<OnRegisterWorkspaceParam>('ON_REGISTER_WORKSPACE');
 
-// export interface RegisterTemplatesParam {
-//     templates: TemplateInfo[];
-//     workspacePath: string;
-// }
-// export const registerTemplates = filesActionCreator<RegisterTemplatesParam>('REGISTER_TEMPLATES');
-
-// export interface RegisterTemplateParam {
-//     templateId: string;
-//     content: string[];
-// }
-// export const registerTemplate = filesActionCreator<RegisterTemplateParam>('REGISTER_TEMPLATE');
-
 export const fillFileContentStarted = filesActionCreator<PathInfo>('FILL_FILE_CONTENT_STARTED');
-// export const fillFileContentBySibling = filesActionCreator<vscode.Uri>('FILL_FILE_CONTENT_BY_SIBLING');
 
 export const createFileContentStarted = filesActionCreator<FileContent>('CREATE_FILE_CONTENT_STARTED');
 export const createFileContentCancel = filesActionCreator<PathInfo>('CREATE_FILE_CONTENT_CANCEL');
@@ -49,8 +36,8 @@ export interface CreateNewTemplateParam {
 export const renameDirectory = filesActionCreator.async<PathInfo, void, Error>('RENAME_DIRECTORY');
 
 export interface UpdateGitIgnoreFileParam {
-    path: string;
-    lines: string[];
+    path: PathInfo;
+    content: string;
 }
 
 export const updateGitIgnoreFile = filesActionCreator<UpdateGitIgnoreFileParam>('UPDATE_GIT_IGNORE_FILE');

@@ -49,7 +49,7 @@ export function getFirstDirectoryWithSameFiles (directoryPath: string){
 export function getSimilarDirectory (searchPath: string) {
     const searchInfo = getInfoAboutPath(searchPath);
     return (state: RootState) => {
-        
+
         const similarPathInfo = getAllDirectory(state)
             .map(value => getInfoAboutPath(value))
             .filter((directoryInfo) =>  directoryInfo.pathParts.length === searchInfo.pathParts.length);
@@ -94,7 +94,7 @@ export function getSimilarDirectoryInfo (searchPath: string) {
                 directoryInfo:getInfoAboutPath(getRelativePath(directoryPath)),
                 filesPath: getFilesInDirectory(directoryPath)(state)
             };
-    
+
             return directoriesInfo;
         }, {} as DirectoriesInfo);
     };

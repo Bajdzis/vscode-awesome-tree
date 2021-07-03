@@ -19,6 +19,11 @@ export function activate(context: vscode.ExtensionContext) {
             if (!config.canUseThisFile(uri)) {
                 return;
             }
+
+            if(vscode.workspace.workspaceFolders?.some(folder => folder.uri.fsPath.includes(uri.fsPath))) {
+                outputChannel.appendLine(`The file "${uri.fsPath}" is outside the workspace directory`);
+                return;
+            }
             fs.lstat(uri.fsPath, (err, stats) => {
                 if (err) {
                     outputChannel.appendLine(`Failed read ${uri.fsPath}`);
@@ -52,20 +57,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(sendFilesPathsToStore));
 
     sendFilesPathsToStore();
-
-    // context.subscriptions.push(vscode.commands.registerCommand('extension.saveAsTemplate', (uri: vscode.Uri) => {
-    //     const workspacePath = findWorkspacePath(uri.fsPath);
-
-    //     if (workspacePath === undefined) {
-    //         vscode.window.showWarningMessage(`Can't find workspace directory for file: '${uri.fsPath}'`);
-    //         return;
-    //     }
-
-    //     store.dispatch(createNewTemplate.started({
-    //         uri,
-    //         workspacePath
-    //     }));
-    // }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {
         store.dispatch(renameDirectory.started(new PathInfo(uri.fsPath)));

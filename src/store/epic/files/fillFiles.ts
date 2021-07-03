@@ -21,7 +21,6 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
             mergeMap(async ({ payload }: Action<PathInfo>) => {
                 const paths = Object.values(state$.value.files.pathToInfo);
                 const contentPromise = files.getContentBySibling(payload, paths);
-
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: `Analyzing the sibling files of '${getRelativePath(payload.getPath())}'`,
@@ -35,7 +34,6 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
             }),
             filter(({ content }) => !!content.length),
             mergeMap(async ({ createPath, content }) => {
-
                 const fileName = createPath.getName();
                 const parentDir = createPath.getParent().getPath();
 

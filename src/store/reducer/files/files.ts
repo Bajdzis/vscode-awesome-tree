@@ -1,10 +1,11 @@
+import ignore, {Ignore} from 'ignore';
 import { reducerWithInitialState } from 'typescript-fsa-reducers';
 import { onRegisterWorkspace, onDidDelete, onDidCreate, updateGitIgnoreFile } from '../../action/files/files';
 import { PathInfo } from 'awesome-tree-engine';
 
 export interface FilesState {
-    pathToInfo: { [key: string]: PathInfo }
-    gitIgnoreCache: {[patch: string]: string[]}
+    pathToInfo: { [filePath: string]: PathInfo }
+    gitIgnoreCache: {[directoryPath: string]: Ignore}
 }
 
 const INITIAL_STATE: FilesState = {
@@ -49,7 +50,7 @@ export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
             ...state,
             gitIgnoreCache: {
                 ...state.gitIgnoreCache,
-                [payload.path]: payload.lines
+                [payload.path.getParent().getPath()]: ignore().add(payload.content)
             }
         };
     });
