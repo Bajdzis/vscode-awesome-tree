@@ -32,7 +32,7 @@ export const filesReducer = reducerWithInitialState<FilesState>(INITIAL_STATE)
         }, {} as { [key: string]: PathInfo })
     }))
     .case(onDidCreate, (state: FilesState, payload): FilesState => {
-        if (payload.isFile()) {
+        if (payload.isDirectory()) {
             return state;
         }
 

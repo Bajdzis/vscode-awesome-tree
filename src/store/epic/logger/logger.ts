@@ -15,8 +15,8 @@ export const loggerEpic: RootEpic = (action$, state$, { outputChannel, webViewRe
             outputChannel.appendLine(`ACTION: ${action.type}`);
             // outputChannel.appendLine(`PAYLOAD: ${JSON.stringify(action.payload, null, 4)}`);
             outputChannel.appendLine('-----------------------');
-            outputChannel.appendLine(`STATE: ${JSON.stringify(state$.value)}`);
-            outputChannel.appendLine('=======================');
+            // outputChannel.appendLine(`STATE: ${JSON.stringify(state$.value)}`);
+            // outputChannel.appendLine('=======================');
             panel.then(panel => {
                 panel.webview.postMessage(
 

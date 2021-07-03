@@ -35,10 +35,10 @@ export const onDidCreateFilesEpic: RootEpic<InputAction> = (action$) =>
         mergeMap(({ payload }: Action<PathInfo>) => {
             // when directory or file is not empty probably change name parent directory
             if (payload.isDirectory()) {
-                if(payload.getPath().match(/ copy[^\//]*$/)) {
+                if(payload.getPath().match(/ copy[^\\//]*$/)) {
                     return [renameCopyDirectory(payload)];
-                // } else {
-                //     return [createFilesInNewDirectory(payload)];
+                } else {
+                    return [createFilesInNewDirectory(payload)];
                 }
             }
 

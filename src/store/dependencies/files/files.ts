@@ -1,13 +1,9 @@
 import { CompareFiles, FileContent, FileContentCreator, PathInfo } from 'awesome-tree-engine';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
-import { getInfoAboutPath } from '../../../fileInfo/getInfoAboutPath';
-import { DirectoriesInfo } from '../../../fileInfo/getSiblingInfo';
-import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { generateFileAction, setDataAction } from '../../../reactViews/apps/chooseFiles/actions/action';
+import { checkAction } from '../../../reactViews/hooks/useActionHandler';
 import { compareVariableTemplate } from '../../../variableTemplate/compareVariableTemplate';
-import { renderVariableTemplate } from '../../../variableTemplate/renderVariableTemplate';
 import { WebViewReact } from '../webView/webViewReact';
 
 export type WebViewInfoAboutFiles = {
@@ -27,56 +23,40 @@ export class Files {
     }
 
     async showWebView(
-        createdItemUri: vscode.Uri,
-        filesWithContent:WebViewInfoAboutFiles[],
-        infoAboutSiblingDirectories: DirectoriesInfo,
-        siblingTemplatePathFiles: string[],
-        onHandleEvent: ((filePath: string, content: string) => void)
+        createFiles: FileContent[],
+        generateDirectory: PathInfo,
+        onHandleEvent: ((file: FileContent) => void)
     ): Promise<vscode.WebviewPanel> {
 
         let chooseFilesPanel = await this.webView.showWebView('Choose files to create', 'reactAppChooseFiles.js');
 
-        const countSiblingDirectories = Object.keys(infoAboutSiblingDirectories).length;
-        const allSiblingHave: WebViewInfoAboutFiles[] = [];
-        const notAllSiblingHave: WebViewInfoAboutFiles[] = [];
-        const fromTemplate: WebViewInfoAboutFiles[] = [];
-
-        filesWithContent.forEach(async(fileInfo) => {
-            if (fileInfo.fromTemplate) {
-                fromTemplate.push(fileInfo);
-            } else if (this.countSameTemplates(siblingTemplatePathFiles, fileInfo.filePathTemplate) === countSiblingDirectories) {
-                allSiblingHave.push(fileInfo);
-            } else {
-                notAllSiblingHave.push(fileInfo);
-            }
-        });
-
         chooseFilesPanel.webview.postMessage(setDataAction({
-            createdFolderName: path.basename(createdItemUri.fsPath),
-            allSiblingHave,
-            notAllSiblingHave,
-            fromTemplate
+            createdFolderName: generateDirectory.getName(),
+            files: createFiles.map((file) => ({
+                content: file.getContent(),
+                filePath: file.getPathInfo().getPath()
+            }))
         }));
 
         chooseFilesPanel.webview.onDidReceiveMessage((action) => {
-            if (action.type === generateFileAction.type) {
+            if (checkAction(generateFileAction, action)) {
                 const { filePath, content } = action.payload;
-                onHandleEvent(filePath, content);
+                onHandleEvent(new FileContent(new PathInfo(filePath), content));
             }
         });
 
         return chooseFilesPanel;
     }
 
-    generateFileContentByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]): string{
-        const relativePath = getRelativePath(createdItemUri.fsPath);
-        const infoAboutNewFile = getInfoAboutPath(relativePath);
-        const content = savedTemplate.map(line =>
-            renderVariableTemplate(line, [infoAboutNewFile])
-        ).join('\n');
+    // generateFileContentByTemplate(createdItemUri: vscode.Uri, savedTemplate: string[]): string{
+    //     const relativePath = getRelativePath(createdItemUri.fsPath);
+    //     const infoAboutNewFile = getInfoAboutPath(relativePath);
+    //     const content = savedTemplate.map(line =>
+    //         renderVariableTemplate(line, [infoAboutNewFile])
+    //     ).join('\n');
 
-        return content;
-    }
+    //     return content;
+    // }
 
     async getContentBySibling(generateFile: PathInfo, workspacePaths: PathInfo[]): Promise<string> {
 

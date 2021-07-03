@@ -99,28 +99,8 @@ export const RenameFilesApp = () => {
                 });
             }}>Rename all</Button>}
         </HeaderWithButton>
-        {/* {!state.generated && <div>
 
-            {generateData.map(({currentFile, newFile}) => (<div key={newFile.getPathInfo().getPath()}>
-                <div>{currentFile.getPathInfo().getPath()} - {newFile.getPathInfo().getPath()}</div>
-                <div>
-                    <pre>
-                        {currentFile.getContent()}
-                    </pre>
-                    <pre>
-                        {newFile.getContent()}
-                    </pre>
-                </div>
-            </div>))}
-        </div>} */}
-
-
-        {generateData.map(({currentFile, newFile}, index) =>  <FileWithCode key={index} file={newFile} oldFile={currentFile} />)}
-
-        {/*}
-        {state.generated && <GeneratedFiles files={state.allSiblingHave}/>}
-
-        {!state.generated && <FilesWithCode files={state.allSiblingHave}/>} */}
+        {generateData.map(({currentFile, newFile}, index) => <FileWithCode key={index} file={newFile} oldFile={currentFile} generated={state.generated} />)}
 
         <Footer/>
     </Container>;

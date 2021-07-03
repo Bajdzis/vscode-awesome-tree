@@ -27,19 +27,24 @@ const initialState: DebuggerState = {
 
 
 const DebuggerComponent = () => {
-    const {state, setState} = useVscodeState<DebuggerState>(initialState);
+    const {state : initState, setState : saveState} = useVscodeState<DebuggerState>(initialState);
+    const [state, setState] = React.useState<DebuggerState>(initState);
 
     const [activeAction, setActiveAction] = React.useState<null|number>(null);
 
     React.useEffect(() => {
+        saveState(state);
+    }, [state]);
+
+    React.useEffect(() => {
         const handler = ({data}: MessageEvent<any>) => {
             if (data.type === dispatchAction.type) {
-                setState({
+                setState(state => ({
                     logs: [
                         data.payload as DispatchActionParams,
                         ...state.logs
                     ]
-                });
+                }));
             }
         };
         window.addEventListener('message',handler);
