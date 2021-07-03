@@ -100,8 +100,8 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "webpack --mode production",
-		"webpack:profile": "webpack --mode production --profile --json > stats.json",
+		"vscode:prepublish": "webpack --mode production --define process.env.NODE_ENV=\"'production'\"",
+		"webpack:profile": "webpack --mode production --define process.env.NODE_ENV=\"'production'\" --profile --json > stats.json",
 		"compile": "webpack --mode development",
 		"watch": "webpack --mode development",
 		"test": "jest",
