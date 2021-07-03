@@ -63,7 +63,7 @@ export class DirectoryRename {
             createdFolderName: directoryToRenameUri.getPath(),
             allSiblingHave : files.map(file => ({
                 content: file.getContent(),
-                filePath: file.getPath().getPath()
+                filePath: file.getPathInfo().getPath()
             }))
         }));
 

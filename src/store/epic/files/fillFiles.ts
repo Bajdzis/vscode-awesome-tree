@@ -64,7 +64,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
         action$.pipe(
             ofType<InputAction, Action<FileContent>>(createFileContentStarted.type),
             tap(({ payload }: Action<FileContent>) => {
-                createDocument(payload.getPath().getPath(), payload.getContent()).catch(reportBug);
+                createDocument(payload.getPathInfo().getPath(), payload.getContent()).catch(reportBug);
             }),
             ignoreElements()
         ),

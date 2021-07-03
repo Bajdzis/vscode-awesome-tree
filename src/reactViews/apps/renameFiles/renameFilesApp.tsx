@@ -36,7 +36,9 @@ export const RenameFilesApp = () => {
         const handler = ({data}: MessageEvent<any>) => {
             if (data.type === setDataAction.type && state.generated === false) {
                 const { allSiblingHave, createdFolderName } = data.payload;
-                setState({ allSiblingHave, createdFolderName });
+
+                const newFolderName = (new PathInfo(createdFolderName)).getName();
+                setState({ allSiblingHave, createdFolderName, newFolderName });
             }
         };
         window.addEventListener('message',handler);
@@ -74,7 +76,7 @@ export const RenameFilesApp = () => {
                     value: newFolderName
                 }));
             }}
-            defaultValue={state.newFolderName || state.createdFolderName}
+            defaultValue={state.newFolderName}
         />}
 
 
@@ -84,11 +86,11 @@ export const RenameFilesApp = () => {
                     files: generateData.map(({currentFile, newFile}) => ({
                         currentFile: {
                             content: currentFile.getContent(),
-                            filePath: currentFile.getPath().getPath(),
+                            filePath: currentFile.getPathInfo().getPath(),
                         },
                         newFile: {
                             content: newFile.getContent(),
-                            filePath: newFile.getPath().getPath(),
+                            filePath: newFile.getPathInfo().getPath(),
                         }
                     }))
                 }));
@@ -99,8 +101,8 @@ export const RenameFilesApp = () => {
         </HeaderWithButton>
         {/* {!state.generated && <div>
 
-            {generateData.map(({currentFile, newFile}) => (<div key={newFile.getPath().getPath()}>
-                <div>{currentFile.getPath().getPath()} - {newFile.getPath().getPath()}</div>
+            {generateData.map(({currentFile, newFile}) => (<div key={newFile.getPathInfo().getPath()}>
+                <div>{currentFile.getPathInfo().getPath()} - {newFile.getPathInfo().getPath()}</div>
                 <div>
                     <pre>
                         {currentFile.getContent()}
