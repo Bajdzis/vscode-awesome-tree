@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.7.0...v2.0.0) (2021-07-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* Delete save template feature
+
+### Features
+
+* start work on new engine, first version of debugger, filter files by .gitignore (fixes) ([a114cb2](https://github.com/Bajdzis/vscode-awesome-tree/commit/a114cb2ed603a9a9092d03635574a8653bb66457))
+
 ## [1.7.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v1.6.0...v1.7.0) (2021-02-27)
 
 
