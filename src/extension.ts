@@ -64,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {
-        store.dispatch(renameDirectory.started(new PathInfo(uri.fsPath)));
+        store.dispatch(renameDirectory.started(new PathInfo(`${uri.fsPath}/`)));
     }));
 
 }

@@ -40,20 +40,23 @@ export const RenameFilesApp = () => {
         }
     });
 
-    const generateData = React.useMemo(() => {
+    const childrenFiles = React.useMemo(() => {
 
+        return state.allSiblingHave.map(({content, filePath}) => new FileContent(new PathInfo(filePath), content));
+
+    }, [state.allSiblingHave]);
+
+    const generateData = React.useMemo(() => {
 
         const baseDirectory = new PathInfo(state.createdFolderName);
         const destinationPath = new PathInfo(`${baseDirectory.getParent().getPath()}${state.newFolderName}/`);
 
-        const similarFiles = state.allSiblingHave.map(({content, filePath}) => new FileContent(new PathInfo(filePath), content));
-
-        return similarFiles.map(currentFile => {
+        return childrenFiles.map(currentFile => {
             const newFile = new FileContentCreator(destinationPath, currentFile);
 
             return {currentFile, newFile: newFile.createFile()};
         });
-    }, [state.allSiblingHave, state.createdFolderName, state.newFolderName]);
+    }, [childrenFiles, state.createdFolderName, state.newFolderName]);
 
 
     return <Container>

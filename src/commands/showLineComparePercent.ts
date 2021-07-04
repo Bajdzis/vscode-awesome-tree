@@ -4,12 +4,10 @@ import { RootState } from '../store/reducer';
 import * as fs from 'fs';
 import { RootDependency } from '../store/dependencies';
 import { setDataAction } from '../reactViews/apps/comparePercent/actions/action';
+import { getSimilarPaths } from '../store/selectors/files/files';
 
 export async function showLineComparePercent(basePath: PathInfo, store: Store<RootState>, dependencies: RootDependency ){
-    const workspacePaths = Object.values(store.getState().files.pathToInfo);
-
-    const similarFiles = workspacePaths
-        .filter(path => basePath.isSimilar(path))
+    const similarFiles = getSimilarPaths(basePath)(store.getState())
         .map(path => new FileContent(path, fs.readFileSync(path.getPath()).toString()));
 
     let comparePercentApp = await dependencies.webViewReact.showWebView(`Analyze - ${basePath.getName()}`, 'reactAppComparePercent.js');

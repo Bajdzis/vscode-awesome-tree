@@ -1,10 +1,10 @@
 jest.mock('path');
 import { PathInfo } from 'awesome-tree-engine';
 import { RootState } from '../../reducer';
-import { getAllFiles } from './files';
+import { getAllFiles, getIncludePaths, getSimilarPaths } from './files';
 
 describe('selectors / files', () => {
-    const mockState: Partial<RootState> = {
+    const mockState = {
         files: {
             gitIgnoreCache: {},
             pathToInfo: [
@@ -33,10 +33,29 @@ describe('selectors / files', () => {
                 return pathToInfo;
             }, {} as { [key: string]: PathInfo })
         }
-    };
+    } as  Partial<RootState> as RootState;
     it('getAllFiles should return all path info', () => {
-        const similarPaths = getAllFiles(mockState as any as RootState);
+        const similarPaths = getAllFiles(mockState);
 
         expect(similarPaths).toHaveLength(20);
+    });
+
+    it('getSimilarPaths should return correct files', () => {
+        const similarPaths = getSimilarPaths(new PathInfo('/home/path/project/src/component/header/header.js'))(mockState);
+        expect(similarPaths.map(path => path.getPath())).toEqual([
+            '/home/path/project/src/component/header/header.js',
+            '/home/path/project/src/component/content/content.js',
+        ]);
+    });
+
+    it('getSimilarPaths should return correct files for directory', () => {
+        const similarPaths = getIncludePaths(new PathInfo('/home/path/project/src/component/header/'))(mockState);
+        expect(similarPaths.map(path => path.getPath())).toEqual([
+            '/home/path/project/src/component/header/header.js',
+            '/home/path/project/src/component/header/header.css',
+            '/home/path/project/src/component/header/header.html',
+            '/home/path/project/src/component/header/hooks/useHeaderStyle.js',
+            '/home/path/project/src/component/header/hooks/useAffix.js',
+        ]);
     });
 });

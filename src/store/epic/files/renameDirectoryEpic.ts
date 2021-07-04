@@ -10,6 +10,7 @@ import { createDocument } from '../../../fileSystem/createDocument';
 import { deleteDocument } from '../../../fileSystem/deleteDocument';
 import { OnRegisterWorkspaceParam, renameCopyDirectory, renameDirectory } from '../../action/files/files';
 import { generateFinish, generateStarted } from '../../action/lock/lock';
+import { getIncludePaths } from '../../selectors/files/files';
 
 type InputAction = Action<vscode.Uri> | Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
 
@@ -54,16 +55,9 @@ export const renameDirectoryEpic: RootEpic<InputAction> = (action$, state$, { di
         action$.pipe(
             ofType<InputAction, Action<PathInfo>>(renameDirectory.started.type),
             mergeMap(async ({payload}) => {
+                const childrenFiles = getIncludePaths(payload)(state$.value);
 
-                console.log({pathToInfo : state$.value.files.pathToInfo });
-
-                const similarFiles = Object.keys(state$.value.files.pathToInfo).filter(file => {
-                    return file.includes(payload.getPath());
-                }).map((file) => {
-                    return state$.value.files.pathToInfo[file];
-                });
-
-                return await directoryRename.showWebView(payload, similarFiles);
+                return await directoryRename.showWebView(payload, childrenFiles);
             }),
             mergeMap(({files}) => new Observable<Action<any>>((observer) => {
                 observer.next(generateStarted());

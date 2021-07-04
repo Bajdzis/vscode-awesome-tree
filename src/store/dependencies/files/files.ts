@@ -39,9 +39,8 @@ export class Files {
         return chooseFilesPanel;
     }
 
-    async getContentBySibling(generateFile: PathInfo, workspacePaths: PathInfo[]): Promise<string> {
-        const similarFiles: FileContent[] = workspacePaths
-            .filter(path => generateFile.isSimilar(path) && generateFile.getPath() !== path.getPath() )
+    async getContentBySibling(generateFile: PathInfo, similarPaths: PathInfo[]): Promise<string> {
+        const similarFiles: FileContent[] = similarPaths
             .map(path => {
                 const content = fs.readFileSync(path.getPath()).toString();
                 return new FileContent(path, content);
@@ -55,6 +54,7 @@ export class Files {
 
             comparer.addFile(newFileContent.getFileGraph());
         });
+
         return comparer.compare(0.75).getContent();
     }
 

@@ -10,6 +10,7 @@ import { reportBug } from '../../../errors/reportBug';
 import { createDocument } from '../../../fileSystem/createDocument';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { createFileContentCancel, createFileContentStarted, createFilesInNewDirectory, fillFileContentStarted, OnRegisterWorkspaceParam } from '../../action/files/files';
+import { getSimilarPaths } from '../../selectors/files/files';
 
 type InputAction =
     Action<FileContent> | Action<vscode.Uri> | Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
@@ -19,8 +20,12 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
         action$.pipe(
             ofType<InputAction, Action<PathInfo>>(fillFileContentStarted.type),
             mergeMap(async ({ payload }: Action<PathInfo>) => {
-                const paths = Object.values(state$.value.files.pathToInfo);
-                const contentPromise = files.getContentBySibling(payload, paths);
+
+                const similarPaths = getSimilarPaths(payload)(state$.value)
+                    .filter(path => payload.getPath() !== path.getPath());
+
+                const contentPromise = files.getContentBySibling(payload, similarPaths);
+
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: `Analyzing the sibling files of '${getRelativePath(payload.getPath())}'`,
@@ -71,8 +76,8 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                 const generateDirectory = payload;
                 const parentGenerateDirectory = generateDirectory.getParent();
 
-                const similarPaths = Object.values(state$.value.files.pathToInfo)
-                    .filter(file => file.includes(parentGenerateDirectory));
+                const similarPaths = getSimilarPaths(parentGenerateDirectory)(state$.value);
+
 
                 const similarPathGrouped = similarPaths.reduce<PathInfo[][]>((arr,path) => {
                     for (let i = 0; i < arr.length; i++) {
