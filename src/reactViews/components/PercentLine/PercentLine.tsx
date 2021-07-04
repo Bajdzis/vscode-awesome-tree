@@ -15,7 +15,7 @@ function getColor (percent: number, similarFiles: number, filesWithLine: number)
         return 'fatal';
     }
 
-    if(percent >= 85) {
+    if(percent >= 70) {
         return 'success';
     }
 

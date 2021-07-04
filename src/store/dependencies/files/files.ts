@@ -55,7 +55,7 @@ export class Files {
             comparer.addFile(newFileContent.getFileGraph());
         });
 
-        return comparer.compare(0.75).getContent();
+        return comparer.compare(0.7).getContent();
     }
 
     isDirectory(uri: vscode.Uri, outputChannel?: vscode.OutputChannel): boolean  {

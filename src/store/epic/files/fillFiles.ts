@@ -126,7 +126,7 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                         comparer.addFile(newFileContent.getFileGraph());
                     });
 
-                    return new FileContent(generateFilePath, comparer.compare(1).getContent());
+                    return new FileContent(generateFilePath, comparer.compare(0.7).getContent());
                 });
 
 
