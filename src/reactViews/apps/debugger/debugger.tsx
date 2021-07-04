@@ -6,6 +6,7 @@ import { Footer } from '../../components/Footer/Footer';
 import { useVscodeState } from '../../hooks/useVscodeState';
 import { dispatchAction, DispatchActionParams } from './actions/actions';
 import ReactJson from 'react-json-view';
+import { useActionHandler } from '../../hooks/useActionHandler';
 
 
 const rootElement = document.getElementById('root');
@@ -36,20 +37,14 @@ const DebuggerComponent = () => {
         saveState(state);
     }, [state]);
 
-    React.useEffect(() => {
-        const handler = ({data}: MessageEvent<any>) => {
-            if (data.type === dispatchAction.type) {
-                setState(state => ({
-                    logs: [
-                        data.payload as DispatchActionParams,
-                        ...state.logs
-                    ]
-                }));
-            }
-        };
-        window.addEventListener('message',handler);
-        return () => window.removeEventListener('message',handler);
-    }, [state]);
+    useActionHandler(dispatchAction, ({payload}) => {
+        setState(state => ({
+            logs: [
+                payload,
+                ...state.logs
+            ]
+        }));
+    });
 
     const activeActionIndex = activeAction === null ? 0 : activeAction;
     return <div>

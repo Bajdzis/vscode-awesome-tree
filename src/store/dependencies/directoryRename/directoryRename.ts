@@ -1,6 +1,7 @@
 import { FileContent, PathInfo } from 'awesome-tree-engine';
 import * as fs from 'fs';
 import { generateAllAction, GenerateAllParams, setDataAction } from '../../../reactViews/apps/renameFiles/actions/action';
+import { checkAction } from '../../../reactViews/hooks/useActionHandler';
 import { WebViewReact } from '../webView/webViewReact';
 
 
@@ -35,7 +36,7 @@ export class DirectoryRename {
 
         return new Promise((resolve) => {
             chooseFilesPanel.webview.onDidReceiveMessage((action) => {
-                if (action.type === generateAllAction.type) {
+                if (checkAction(generateAllAction, action)) {
                     resolve( action.payload);
                 }
             });

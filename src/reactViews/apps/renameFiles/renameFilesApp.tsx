@@ -8,6 +8,7 @@ import { Footer } from '../../components/Footer/Footer';
 import { HeaderWithButton } from '../../components/HeaderWithButton/HeaderWithButton';
 import { Input } from '../../components/Input/Input';
 import { useAcquireVsCodeApi } from '../../hooks/useAcquireVsCodeApi';
+import { useActionHandler } from '../../hooks/useActionHandler';
 import { useVscodeState } from '../../hooks/useVscodeState';
 import { changeNameAction, generateAllAction, setDataAction } from './actions/action';
 
@@ -30,18 +31,14 @@ export const RenameFilesApp = () => {
 
     const vscode = useAcquireVsCodeApi<RenameFilesState>();
 
-    React.useEffect(() => {
-        const handler = ({data}: MessageEvent<any>) => {
-            if (data.type === setDataAction.type && state.generated === false) {
-                const { allSiblingHave, createdFolderName } = data.payload;
+    useActionHandler(setDataAction, ({payload}) => {
+        if(state.generated === false) {
+            const { allSiblingHave, createdFolderName } = payload;
 
-                const newFolderName = (new PathInfo(createdFolderName)).getName();
-                setState({ allSiblingHave, createdFolderName, newFolderName });
-            }
-        };
-        window.addEventListener('message',handler);
-        return () => window.removeEventListener('message',handler);
-    },[]);
+            const newFolderName = (new PathInfo(createdFolderName)).getName();
+            setState({ allSiblingHave, createdFolderName, newFolderName });
+        }
+    });
 
     const generateData = React.useMemo(() => {
 
