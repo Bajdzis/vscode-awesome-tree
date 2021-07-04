@@ -26,9 +26,14 @@ export const DiffLine: React.FC<DiffLineProps> = ({ newLine, oldLine }) => {
         }
     }
 
-    return <pre className="diffLine">{newLine.substring(0, start)}
-        <span className="diffLine__old">{oldLine.substring(start, oldLine.length - end + 1)}</span>
-        <span className="diffLine__new">{newLine.substring(start, newLine.length - end + 1)}</span>
-        {newLine.substring(newLine.length - end + 1, newLine.length)}
+    const begin = newLine.substring(0, start);
+    const compareOld = oldLine.substring(start, oldLine.length - end + 1);
+    const compareNew = newLine.substring(start, newLine.length - end + 1);
+    const last = newLine.substring(newLine.length - end + 1, newLine.length);
+
+    return <pre className="diffLine">{begin}
+        {compareOld && <span className="diffLine__old">{compareOld}</span>}
+        {compareNew && <span className="diffLine__new">{compareNew}</span>}
+        {last}
     </pre>;
 };
