@@ -37,7 +37,7 @@ const config = {
         }]
     },
     optimization: {
-        minimize: true, 
+        minimize: true,
     }
 };
 
@@ -49,9 +49,10 @@ const configReactView = {
         reactViewsDebugger: './src/reactViews/apps/debugger/debugger.tsx',
         reactAppRenameFiles:'./src/reactViews/apps/renameFiles/index.tsx',
         reactAppChooseFiles:'./src/reactViews/apps/chooseFiles/index.tsx',
+        reactAppComparePercent:'./src/reactViews/apps/comparePercent/index.tsx',
         // shared: ['react', 'react-dom'], //, 'redux', 'react-redux'],
     },
-    output: { 
+    output: {
         path: path.resolve(__dirname, 'out'),
         filename: '[name].js',
     },
@@ -75,7 +76,7 @@ const configReactView = {
         }]
     },
     optimization: {
-        minimize: true, 
+        minimize: true,
     }
 };
 

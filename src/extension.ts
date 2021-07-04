@@ -2,6 +2,7 @@ import { PathInfo } from 'awesome-tree-engine';
 import * as fs from 'fs';
 import { ActionCreator } from 'typescript-fsa';
 import * as vscode from 'vscode';
+import { showLineComparePercent } from './commands/showLineComparePercent';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { createStore } from './store';
 import { onDidChange, onDidCreate, onDidDelete, onRegisterWorkspace, renameDirectory } from './store/action/files/files';
@@ -57,6 +58,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(sendFilesPathsToStore));
 
     sendFilesPathsToStore();
+
+    context.subscriptions.push(vscode.commands.registerCommand('extension.showLineComparePercent', (uri: vscode.Uri) => {
+        showLineComparePercent(new PathInfo(uri.fsPath), store, dependencies);
+    }));
 
     context.subscriptions.push(vscode.commands.registerCommand('extension.renameDirectory', (uri: vscode.Uri) => {
         store.dispatch(renameDirectory.started(new PathInfo(uri.fsPath)));

@@ -36,8 +36,8 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.saveAsTemplate",
-				"title": "Save file as awesome template",
+				"command": "extension.showLineComparePercent",
+				"title": "Analyze similar files",
 				"category": "FILE",
 				"icon": {
 					"dark": "icons/awesome-template.svg",
@@ -57,7 +57,7 @@
 		"menus": {
 			"editor/title": [
 				{
-					"command": "extension.saveAsTemplate",
+					"command": "extension.showLineComparePercent",
 					"group": "navigation@1",
 					"when": "resourceScheme == file"
 				}
@@ -144,7 +144,7 @@
 		"@types/minimatch": "^3.0.4",
 		"@types/react": "^17.0.13",
 		"@types/react-dom": "^17.0.8",
-		"awesome-tree-engine": "^2.1.1",
+		"awesome-tree-engine": "^2.2.0",
 		"ignore": "^5.1.8",
 		"minimatch": "^3.0.4",
 		"react": "^17.0.2",

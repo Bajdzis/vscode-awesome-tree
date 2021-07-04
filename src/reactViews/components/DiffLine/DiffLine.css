@@ -1,3 +1,7 @@
+.diffLine {
+    margin: 0;
+}
+
 .diffLine__new {
     background: rgba(0, 128, 0, 0.2);
     display:inline-block;
