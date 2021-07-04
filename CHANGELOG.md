@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.2](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.1.1...v2.1.2) (2021-07-04)
+
+
+### Bug Fixes
+
+* block informaton when not find similar files ([502ac30](https://github.com/Bajdzis/vscode-awesome-tree/commit/502ac30f8de4cfe55c698afa6293fab10601054b))
+* hide compare span when lines no have difference ([e79667d](https://github.com/Bajdzis/vscode-awesome-tree/commit/e79667d7c26493fabc4e05d4938a98a9a7473a46))
+
 ### [2.1.1](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.1.0...v2.1.1) (2021-07-04)
 
 
