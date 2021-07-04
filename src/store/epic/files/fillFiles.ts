@@ -10,7 +10,7 @@ import { reportBug } from '../../../errors/reportBug';
 import { createDocument } from '../../../fileSystem/createDocument';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { createFileContentCancel, createFileContentStarted, createFilesInNewDirectory, fillFileContentStarted, OnRegisterWorkspaceParam } from '../../action/files/files';
-import { getSimilarPaths } from '../../selectors/files/files';
+import { getIncludePaths, getSimilarPaths } from '../../selectors/files/files';
 
 type InputAction =
     Action<FileContent> | Action<vscode.Uri> | Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
@@ -76,8 +76,12 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                 const generateDirectory = payload;
                 const parentGenerateDirectory = generateDirectory.getParent();
 
-                const similarPaths = getSimilarPaths(parentGenerateDirectory)(state$.value);
+                const similarPaths = getIncludePaths(parentGenerateDirectory)(state$.value);
 
+                if (similarPaths.length === 0) {
+                    outputChannel.appendLine(`[FilesEpic] Not found similar paths for (${parentGenerateDirectory.getPath()}) `);
+                    return [];
+                }
 
                 const similarPathGrouped = similarPaths.reduce<PathInfo[][]>((arr,path) => {
                     for (let i = 0; i < arr.length; i++) {
@@ -90,6 +94,12 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                     arr.push([path]);
                     return arr;
                 }, []).filter(group => group.length > 1);
+
+
+                if (similarPaths.length === 0) {
+                    outputChannel.appendLine(`[FilesEpic] Not enough files to compare for new directory ${generateDirectory.getName()}`);
+                    return [];
+                }
 
                 if (similarPathGrouped.length > 8) {
                     outputChannel.appendLine(`[FilesEpic] Too many similar files! (${similarPaths.length}) `);
