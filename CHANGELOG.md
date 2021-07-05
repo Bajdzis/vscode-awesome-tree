@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.3](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.1.2...v2.1.3) (2021-07-05)
+
+
+### Bug Fixes
+
+* set same number of percent in all places ([e5fbe49](https://github.com/Bajdzis/vscode-awesome-tree/commit/e5fbe4976fda18e5336f8e2a5352f3f1aecac2a1))
+
 ### [2.1.2](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.1.1...v2.1.2) (2021-07-04)
 
 
