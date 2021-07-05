@@ -1,7 +1,9 @@
 import { PathInfo } from 'awesome-tree-engine';
 import * as fs from 'fs';
+import * as path from 'path';
 import { ActionCreator } from 'typescript-fsa';
 import * as vscode from 'vscode';
+
 // import { showLineComparePercent } from './commands/showLineComparePercent';
 import { getAllFilesPath } from './fileSystem/getAllFilesPath';
 import { createStore } from './store';
@@ -62,33 +64,29 @@ export function activate(context: vscode.ExtensionContext) {
 
     // create a decorator type that we use to decorate small numbers
     const smallNumberDecorationType = vscode.window.createTextEditorDecorationType({
-        isWholeLine: true,
-        borderWidth: '10px',
-        borderStyle: 'solid',
-        overviewRulerColor: 'blue',
-        overviewRulerLane: vscode.OverviewRulerLane.Center,
-        rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+        // isWholeLine: false,
+        // borderWidth: '10px',
+        // borderStyle: 'solid',
+        // overviewRulerColor: 'blue',
+        // overviewRulerLane: vscode.OverviewRulerLane.Center,
+        // rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 
-        light: {
-            // this color will be used in light color themes
-            borderColor: 'darkblue'
-        },
-        dark: {
-            // this color will be used in dark color themes
-            borderColor: 'lightblue'
-        },
-        before: {
-            contentText: 'wesome Tree33232',
-            backgroundColor: 'yellow',
-            color: 'black',
-            textDecoration:''
-        },
-        after: {
-            contentText: 'Awesome Tree\n33232',
-            backgroundColor: 'yellow',
-            color: 'black',
-            textDecoration:''
-        },
+        // light: {
+        //     // this color will be used in light color themes
+        //     borderColor: 'darkblue'
+        // },
+        // dark: {
+        //     // this color will be used in dark color themes
+        //     borderColor: 'lightblue'
+        // },
+        // before: {
+        //     contentText: 'Awesome Tree',
+        //     contentIconPath: vscode.Uri.file(
+        //         path.join(context.extensionPath, 'icons', 'awesome-template-light.svg')
+        //     ),
+        //     backgroundColor: 'yellow',
+        //     color: 'black',
+        // },
     });
 
     let activeEditor = vscode.window.activeTextEditor;
@@ -105,14 +103,24 @@ export function activate(context: vscode.ExtensionContext) {
         // const startPos = activeEditor.document.positionAt(match.index);
         const startPos = activeEditor.document.positionAt(0);
         const endPos = activeEditor.document.positionAt(text.length);
+
+        const abc  = path.join(context.extensionPath, 'icons', 'awesome-template-light.svg');
+        // eslint-disable-next-line no-debugger
+        debugger;
+
         const decoration: vscode.DecorationOptions = {
             range: new vscode.Range(startPos, endPos),
-            hoverMessage: 'Number **',
+            // hoverMessage: 'Number **',
 
             renderOptions: {
                 after: {
-                    contentText: 'hover ??',
-                    margin: '0 0 20px 0'
+                    margin: '0 0 20px 0',
+                    contentText: 'Awesome Tree',
+                    contentIconPath: vscode.Uri.file(
+                        abc
+                    ),
+                    backgroundColor: 'yellow',
+                    color: 'black',
                 }
             }};
 
@@ -120,6 +128,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 
         activeEditor.setDecorations(smallNumberDecorationType, smallNumbers);
+
+        // smallNumberDecorationType.dispose();
 
     }
 
