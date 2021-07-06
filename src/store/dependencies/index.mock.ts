@@ -38,6 +38,23 @@ export const createMockDependency = (): RootDependencyMocked => {
             hide: jest.fn(),
             name: jest.fn(),
             show: jest.fn(),
+        },
+        context: {
+            asAbsolutePath: jest.fn(),
+            environmentVariableCollection: jest.fn(),
+            extensionMode: jest.fn(),
+            extensionPath: jest.fn(),
+            extensionUri: jest.fn(),
+            globalState: jest.fn(),
+            globalStoragePath: jest.fn(),
+            globalStorageUri: jest.fn(),
+            logPath: jest.fn(),
+            logUri: jest.fn(),
+            secrets: jest.fn(),
+            storagePath: jest.fn(),
+            storageUri: jest.fn(),
+            subscriptions: jest.fn(),
+            workspaceState: jest.fn(),
         }
     };
     return dependency;

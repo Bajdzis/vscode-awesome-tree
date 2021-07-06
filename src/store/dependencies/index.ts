@@ -19,7 +19,8 @@ export const createDependency = (context: vscode.ExtensionContext): RootDependen
         files,
         webViewReact,
         directoryRename,
-        outputChannel
+        outputChannel,
+        context
     };
 };
 
@@ -29,4 +30,5 @@ export interface RootDependency {
     webViewReact: WebViewReact;
     directoryRename: DirectoryRename;
     outputChannel: vscode.OutputChannel;
+    context: vscode.ExtensionContext;
 }

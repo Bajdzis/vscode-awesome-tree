@@ -9,7 +9,7 @@
 		"url": "https://budzis.pl"
 	},
 	"engines": {
-		"vscode": "^1.53.0"
+		"vscode": "^1.57.1"
 	},
 	"categories": [
 		"Other"
@@ -34,6 +34,17 @@
 	},
 	"main": "./out/extension.js",
 	"contributes": {
+		"colors": [
+			{
+				"id": "awesomeTree.generatedCodeBackground",
+				"description": "Color for generated code",
+				"defaults": {
+					"dark": "#eb731855",
+					"light": "#eb731855",
+					"highContrast": "#eb731855"
+				}
+			}
+		],
 		"commands": [
 			{
 				"command": "extension.showLineComparePercent",
@@ -122,7 +133,7 @@
 		"@types/jest": "^26.0.23",
 		"@types/node": "^14.17.4",
 		"@types/uuid": "^8.3.1",
-		"@types/vscode": "^1.53.0",
+		"@types/vscode": "^1.57.1",
 		"@typescript-eslint/eslint-plugin": "^4.28.1",
 		"@typescript-eslint/parser": "^4.28.1",
 		"coveralls": "^3.1.1",
