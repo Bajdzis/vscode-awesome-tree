@@ -34,6 +34,17 @@
 	},
 	"main": "./out/extension.js",
 	"contributes": {
+		"colors": [
+			{
+				"id": "awesomeTree.generatedCodeBackground",
+				"description": "Color for generated code",
+				"defaults": {
+					"dark": "#eb731855",
+					"light": "#eb731855",
+					"highContrast": "#eb731855"
+				}
+			}
+		],
 		"commands": [
 			{
 				"command": "extension.showLineComparePercent",

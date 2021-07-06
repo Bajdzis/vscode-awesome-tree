@@ -11,11 +11,13 @@ import { createDocument } from '../../../fileSystem/createDocument';
 import { getRelativePath } from '../../../fileSystem/getRelativePath';
 import { createFileContentCancel, createFileContentStarted, createFilesInNewDirectory, fillFileContentStarted, OnRegisterWorkspaceParam } from '../../action/files/files';
 import { getIncludePaths, getSimilarPaths } from '../../selectors/files/files';
+import { showGeneratedCodeInTextEditor } from '../../../fileSystem/showGeneratedCodeInTextEditor';
+import { generateFinish } from '../../action/lock/lock';
 
 type InputAction =
     Action<FileContent> | Action<vscode.Uri> | Action<PathInfo> | Action<OnRegisterWorkspaceParam>;
 
-export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files }) =>
+export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputChannel, files, context }) =>
     merge(
         action$.pipe(
             ofType<InputAction, Action<PathInfo>>(fillFileContentStarted.type),
@@ -37,26 +39,35 @@ export const fillFilesEpic: RootEpic<InputAction> = (action$, state$, { outputCh
                     content: await contentPromise
                 });
             }),
-            filter(({ content }) => !!content.length),
+            filter(({ content }) => !!content.trim().length),
             mergeMap(async ({ createPath, content }) => {
-                const fileName = createPath.getName();
-                const parentDir = createPath.getParent().getPath();
+                const generateFile = new FileContent(createPath, content);
 
-                const answersQuestion = [
-                    'Yes, create content',
-                    'No, thanks'
-                ];
+                try {
+                    await showGeneratedCodeInTextEditor(context, generateFile);
 
-                const resultQuestion = await vscode.window.showInformationMessage(
-                    `Do you want to create content for new file '${fileName}' in folder "${parentDir}"?`,
-                    ...answersQuestion
-                );
+                    return generateFinish();
+                } catch (error) {
 
-                if (resultQuestion === answersQuestion[0]) {
-                    return createFileContentStarted(new FileContent(createPath, content));
+                    const fileName = createPath.getName();
+                    const parentDir = createPath.getParent().getPath();
+
+                    const answersQuestion = [
+                        'Yes, create content',
+                        'No, thanks'
+                    ];
+
+                    const resultQuestion = await vscode.window.showInformationMessage(
+                        `Do you want to create content for new file '${fileName}' in folder "${parentDir}"?`,
+                        ...answersQuestion
+                    );
+
+                    if (resultQuestion === answersQuestion[0]) {
+                        return createFileContentStarted(generateFile);
+                    }
+
+                    return createFileContentCancel(createPath);
                 }
-
-                return createFileContentCancel(createPath);
 
             }),
         ),
