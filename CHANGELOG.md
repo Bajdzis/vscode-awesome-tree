@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.3.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.2.0...v2.3.0) (2021-07-08)
+
+
+### Features
+
+* update readme ([08d1394](https://github.com/Bajdzis/vscode-awesome-tree/commit/08d139490c5d2d0897f96878c54b45043e6439ad))
+
 ## [2.2.0](https://github.com/Bajdzis/vscode-awesome-tree/compare/v2.1.3...v2.2.0) (2021-07-06)
 
 

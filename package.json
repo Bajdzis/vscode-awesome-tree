@@ -2,7 +2,7 @@
 	"name": "awesome-tree",
 	"displayName": "Awesome tree",
 	"description": "Code completion plugin. Analyze your files content on your computer. We analyze files content by whitespace indentation so we can supports all programming languages.",
-	"version": "2.2.0",
+	"version": "2.3.0",
 	"publisher": "bajdzis",
 	"author": {
 		"name": "Rafał Budzis",
