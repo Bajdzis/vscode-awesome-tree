@@ -55,6 +55,7 @@ export const createMockDependency = (): RootDependencyMocked => {
             storageUri: jest.fn(),
             subscriptions: jest.fn(),
             workspaceState: jest.fn(),
+            extension: jest.fn(),
         }
     };
     return dependency;
