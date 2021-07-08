@@ -1,26 +1,35 @@
 # Awesome Tree
 
-engine:
+[![Support this project](https://img.shields.io/badge/GitHub_Sponsors-Bajdzis-green)](https://github.com/sponsors/Bajdzis/)
+[![Build Status](https://travis-ci.com/Bajdzis/vscode-awesome-tree.svg?branch=master)](https://travis-ci.com/Bajdzis/vscode-awesome-tree)
+[![Coverage Status](https://coveralls.io/repos/github/Bajdzis/vscode-awesome-tree/badge.svg?branch=master)](https://coveralls.io/github/Bajdzis/vscode-awesome-tree?branch=master)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+
+<img src="https://github.com/Bajdzis/vscode-awesome-tree/raw/master/readme/awesome-tree-icon.png" alt="logo" style="max-width:100px">
+
+Extension for Visual Studio Code which analyze your files content **on your computer**!
+We analyze files content by whitespace indentation so we can supports all programming languages. Parse algorithm is available on NPM :
+
+https://www.npmjs.com/package/awesome-tree-engine
+
 
 [![Coverage Status](https://coveralls.io/repos/github/Bajdzis/awesome-tree/badge.svg?branch=master)](https://coveralls.io/github/Bajdzis/awesome-tree?branch=master)
 ![npm](https://img.shields.io/npm/v/awesome-tree-engine)
 
 
-vscode extension:
-
-[![Build Status](https://travis-ci.com/Bajdzis/vscode-awesome-tree.svg?branch=master)](https://travis-ci.com/Bajdzis/vscode-awesome-tree)
-[![Coverage Status](https://coveralls.io/repos/github/Bajdzis/vscode-awesome-tree/badge.svg?branch=master)](https://coveralls.io/github/Bajdzis/vscode-awesome-tree?branch=master)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-
-
-### Extension for Visual Studio Code
-
-![logo](https://github.com/Bajdzis/vscode-awesome-tree/raw/master/readme/awesome-tree-icon.png)
-
 ## Features
 
- - Create structure (file or directory) based on sibling directory
- - Rename directory with file content
+- Create file content after creating a new file. We try to put the file name in the generated content.
+
+![create file](https://github.com/Bajdzis/vscode-awesome-tree/raw/master/readme/create-file.gif)
+
+- Create structure after creating new directory. We analyze siblings directories and create files with content.
+
+![create directory](https://github.com/Bajdzis/vscode-awesome-tree/raw/master/readme/create-directory.gif)
+
+- You can compare files if you want to find out on what basis the content was generated.
+
+![compare files](https://github.com/Bajdzis/vscode-awesome-tree/raw/master/readme/compare-files.gif)
 
 ## How it work?
 

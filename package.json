@@ -1,24 +1,60 @@
 {
 	"name": "awesome-tree",
 	"displayName": "Awesome tree",
-	"description": "Stop creating folders, start creating structures! (Automated file creation)",
+	"description": "Code completion plugin. Analyze your files content on your computer. We analyze files content by whitespace indentation so we can supports all programming languages.",
 	"version": "2.2.0",
 	"publisher": "bajdzis",
 	"author": {
 		"name": "Rafał Budzis",
-		"url": "https://budzis.pl"
+		"url": "https://github.com/Bajdzis/"
 	},
 	"engines": {
 		"vscode": "^1.57.1"
 	},
 	"categories": [
+		"Programming Languages",
+		"Snippets",
 		"Other"
 	],
 	"activationEvents": [
 		"*"
 	],
+	"badges": [
+		{
+			"url": "https://img.shields.io/badge/GitHub_Sponsors-Bajdzis-green",
+			"description": "Support this project",
+			"href": "https://github.com/sponsors/Bajdzis/"
+		}
+	],
 	"icon": "readme/awesome-tree-icon.png",
 	"keywords": [
+		"javascript",
+		"python",
+		"typescript",
+		"php",
+		"autocomplete",
+		"ruby",
+		"java",
+		"go",
+		"golang",
+		"bash",
+		"kotlin",
+		"html",
+		"css",
+		"ocaml",
+		"perl",
+		"rust",
+		"c",
+		"cpp",
+		"c++",
+		"csharp",
+		"c#",
+		"react",
+		"ai",
+		"method completion",
+		"intellicode",
+		"intellisense",
+		"snippets",
 		"file",
 		"files",
 		"dir",
